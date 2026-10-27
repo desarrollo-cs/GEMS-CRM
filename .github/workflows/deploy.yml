@@ -31,7 +31,7 @@ jobs:
         run: |
           npm run build-github
         env:
-          VITE_API_BASE_URL_PROD: https://gems-crm-backend.onrender.com/api
+          VITE_API_BASE_URL_PROD: https://back-crm-ahcmawg9bnczgad6.canadacentral-01.azurewebsites.net/api
           VITE_APP_NAME: GEMS CRM
           VITE_APP_VERSION: 1.0.0
           VITE_DEBUG_MODE: false

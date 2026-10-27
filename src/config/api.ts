@@ -5,7 +5,7 @@ const getBaseURL = (): string => {
   const envURL = import.meta.env.VITE_API_URL
   if (envURL) return envURL
 
-  return 'https://gems-crm-backend.onrender.com/api'
+  return 'https://back-crm-ahcmawg9bnczgad6.canadacentral-01.azurewebsites.net/api'
 }
 
 // Función para obtener timeout personalizado

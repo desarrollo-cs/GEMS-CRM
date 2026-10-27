@@ -143,7 +143,7 @@ onMounted(async () => {
 // Verificar estado de WhatsApp
 async function checkWhatsAppStatus() {
   try {
-    const response = await fetch('https://gems-crm-backend.onrender.com/api/wpp-status')
+    const response = await fetch('https://back-crm-ahcmawg9bnczgad6.canadacentral-01.azurewebsites.net/api/wpp-status')
     const data = await response.json()
     whatsappStatus.value = data.ready === true
   } catch (error) {
@@ -156,7 +156,7 @@ async function checkWhatsAppStatus() {
 async function loadActivities() {
   loading.value = true
   try {
-    const response = await fetch('https://gems-crm-backend.onrender.com/api/activities?sort=dueDate&order=asc&limit=100&page=1&status=all&relations=client,assignedTo')
+    const response = await fetch('https://back-crm-ahcmawg9bnczgad6.canadacentral-01.azurewebsites.net/api/activities?sort=dueDate&order=asc&limit=100&page=1&status=all&relations=client,assignedTo')
     const data = await response.json()
     activities.value = data.data
   } catch (error) {

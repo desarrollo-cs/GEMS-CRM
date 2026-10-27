@@ -308,7 +308,7 @@ function openModal() {
 // Verificar estado de WhatsApp
 async function checkWhatsAppStatus() {
   try {
-    const response = await fetch('https://gems-crm-backend.onrender.com/api/wpp-status')
+    const response = await fetch('https://back-crm-ahcmawg9bnczgad6.canadacentral-01.azurewebsites.net/api/wpp-status')
     const data = await response.json()
     whatsappStatus.value = data.ready === true
   } catch (error) {

@@ -45,7 +45,7 @@ export default {
       this.ready = false;
       this.errorMsg = '';
       try {
-  const res = await fetch('https://gems-crm-backend.onrender.com/api/wpp-qr');
+  const res = await fetch('https://back-crm-ahcmawg9bnczgad6.canadacentral-01.azurewebsites.net/api/wpp-qr');
         const data = await res.json();
         if (data.qr) {
           this.qr = data.qr;
@@ -69,7 +69,7 @@ export default {
       this.loading = true;
       this.errorMsg = '';
       try {
-  const res = await fetch('https://gems-crm-backend.onrender.com/api/wpp-reset', { method: 'POST' });
+  const res = await fetch('https://back-crm-ahcmawg9bnczgad6.canadacentral-01.azurewebsites.net/api/wpp-reset', { method: 'POST' });
         const data = await res.json();
         if (data.reset) {
           this.qr = null;
@@ -85,7 +85,7 @@ export default {
     },
     async pollStatus() {
       try {
-  const res = await fetch('https://gems-crm-backend.onrender.com/api/wpp-status');
+  const res = await fetch('https://back-crm-ahcmawg9bnczgad6.canadacentral-01.azurewebsites.net/api/wpp-status');
         const data = await res.json();
         this.ready = !!data.ready;
         // Si la sesión se cae, refrescar QR automáticamente
