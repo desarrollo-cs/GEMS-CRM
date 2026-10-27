@@ -2975,8 +2975,10 @@ const visualStatusFor = (a: any): 'pending' | 'in-progress' | 'completed' | 'ove
 }
 
 // Las recurrentes no avanzan por estados: van en su apartado arriba del tablero.
-// Las features son bloques amplios (solo Nueva/Terminada): se ven en Lista y Backlog.
-const boardActivities = computed(() => filteredActivities.value.filter(a => a.type !== 'recurring' && a.type !== 'feature'))
+// Las features son bloques amplios (solo Nueva/Terminada): se ven en Lista y
+// Backlog; en el tablero solo las terminadas, en Completadas, para no perderlas.
+const boardActivities = computed(() => filteredActivities.value.filter(a =>
+  a.type !== 'recurring' && (a.type !== 'feature' || visualStatusFor(a) === 'completed')))
 
 const recurringBoardItems = computed(() =>
   filteredActivities.value

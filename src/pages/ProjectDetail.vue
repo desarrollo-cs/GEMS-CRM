@@ -543,9 +543,10 @@ const statusGroups = computed(() => [
   { key: 'done', label: 'Completada', dot: 'bg-emerald-500', items: filteredLinked.value.filter(isDone) }
 ])
 
-// El tablero no muestra features: son bloques amplios de tiempo (se ven en Lista y Backlog)
+// El tablero no muestra features abiertas (bloques amplios: se ven en Lista y
+// Backlog), pero las terminadas sí van a Completada para que no se pierdan.
 const boardGroups = computed(() =>
-  statusGroups.value.map(g => ({ ...g, items: g.items.filter(i => i.type !== 'feature') }))
+  statusGroups.value.map(g => ({ ...g, items: g.items.filter(i => i.type !== 'feature' || g.key === 'done') }))
 )
 
 // ── Vista de Lista (TaskListView, la misma que usa /activities) ──
