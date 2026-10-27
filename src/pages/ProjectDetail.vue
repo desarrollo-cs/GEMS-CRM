@@ -515,7 +515,7 @@ const ACTIVITY_STATUS_LABELS: Record<string, string> = {
 }
 // Las features solo tienen dos estados
 const FEATURE_STATUS_LABELS: Record<string, string> = { pending: 'Nueva', completed: 'Terminada' }
-const isDone = (item: LinkedItem) => ['done', 'completed'].includes(item.status)
+const isDone = (item: LinkedItem) => ['done', 'completed', 'cancelled'].includes(item.status)
 const isInProgress = (item: LinkedItem) => ['in-progress', 'review', 'testing'].includes(item.status)
 
 // Filtro por responsable (aplica a Lista y Tablero). '__none__' = sin asignar

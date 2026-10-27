@@ -2961,6 +2961,10 @@ const sortActivities = (list: ActivityData[]) => {
  * durante el sweep de reconciliación.
  */
 const visualStatusFor = (a: any): 'pending' | 'in-progress' | 'completed' | 'overdue' | 'cancelled' => {
+  // Completada o cancelada siempre va a Completadas: una cancelada no tenía
+  // columna y desaparecía del tablero. (El 100% sin cerrar no cuenta: al
+  // reabrir una tarea queda con su progreso y debe volver a Pendiente.)
+  if (a.status === 'completed' || a.status === 'cancelled') return 'completed'
   if (a.status === 'overdue' && !shouldBeOverdue(a)) {
     // Mal marcada: la mostramos según su progreso
     if (isActivityDone(a)) return 'completed'
@@ -3000,8 +3004,14 @@ const hasMoreInProgress = computed(() =>
   boardActivities.value.filter(a => visualStatusFor(a) === 'in-progress').length > columnLimits.value.inProgress
 )
 
+// Completadas: lo último que se terminó va arriba. Con el orden por prioridad
+// y entrega más antigua, una tarea recién completada quedaba detrás de
+// "ver más" y parecía que no se había movido a esta columna.
+const finishedAt = (a: any) => new Date(a.endDate || a.updatedAt || a.dueDate || a.date || 0).getTime()
+const sortByFinished = (list: ActivityData[]) => [...list].sort((a, b) => finishedAt(b) - finishedAt(a))
+
 const completedActivities = computed(() => {
-  const sorted = sortActivities(boardActivities.value.filter(a => visualStatusFor(a) === 'completed'))
+  const sorted = sortByFinished(boardActivities.value.filter(a => visualStatusFor(a) === 'completed'))
   return sorted.slice(0, columnLimits.value.completed)
 })
 
@@ -3135,8 +3145,10 @@ function activityToListRow(activity: ActivityData): TaskListRow {
 
 const activityListGroups = computed<TaskListGroup[]>(() => {
   // Las recurrentes van en su propio grupo arriba: no vencen ni se completan
-  const byStatus = (status: ReturnType<typeof visualStatusFor>) =>
-    sortActivities(listFilteredActivities.value.filter(a => a.type !== 'recurring' && visualStatusFor(a) === status)).map(activityToListRow)
+  const byStatus = (status: ReturnType<typeof visualStatusFor>) => {
+    const rows = listFilteredActivities.value.filter(a => a.type !== 'recurring' && visualStatusFor(a) === status)
+    return (status === 'completed' ? sortByFinished(rows) : sortActivities(rows)).map(activityToListRow)
+  }
   const recurringRows = listFilteredActivities.value.filter(a => a.type === 'recurring').map(activityToListRow)
 
   return [
@@ -5879,6 +5891,7 @@ const onDrop = async (event: DragEvent, newStatus: string) => {
       activities.value[activityIndex].status = newStatus
       if (newStatus === 'completed') {
         activities.value[activityIndex].completionPercentage = 100
+        if (!activities.value[activityIndex].endDate) (activities.value[activityIndex] as any).endDate = new Date().toISOString()
       }
     }
 
