@@ -2804,8 +2804,8 @@ const filteredWikiForLinking = computed(() => {
 
 // Computed
 const filteredMembersByDept = computed(() => {
-  if (!selectedDepartment.value) return teamMembers.value
-  return teamMembers.value.filter((m: any) => m.department?.toLowerCase() === selectedDepartment.value?.toLowerCase())
+  if (!selectedDepartment.value) return memberOptionsSource.value
+  return memberOptionsSource.value.filter((m: any) => m.department?.toLowerCase() === selectedDepartment.value?.toLowerCase())
 })
 
 const filteredActivities = computed(() => {
@@ -3574,27 +3574,27 @@ const updateOverdueActivities = async () => {
 }
 
 const loadTeamMembers = async () => {
+  // Lista completa propia: el store puede tener solo una página (la de Equipo)
   try {
-    // Usar el store como fuente primaria (evita llamadas duplicadas a la API)
-    if (teamStore.members.length === 0) {
-      await teamStore.fetchTeam(1, 500)
-    }
-    if (teamStore.members.length > 0) {
-      teamMembers.value = teamStore.members.filter(m => m.isActive && !m.role?.toLowerCase().includes('client'))
-      return
-    }
-    // Fallback: llamada directa al servicio
     teamMembers.value = await teamService.getActiveMembers()
   } catch (err) {
     console.error('❌ Error loading team members:', err)
-    try {
-      const allMembers = await teamService.getAll()
-      teamMembers.value = allMembers.filter(member => member.isActive)
-    } catch (err2) {
-      console.error('❌ Error loading all team members:', err2)
-    }
   }
 }
+
+// Sin permiso para ver el equipo (o si falla), se arma la lista con los
+// responsables de las actividades cargadas y el usuario actual, para que el
+// filtro nunca quede vacío.
+const memberOptionsSource = computed(() => {
+  const byId = new Map<string, any>()
+  teamMembers.value.forEach((m: any) => m._id && byId.set(m._id, m))
+  activities.value.forEach((a: any) => (a.assignedTo || []).forEach((u: any) => {
+    if (u && typeof u === 'object' && u._id && !byId.has(u._id)) byId.set(u._id, u)
+  }))
+  const me = authStore.user as any
+  if (me?._id && !byId.has(me._id)) byId.set(me._id, { _id: me._id, name: me.name, department: me.department })
+  return [...byId.values()].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'es'))
+})
 
 const loadClients = async () => {
   loadingClients.value = true
