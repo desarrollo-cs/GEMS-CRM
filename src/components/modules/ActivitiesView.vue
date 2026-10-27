@@ -6002,6 +6002,12 @@ watch(() => props.searchTerm, () => {
 watch(() => authStore.user?._id, (userId) => {
   if (userId) {
     loadSavedFilters()
+    // Llegada desde el dashboard: ?status=overdue|pending|in-progress|completed
+    const qs = route.query.status as string | undefined
+    if (qs && ['pending', 'in-progress', 'completed', 'overdue'].includes(qs)) {
+      selectedStatus.value = qs
+      selectedTeamMember.value = authStore.user?._id || ''
+    }
   }
 }, { immediate: true })
 

@@ -1,76 +1,47 @@
 <template>
-  <!-- Insights de IA, versión compacta: 1 o 2 sugerencias accionables para esta
-       persona, calculadas a partir del resumen del dashboard (sin cargar nada más). -->
-  <DashCard eyebrow="IA" :title="`Sugerencias para ${firstName}`" icon="fa-wand-magic-sparkles" icon-class="bg-primary-50 text-primary-600">
-    <template #action>
-      <button
-        type="button"
-        title="Volver a generar"
-        @click="generate(true)"
-        :disabled="loading"
-        class="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary-600 hover:border-primary-200 transition-colors disabled:opacity-40"
-      >
-        <i class="fas fa-rotate text-[10px]" :class="{ 'animate-spin': loading }"></i>
+  <!-- Sugerencias de IA: franja discreta con 1 o 2 líneas accionables para esta persona. -->
+  <div class="rounded-2xl bg-slate-50 px-5 py-4">
+    <div class="flex items-center justify-between gap-3 mb-2">
+      <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 leading-none">Sugerencias para {{ firstName }}</p>
+      <button type="button" @click="generate(true)" :disabled="loading" class="text-[11px] font-medium text-slate-400 hover:text-primary-600 transition-colors disabled:opacity-40">
+        {{ loading ? 'Generando…' : 'Actualizar' }}
       </button>
-    </template>
+    </div>
 
     <Transition name="swap" mode="out-in">
-      <!-- Cargando -->
-      <div v-if="loading" key="loading" class="space-y-2.5" aria-busy="true">
-        <div v-for="n in 2" :key="n" class="flex items-start gap-3">
-          <Skeleton shape="circle" size="22" />
-          <div class="flex-1 space-y-1.5 pt-1">
-            <Skeleton height="10" :width="n === 1 ? '70%' : '55%'" />
-            <Skeleton height="10" width="90%" />
-          </div>
-        </div>
+      <div v-if="loading" key="loading" class="space-y-2" aria-busy="true">
+        <Skeleton height="11" width="85%" />
+        <Skeleton height="11" width="65%" />
       </div>
 
-      <!-- Insights -->
-      <ul v-else-if="insights.length" key="list" class="space-y-2.5">
-        <li v-for="(it, i) in insights" :key="i" class="flex items-start gap-3">
-          <span class="w-[22px] h-[22px] rounded-md flex items-center justify-center shrink-0 text-[10px] mt-px" :class="it.tone.bg">
-            <i :class="['fas', it.icon, it.tone.text]"></i>
-          </span>
-          <p class="text-[12.5px] text-slate-700 leading-snug">{{ it.text }}</p>
+      <ul v-else-if="insights.length" key="list" class="space-y-1.5">
+        <li v-for="(it, i) in insights" :key="i" class="flex items-start gap-2.5">
+          <span class="w-1.5 h-1.5 rounded-full shrink-0 mt-[7px]" :class="it.tone"></span>
+          <p class="text-[13px] text-slate-700 leading-snug">{{ it.text }}</p>
         </li>
       </ul>
 
-      <!-- Error discreto -->
-      <p v-else-if="error" key="error" class="text-[12px] text-slate-400 flex items-center gap-2">
-        <i class="fas fa-circle-info text-[11px]"></i>
+      <p v-else-if="error" key="error" class="text-[12px] text-slate-400">
         {{ error }}
-        <button type="button" @click="generate(true)" class="font-semibold text-primary-600 hover:text-primary-700">Reintentar</button>
+        <button type="button" @click="generate(true)" class="font-medium text-primary-600 hover:text-primary-700 ml-1">Reintentar</button>
       </p>
 
-      <!-- Vacío -->
-      <p v-else key="empty" class="text-[12px] text-slate-400 flex items-center gap-2">
-        <i class="fas fa-check text-[11px] text-emerald-500"></i>
-        Nada que sugerir por ahora: vas al día.
-      </p>
+      <p v-else key="empty" class="text-[12px] text-slate-400">Nada que sugerir por ahora: vas al día.</p>
     </Transition>
-  </DashCard>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { API_CONFIG } from '@/config/api'
-import DashCard from './dashboard/DashCard.vue'
 import Skeleton from './ui/Skeleton.vue'
 import type { DashboardSummary } from '@/services/dashboardService'
 import { relativeDue, roleLabel } from './dashboard/dashboardFormat'
 
 const props = defineProps<{ summary: DashboardSummary }>()
 
-interface Insight { text: string; icon: string; tone: { bg: string; text: string } }
-
-const TONES = {
-  danger: { bg: 'bg-red-50', text: 'text-red-500' },
-  warning: { bg: 'bg-amber-50', text: 'text-amber-500' },
-  primary: { bg: 'bg-primary-50', text: 'text-primary-600' },
-  success: { bg: 'bg-emerald-50', text: 'text-emerald-500' }
-}
+interface Insight { text: string; tone: string }
 
 const authStore = useAuthStore()
 const firstName = computed(() => authStore.user?.name?.split(' ')[0] || 'ti')
@@ -97,16 +68,8 @@ const readCache = (): string[] | null => {
 }
 const writeCache = (lines: string[]) => { try { localStorage.setItem(cacheKey.value, JSON.stringify({ lines, timestamp: Date.now() })) } catch {} }
 
-// Icono y tono según de qué habla la frase
-const decorate = (text: string): Insight => {
-  const t = text.toLowerCase()
-  if (/vencid|atras|retras/.test(t)) return { text, icon: 'fa-triangle-exclamation', tone: TONES.danger }
-  if (/autoriz|aprob|plazo/.test(t)) return { text, icon: 'fa-user-shield', tone: TONES.warning }
-  if (/hoy|urgente|en curso/.test(t)) return { text, icon: 'fa-sun', tone: TONES.warning }
-  if (/equipo|carga|persona|área|area/.test(t)) return { text, icon: 'fa-users', tone: TONES.primary }
-  if (/cliente|proyecto/.test(t)) return { text, icon: 'fa-briefcase', tone: TONES.primary }
-  return { text, icon: 'fa-lightbulb', tone: TONES.success }
-}
+// Punto rojo si la frase habla de vencidas; el resto, color de acento
+const decorate = (text: string): Insight => ({ text, tone: /vencid|atras|retras/i.test(text) ? 'bg-red-500' : 'bg-primary-500' })
 
 // Sin IA (o mientras no responde): sugerencias calculadas con los mismos datos
 const fallback = (): string[] => {
@@ -116,8 +79,8 @@ const fallback = (): string[] => {
     const first = s.lists.overdue[0]
     out.push(`Tienes ${s.mine.overdue} vencida${s.mine.overdue === 1 ? '' : 's'}; empieza por "${first?.title}" (${relativeDue(first?.dueDate)}).`)
   }
-  if (s.approvals.toReview > 0) out.push(`${s.approvals.toReview} autorización${s.approvals.toReview === 1 ? '' : 'es'} de tu equipo espera${s.approvals.toReview === 1 ? '' : 'n'} tu revisión: resuélvelas para no frenar entregas.`)
-  if (s.mine.today > 0 && out.length < 2) out.push(`Hoy vencen ${s.mine.today}; cierra primero la de mayor prioridad antes de abrir frentes nuevos.`)
+  if (s.approvals.toReview > 0) out.push(`${s.approvals.toReview} ${s.approvals.toReview === 1 ? 'autorización de tu equipo espera' : 'autorizaciones de tu equipo esperan'} tu revisión: resuélvelas para no frenar entregas.`)
+  if (s.mine.today > 0 && out.length < 2) out.push(s.mine.today === 1 ? 'Hoy vence 1; ciérrala antes de abrir frentes nuevos.' : `Hoy vencen ${s.mine.today}; cierra primero la de mayor prioridad antes de abrir frentes nuevos.`)
   if (s.team && out.length < 2) {
     const loaded = [...s.team.members].sort((a, b) => b.stats.overdue - a.stats.overdue)[0]
     if (loaded && loaded.stats.overdue > 0 && loaded._id !== s.viewer.id) out.push(`${loaded.name.split(' ')[0]} acumula ${loaded.stats.overdue} vencida${loaded.stats.overdue === 1 ? '' : 's'}: vale una conversación corta hoy.`)

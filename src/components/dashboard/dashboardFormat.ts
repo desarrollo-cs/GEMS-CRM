@@ -50,14 +50,6 @@ export function roleLabel(role?: string | null): string {
   return ROLE_LABELS[role] || role.charAt(0).toUpperCase() + role.slice(1)
 }
 
-export const PRIORITY_DOT: Record<string, string> = {
-  urgent: 'bg-red-500', high: 'bg-orange-500', medium: 'bg-primary-500', low: 'bg-slate-300'
-}
-
-export const PRIORITY_LABEL: Record<string, string> = {
-  urgent: 'Urgente', high: 'Alta', medium: 'Media', low: 'Baja'
-}
-
 export function statusBadge(a: DashboardActivity, now: Date = new Date()): { label: string; cls: string } {
   const due = a.dueDate ? new Date(a.dueDate) : null
   if (a.status === 'overdue' || (due && due.getTime() < now.getTime() && a.status !== 'completed')) {
