@@ -31,7 +31,7 @@
             v-for="item in navigation"
             :key="item.name"
             :to="item.path"
-            class="flex items-center rounded-xl text-sm font-medium transition-all group outline-none h-12"
+            class="flex items-center rounded-xl text-sm font-medium transition-all duration-200 group outline-none h-12 active:scale-[0.98]"
             :class="[
               $route.path === item.path 
                 ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/20' 
@@ -163,7 +163,12 @@
       
       <!-- Page Content -->
       <main class="p-4 sm:p-8">
-        <router-view />
+        <router-view v-slot="{ Component, route: viewRoute }">
+          <!-- Cada página entra con un fade + subida suave (motion.css) -->
+          <div :key="viewRoute.path" class="motion-page">
+            <component :is="Component" />
+          </div>
+        </router-view>
       </main>
     </div>
     

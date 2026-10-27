@@ -4,43 +4,35 @@
     <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-50/50 p-2 rounded-xl border border-slate-100 shadow-sm">
       <div class="flex items-center gap-4 flex-wrap">
         <!-- Toggle vista -->
-        <div class="flex bg-slate-100 rounded-lg p-1 border border-slate-200 shadow-inner">
+        <div class="seg">
           <button
             @click="currentView = 'kanban'"
-            :class="currentView === 'kanban' 
-              ? 'bg-white text-primary-600 shadow-sm font-bold border-slate-200' 
-              : 'text-slate-500 hover:text-slate-800'"
-            class="px-3 py-1.5 rounded-md text-xs font-medium transition-all"
+            :aria-pressed="currentView === 'kanban'"
+            class="flex items-center"
           >
             <i class="fas fa-columns mr-1.5"></i>
             Kanban
           </button>
           <button
             @click="currentView = 'tasks'"
-            :class="currentView === 'tasks' 
-              ? 'bg-white text-primary-600 shadow-sm font-bold border-slate-200' 
-              : 'text-slate-500 hover:text-slate-800'"
-            class="px-3 py-1.5 rounded-md text-xs font-medium transition-all"
+            :aria-pressed="currentView === 'tasks'"
+            class="flex items-center"
           >
             <i class="fas fa-list mr-1.5"></i>
             Lista
           </button>
           <button
             @click="currentView = 'calendar'"
-            :class="currentView === 'calendar' 
-              ? 'bg-white text-primary shadow-sm font-bold border-slate-200' 
-              : 'text-slate-500 hover:text-slate-800'"
-            class="px-3 py-1.5 rounded-md text-xs font-medium transition-all"
+            :aria-pressed="currentView === 'calendar'"
+            class="flex items-center"
           >
             <i class="fas fa-calendar-alt mr-1.5"></i>
             Cal.
           </button>
           <button
             @click="currentView = 'daily'"
-            :class="currentView === 'daily' 
-              ? 'bg-white text-primary shadow-sm font-bold border-slate-200' 
-              : 'text-slate-500 hover:text-slate-800'"
-            class="px-3 py-1.5 rounded-md text-xs font-medium transition-all"
+            :aria-pressed="currentView === 'daily'"
+            class="flex items-center"
           >
             <i class="fas fa-sun mr-1.5"></i>
             Daily
@@ -48,10 +40,8 @@
           <button
             v-if="authStore.isLeader"
             @click="currentView = 'team'"
-            :class="currentView === 'team' 
-              ? 'bg-white text-primary shadow-sm font-bold border-slate-200' 
-              : 'text-slate-500 hover:text-slate-800'"
-            class="px-3 py-1.5 rounded-md text-xs font-medium transition-all"
+            :aria-pressed="currentView === 'team'"
+            class="flex items-center"
           >
             <i class="fas fa-users-viewfinder mr-1.5"></i>
             Equipo
@@ -340,7 +330,7 @@
 
 
     <!-- Vista de Calendario -->
-    <div v-if="currentView === 'calendar'">
+    <div v-if="currentView === 'calendar'" class="motion-content-in">
       <MonthlyCalendar
         :activities="filteredActivities"
         :clients="clients"
@@ -351,17 +341,17 @@
     </div>
 
     <!-- Vista Daily -->
-    <div v-else-if="currentView === 'daily'">
+    <div v-else-if="currentView === 'daily'" class="motion-content-in">
       <DailyScrum :activities="filteredActivities" />
     </div>
 
     <!-- Vista Equipo (Líderes) -->
-    <div v-else-if="currentView === 'team'">
+    <div v-else-if="currentView === 'team'" class="motion-content-in">
       <TeamActivities />
     </div>
 
     <!-- Vista de Lista -->
-    <div v-else-if="currentView === 'tasks'" class="mt-6">
+    <div v-else-if="currentView === 'tasks'" class="mt-6 motion-content-in">
       <!-- Filtros de la lista: proyecto → feature → tipo -->
       <div class="flex flex-wrap items-center gap-2 mb-3">
         <div class="w-full sm:w-72" title="Mostrar solo las tareas de un proyecto">
@@ -859,7 +849,8 @@
     <div v-if="loading" class="mt-1">
       <SkeletonBoard v-if="currentView === 'kanban'" variant="kanban" />
       <SkeletonBoard v-else-if="currentView === 'tasks'" variant="list" class="mt-6" />
-      <AppLoader v-else label="Cargando actividades…" />
+      <Skeleton v-else-if="currentView === 'team'" preset="cards" :rows="4" :cols="4" />
+      <Skeleton v-else preset="table" :rows="6" />
     </div>
 
     <!-- Error state -->
@@ -1110,9 +1101,10 @@
           </div>
 
           <!-- Estado vacío para pendientes -->
-          <div v-if="pendingActivities.length === 0" class="text-center py-8">
-            <i class="fas fa-clock text-3xl text-slate-300 mb-2"></i>
-            <p class="text-slate-500 text-sm font-medium">No hay actividades pendientes</p>
+          <div v-if="pendingActivities.length === 0" class="empty-state empty-state--sm border-amber-100 bg-amber-50/30">
+            <div class="empty-state__icon bg-amber-100/70 text-amber-400"><i class="fas fa-clock"></i></div>
+            <p class="empty-state__title">No hay actividades pendientes</p>
+            <p class="empty-state__text">Usa la tarea rápida para agregar la primera.</p>
           </div>
         </div>
 
@@ -1287,9 +1279,10 @@
             </button>
           </div>
 
-          <div v-if="inProgressActivities.length === 0" class="text-center py-8">
-            <i class="fas fa-play text-3xl text-slate-300 mb-2"></i>
-            <p class="text-slate-500 text-sm font-medium">No hay actividades en proceso</p>
+          <div v-if="inProgressActivities.length === 0" class="empty-state empty-state--sm border-sky-100 bg-sky-50/30">
+            <div class="empty-state__icon bg-sky-100/70 text-sky-400"><i class="fas fa-play"></i></div>
+            <p class="empty-state__title">No hay actividades en proceso</p>
+            <p class="empty-state__text">Arrastra aquí una pendiente para empezarla.</p>
           </div>
         </div>
 
@@ -1434,9 +1427,10 @@
           </div>
 
           <!-- Estado vacío para completadas -->
-          <div v-if="completedActivities.length === 0" class="text-center py-8">
-            <i class="fas fa-check-circle text-3xl text-slate-300 mb-2"></i>
-            <p class="text-slate-500 text-sm font-medium">No hay actividades completadas</p>
+          <div v-if="completedActivities.length === 0" class="empty-state empty-state--sm border-emerald-100 bg-emerald-50/30">
+            <div class="empty-state__icon bg-emerald-100/70 text-emerald-400"><i class="fas fa-check-circle"></i></div>
+            <p class="empty-state__title">No hay actividades completadas</p>
+            <p class="empty-state__text">Lo que termines aparecerá aquí.</p>
           </div>
         </div>
       </div>
@@ -1595,10 +1589,10 @@
             </button>
           </div>
 
-          <div v-if="overdueActivities.length === 0" class="text-center py-8">
-            <i class="fas fa-exclamation-triangle text-3xl text-red-300/50 mb-2"></i>
-            <p class="text-red-500/70 text-sm font-bold">No hay actividades vencidas</p>
-            <p class="text-red-400/60 text-xs mt-1 font-medium">¡Excelente gestión del tiempo!</p>
+          <div v-if="overdueActivities.length === 0" class="empty-state empty-state--sm border-rose-100 bg-rose-50/30">
+            <div class="empty-state__icon bg-rose-100/70 text-rose-400"><i class="fas fa-shield-alt"></i></div>
+            <p class="empty-state__title text-rose-600">No hay actividades vencidas</p>
+            <p class="empty-state__text">¡Excelente gestión del tiempo!</p>
           </div>
         </div>
       </div>
@@ -2581,7 +2575,7 @@
               />
             </div>
             <div class="max-h-60 overflow-y-auto space-y-2 custom-scrollbar-slim">
-              <div v-if="linkingLoading" class="text-center py-4"><i class="fas fa-spinner fa-spin text-indigo-500"></i></div>
+              <Skeleton v-if="linkingLoading" preset="list" :rows="3" />
               <div 
                 v-for="c in filteredCasesForLinking" 
                 :key="c._id"
@@ -2620,7 +2614,7 @@
               />
             </div>
             <div class="max-h-60 overflow-y-auto space-y-2 custom-scrollbar-slim">
-              <div v-if="linkingLoading" class="text-center py-4"><i class="fas fa-spinner fa-spin text-emerald-500"></i></div>
+              <Skeleton v-if="linkingLoading" preset="list" :rows="3" />
               <div 
                 v-for="a in filteredWikiForLinking" 
                 :key="a._id"
@@ -2716,7 +2710,7 @@ import DailyScrum from '../../pages/DailyScrum.vue'
 import TeamActivities from '../../pages/TeamActivities.vue'
 import PersonAvatar from '../ui/PersonAvatar.vue'
 import SkeletonBoard from '../ui/SkeletonBoard.vue'
-import AppLoader from '../ui/AppLoader.vue'
+import Skeleton from '../ui/Skeleton.vue'
 
 const currentView = ref<'kanban' | 'tasks' | 'calendar' | 'daily' | 'team'>('kanban')
 

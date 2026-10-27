@@ -82,12 +82,13 @@
       </div>
 
       <!-- Loading state -->
-      <div v-if="loading" class="flex items-center justify-center py-12">
-        <AppLoader label="Cargando actividades del equipo…" :padded="false" />
+      <div v-if="loading">
+        <Skeleton v-if="viewMode === 'table'" preset="table" :rows="8" />
+        <Skeleton v-else preset="cards" :rows="8" :cols="4" />
       </div>
 
       <!-- Vista de tarjetas por miembro -->
-      <div v-else-if="viewMode === 'cards'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div v-else-if="viewMode === 'cards'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 motion-stagger">
         <div
           v-for="member in teamMembersWithActivities"
           :key="member._id"
@@ -245,7 +246,7 @@
 </template>
 
 <script setup lang="ts">
-import AppLoader from '@/components/ui/AppLoader.vue'
+import Skeleton from '@/components/ui/Skeleton.vue'
 import PersonAvatar from '../components/ui/PersonAvatar.vue'
 import { ref, computed, onMounted } from 'vue'
 import { activityService, type ActivityData } from '../services/activityService'

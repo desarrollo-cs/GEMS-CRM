@@ -19,17 +19,15 @@
       </div>
 
       <!-- Loading -->
-      <div v-if="loading" class="flex items-center justify-center py-12">
-        <AppLoader label="Cargando tableros…" :padded="false" />
-      </div>
+      <Skeleton v-if="loading" preset="cards" :rows="6" :cols="3" wrapper-class="opacity-40" />
 
       <!-- Boards Grid -->
-      <div v-else-if="boards.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-else-if="boards.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 motion-stagger">
         <div
           v-for="board in boards"
           :key="board._id"
           @click="openBoard(board._id)"
-          class="board-card bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all cursor-pointer border border-purple-500/20 p-6 hover:border-purple-500/50"
+          class="board-card motion-lift bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-lg cursor-pointer border border-purple-500/20 p-6 hover:border-purple-500/50"
         >
           <!-- Board Type Badge -->
           <div class="flex items-center justify-between mb-4">
@@ -196,7 +194,7 @@
 </template>
 
 <script setup lang="ts">
-import AppLoader from '@/components/ui/AppLoader.vue'
+import Skeleton from '@/components/ui/Skeleton.vue'
 import PersonAvatar from '../components/ui/PersonAvatar.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'

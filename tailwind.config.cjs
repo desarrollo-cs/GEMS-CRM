@@ -89,6 +89,18 @@ module.exports = {
         "xl": "0.75rem",
         "full": "9999px"
       },
+      "boxShadow": {
+        "card": "0 10px 25px -5px rgba(0, 0, 0, 0.03), 0 8px 10px -6px rgba(0, 0, 0, 0.01)",
+        "float": "0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04)",
+        "menu": "0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.06)",
+        "primary": "0 10px 15px -3px rgba(14, 165, 233, 0.2)",
+        "primary-hover": "0 10px 15px -3px rgba(14, 165, 233, 0.3)",
+        "ring": "0 0 0 4px rgba(14, 165, 233, 0.12)"
+      },
+      "transitionTimingFunction": {
+        "out-expo": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "smooth": "cubic-bezier(0.22, 1, 0.36, 1)"
+      },
       "spacing": {
         "container-padding": "24px",
         "base": "8px",

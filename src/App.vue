@@ -62,7 +62,7 @@
               :key="module.id"
               :to="module.path"
               :class="[
-                'w-full flex items-center py-3 rounded-xl transition-all duration-200 text-sm font-bold group',
+                'w-full flex items-center py-3 rounded-xl transition-all duration-200 text-sm font-bold group active:scale-[0.98]',
                 $route.path === module.path
                   ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/20' 
                   : 'text-slate-500 hover:bg-slate-50 hover:text-primary-600',

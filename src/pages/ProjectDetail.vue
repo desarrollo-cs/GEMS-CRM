@@ -1,15 +1,15 @@
 <template>
   <div class="space-y-6 max-w-6xl mx-auto">
-    <div v-if="loading" class="text-center py-20 text-slate-400 text-sm font-bold">
-      <i class="fas fa-spinner fa-spin mr-1.5"></i>Cargando proyecto...
-    </div>
+    <Skeleton v-if="loading" preset="detail" />
 
-    <div v-else-if="!project" class="text-center py-20 bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
-      <i class="fas fa-triangle-exclamation text-3xl text-slate-300 mb-3"></i>
-      <p class="text-slate-500 font-medium">No se encontró este proyecto.</p>
+    <div v-else-if="!project" class="empty-state py-20">
+      <div class="empty-state__icon"><i class="fas fa-triangle-exclamation"></i></div>
+      <p class="empty-state__title">No se encontró este proyecto</p>
+      <p class="empty-state__text">Puede que haya sido eliminado o que el enlace esté incompleto.</p>
     </div>
 
     <template v-else>
+    <div class="motion-content-in space-y-6">
       <!-- Cover -->
       <div class="h-36 md:h-44 w-full rounded-2xl overflow-hidden relative group">
         <div :class="coverGradient(project.status)" class="absolute inset-0 opacity-90"></div>
@@ -34,7 +34,7 @@
 
       <!-- Resumen rápido -->
       <div class="grid grid-cols-3 gap-3">
-        <div v-for="group in statusGroups" :key="group.key" class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex items-center gap-3">
+        <div v-for="group in statusGroups" :key="group.key" class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex items-center gap-3 transition-shadow hover:shadow-md">
           <span class="w-2.5 h-2.5 rounded-full shrink-0" :class="group.dot"></span>
           <div class="min-w-0">
             <p class="text-2xl font-black text-slate-800 leading-none">{{ group.items.length }}</p>
@@ -50,18 +50,20 @@
           v-for="t in tabs"
           :key="t.key"
           @click="activeTab = t.key"
+          :aria-pressed="activeTab === t.key"
           :class="[
-            'px-4 py-2.5 rounded-lg whitespace-nowrap text-sm font-bold transition-colors flex items-center min-w-max',
+            'px-4 py-2.5 rounded-lg whitespace-nowrap text-sm font-bold transition-all duration-200 flex items-center min-w-max border',
             activeTab === t.key
-              ? 'bg-primary-600 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-white hover:text-slate-900 border border-transparent hover:border-slate-200'
+              ? 'bg-primary-600 text-white shadow-md shadow-primary-600/20 border-primary-600'
+              : 'text-slate-600 hover:bg-white hover:text-slate-900 border-transparent hover:border-slate-200 hover:shadow-sm'
           ]"
         >
-          <i :class="[t.icon, 'mr-2', activeTab === t.key ? 'opacity-100' : 'opacity-70']"></i>{{ t.label }}
+          <i :class="[t.icon, 'mr-2 transition-transform duration-200', activeTab === t.key ? 'opacity-100 scale-110' : 'opacity-70']"></i>{{ t.label }}
         </button>
       </div>
 
       <div class="p-6">
+        <transition name="tab" mode="out-in">
         <!-- Documentación -->
         <div v-if="activeTab === 'docs'" class="space-y-3 max-w-3xl">
           <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Descripción</label>
@@ -91,7 +93,7 @@
             </h3>
             <FileDropzone label="Subir archivos al proyecto" @files-selected="handleFilesSelected" />
             <div v-if="project.archivos?.length" class="mt-3 space-y-1.5">
-              <div v-for="file in project.archivos" :key="file._id" class="flex items-center gap-2.5 px-3 py-2 bg-slate-50 rounded-xl border border-slate-100">
+              <div v-for="file in project.archivos" :key="file._id" class="flex items-center gap-2.5 px-3 py-2 bg-slate-50 hover:bg-white hover:border-slate-200 hover:shadow-sm rounded-xl border border-slate-100 transition-all">
                 <i :class="fileIcon(file.tipo)" class="text-slate-400 text-sm shrink-0"></i>
                 <a :href="fullFileUrl(file.url)" target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-slate-700 hover:text-primary-600 truncate flex-1">{{ file.nombre }}</a>
                 <button type="button" @click="removeFile(file._id!)" class="text-slate-300 hover:text-red-500 transition-colors shrink-0" title="Eliminar"><i class="fas fa-trash text-xs"></i></button>
@@ -109,7 +111,7 @@
               <button type="button" @click="addLink" :disabled="!newLinkName.trim() || !newLinkUrl.trim()" class="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0">Agregar</button>
             </div>
             <div v-if="project.enlacesExternos?.length" class="space-y-1.5">
-              <div v-for="link in project.enlacesExternos" :key="link._id" class="flex items-center gap-2.5 px-3 py-2 bg-slate-50 rounded-xl border border-slate-100">
+              <div v-for="link in project.enlacesExternos" :key="link._id" class="flex items-center gap-2.5 px-3 py-2 bg-slate-50 hover:bg-white hover:border-slate-200 hover:shadow-sm rounded-xl border border-slate-100 transition-all">
                 <i class="fas fa-link text-slate-400 text-xs shrink-0"></i>
                 <a :href="link.url" target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-primary-600 underline break-all flex-1">{{ link.nombre }}</a>
                 <button type="button" @click="removeLink(link._id!)" class="text-slate-300 hover:text-red-500 transition-colors shrink-0" title="Eliminar"><i class="fas fa-trash text-xs"></i></button>
@@ -147,14 +149,12 @@
             </div>
           </div>
 
-          <div v-if="loadingLinked" class="text-center py-10 text-slate-400 text-xs font-bold">
-            <i class="fas fa-spinner fa-spin mr-1.5"></i>Cargando...
-          </div>
+          <Skeleton v-if="loadingLinked" preset="list" :rows="4" />
 
-          <div v-else-if="backlogFeatures.length === 0 && backlogLooseTasks.length === 0" class="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-            <i class="fas fa-sitemap text-slate-300 text-2xl mb-2"></i>
-            <p class="text-sm font-bold text-slate-500">Aún no hay features en este proyecto</p>
-            <p class="text-xs text-slate-400 mt-1">Crea la primera feature y agrega sus tareas dentro.</p>
+          <div v-else-if="backlogFeatures.length === 0 && backlogLooseTasks.length === 0" class="empty-state">
+            <div class="empty-state__icon"><i class="fas fa-sitemap"></i></div>
+            <p class="empty-state__title">Aún no hay features en este proyecto</p>
+            <p class="empty-state__text">Crea la primera feature y agrega sus tareas dentro.</p>
           </div>
 
           <template v-else>
@@ -259,19 +259,22 @@
         <div v-else-if="activeTab === 'activity'">
           <div class="flex items-center justify-between mb-4">
             <!-- Toggle vista: mismo componente de lista que /activities -->
-            <div class="flex bg-slate-100 rounded-lg p-1 border border-slate-200">
+            <div class="seg">
               <button
                 type="button"
                 @click="linkedView = 'list'"
-                :class="linkedView === 'list' ? 'bg-white text-primary-600 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-800'"
-                class="px-3 py-1.5 rounded-md text-xs font-medium transition-all"
+                :aria-pressed="linkedView === 'list'"
+                class="flex items-center"
               ><i class="fas fa-list mr-1.5"></i>Lista</button>
               <button
                 type="button"
                 @click="linkedView = 'board'"
-                :class="linkedView === 'board' ? 'bg-white text-primary-600 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-800'"
-                class="px-3 py-1.5 rounded-md text-xs font-medium transition-all"
+                :aria-pressed="linkedView === 'board'"
+                class="flex items-center"
               ><i class="fas fa-columns mr-1.5"></i>Tablero</button>
+            </div>
+            <div class="flex-1 max-w-[240px] ml-3 mr-auto">
+              <CustomSelect v-model="assigneeFilter" size="sm" searchable :options="assigneeOptions" placeholder="Todos los responsables" />
             </div>
             <button
               type="button"
@@ -282,12 +285,11 @@
             </button>
           </div>
 
-          <div v-if="loadingLinked" class="text-center py-10 text-slate-400 text-xs font-bold">
-            <i class="fas fa-spinner fa-spin mr-1.5"></i>Cargando...
-          </div>
-          <div v-else-if="linkedItems.length === 0" class="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-            <i class="fas fa-inbox text-slate-300 text-2xl mb-2"></i>
-            <p class="text-xs font-bold text-slate-400">Sin tareas ni actividades vinculadas todavía</p>
+          <Skeleton v-if="loadingLinked" :preset="linkedView === 'board' ? 'board' : 'list'" :rows="4" />
+          <div v-else-if="linkedItems.length === 0" class="empty-state">
+            <div class="empty-state__icon"><i class="fas fa-inbox"></i></div>
+            <p class="empty-state__title">Sin tareas ni actividades vinculadas todavía</p>
+            <p class="empty-state__text">Crea la primera con el botón "Nueva tarea".</p>
           </div>
 
           <TaskListView
@@ -307,7 +309,8 @@
                 <span class="w-1.5 h-1.5 rounded-full" :class="group.dot"></span>{{ group.label }}
                 <span class="text-slate-300">· {{ group.items.length }}</span>
               </h4>
-              <div v-if="group.items.length === 0" class="text-center py-6 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+              <div v-if="group.items.length === 0" class="text-center py-6 bg-slate-50/70 rounded-xl border border-dashed border-slate-200 transition-colors hover:bg-slate-50">
+                <i class="fas fa-circle-check text-slate-200 text-sm block mb-1"></i>
                 <p class="text-[11px] text-slate-400 font-medium">Nada aquí</p>
               </div>
               <button
@@ -315,11 +318,14 @@
                 :key="item.id"
                 type="button"
                 @click="openEdit(item)"
-                class="w-full text-left flex items-start gap-2.5 px-3 py-2.5 bg-white border border-slate-100 rounded-xl shadow-sm hover:border-primary-200 hover:shadow-md transition-all"
+                class="card-interactive w-full text-left flex items-start gap-2.5 px-3 py-2.5 bg-white border border-slate-100 rounded-xl shadow-sm hover:border-primary-200"
               >
                 <div class="min-w-0 flex-1">
                   <span class="text-sm font-bold text-slate-700 truncate block">{{ item.title }}</span>
                   <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{{ item.statusLabel }}</span>
+                  <span class="mt-1 flex items-center gap-1 text-[11px] font-semibold truncate" :class="assigneeNames(item) ? 'text-slate-500' : 'text-slate-300 italic'">
+                    <i class="fas fa-user text-[9px]"></i>{{ assigneeNames(item) || 'Sin responsable' }}
+                  </span>
                 </div>
                 <span
                   class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0"
@@ -331,7 +337,9 @@
             </div>
           </div>
         </div>
+        </transition>
       </div>
+    </div>
     </div>
     </template>
   </div>
@@ -364,6 +372,7 @@ import FileDropzone from '@/components/ui/FileDropzone.vue'
 import ActivityFormModal from '@/components/forms/ActivityFormModal.vue'
 import TaskListView, { type TaskListGroup } from '@/components/tasks/TaskListView.vue'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
+import Skeleton from '@/components/ui/Skeleton.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useTasksStore } from '@/stores/tasks'
 import { useCanManageTasks } from '@/services/taskApprovalService'
@@ -509,10 +518,29 @@ const FEATURE_STATUS_LABELS: Record<string, string> = { pending: 'Nueva', comple
 const isDone = (item: LinkedItem) => ['done', 'completed'].includes(item.status)
 const isInProgress = (item: LinkedItem) => ['in-progress', 'review', 'testing'].includes(item.status)
 
+// Filtro por responsable (aplica a Lista y Tablero). '__none__' = sin asignar
+const assigneeFilter = ref('')
+const assigneeIds = (item: LinkedItem) => resolveAssignees(item.assignedTo).map(a => a._id).filter(Boolean) as string[]
+const assigneeNames = (item: LinkedItem) => resolveAssignees(item.assignedTo).map(a => a.name).join(', ')
+const assigneeOptions = computed(() => {
+  const seen = new Map<string, string>()
+  linkedItems.value.forEach(i => resolveAssignees(i.assignedTo).forEach(a => { if (a._id) seen.set(a._id, a.name) }))
+  return [
+    { value: '', label: 'Todos los responsables' },
+    ...[...seen].map(([value, label]) => ({ value, label })).sort((a, b) => a.label.localeCompare(b.label)),
+    { value: '__none__', label: 'Sin responsable' }
+  ]
+})
+const filteredLinked = computed(() => {
+  const f = assigneeFilter.value
+  if (!f) return linkedItems.value
+  return linkedItems.value.filter(i => f === '__none__' ? assigneeIds(i).length === 0 : assigneeIds(i).includes(f))
+})
+
 const statusGroups = computed(() => [
-  { key: 'pending', label: 'Pendiente', dot: 'bg-slate-300', items: linkedItems.value.filter(i => !isDone(i) && !isInProgress(i)) },
-  { key: 'progress', label: 'En progreso', dot: 'bg-blue-500', items: linkedItems.value.filter(isInProgress) },
-  { key: 'done', label: 'Completada', dot: 'bg-emerald-500', items: linkedItems.value.filter(isDone) }
+  { key: 'pending', label: 'Pendiente', dot: 'bg-slate-300', items: filteredLinked.value.filter(i => !isDone(i) && !isInProgress(i)) },
+  { key: 'progress', label: 'En progreso', dot: 'bg-blue-500', items: filteredLinked.value.filter(isInProgress) },
+  { key: 'done', label: 'Completada', dot: 'bg-emerald-500', items: filteredLinked.value.filter(isDone) }
 ])
 
 // El tablero no muestra features: son bloques amplios de tiempo (se ven en Lista y Backlog)

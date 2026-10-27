@@ -109,12 +109,9 @@
           <div
             v-else
             key="loading"
-            class="bg-white rounded-2xl border border-slate-200 h-full flex items-center justify-center"
+            class="bg-white rounded-2xl border border-slate-200 h-full p-6 overflow-hidden"
           >
-            <div class="text-center">
-              <i class="fas fa-circle-notch fa-spin text-3xl text-violet-400 mb-3 block"></i>
-              <p class="text-xs font-bold text-slate-400">Cargando prospectos...</p>
-            </div>
+            <Skeleton preset="detail" />
           </div>
         </transition>
       </div>
@@ -155,6 +152,7 @@
 </template>
 
 <script setup lang="ts">
+import Skeleton from '@/components/ui/Skeleton.vue'
 import { computed, onMounted, ref } from 'vue'
 import { prospectService } from '@/services/prospectService'
 import type { Prospect, ProspectStatus } from '@/types/prospect'

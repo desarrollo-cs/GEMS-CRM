@@ -51,8 +51,8 @@
     <!-- Main Content Area -->
     <div class="space-y-4 pb-20">
       <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden flex flex-col min-h-[400px] relative">
-        <div v-if="loading" class="flex items-center justify-center absolute inset-0 z-10 bg-white/60 backdrop-blur-[2px]">
-          <AppLoader label="Cargando clientes…" :padded="false" />
+        <div v-if="loading" class="p-4 sm:p-6">
+          <Skeleton preset="table" :rows="7" :cols="5" />
         </div>
       
         <div v-else-if="error" class="flex-1 flex items-center justify-center p-12">
@@ -66,7 +66,7 @@
           </div>
         </div>
       
-        <div v-else class="flex-1">
+        <div v-else class="flex-1 motion-content-in">
           <!-- Desktop Table View -->
           <div class="hidden md:block overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-100">
@@ -335,7 +335,7 @@
 </template>
 
 <script setup lang="ts">
-import AppLoader from '@/components/ui/AppLoader.vue'
+import Skeleton from '@/components/ui/Skeleton.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useClientStore } from '../stores/clientStore'
 import type { Client, ClientForm } from '../types'

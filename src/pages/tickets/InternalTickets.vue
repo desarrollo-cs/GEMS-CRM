@@ -264,12 +264,11 @@
 
         <!-- Inbox List -->
         <div class="flex-1 overflow-y-auto custom-scrollbar px-6">
-          <div v-if="loadingMyTickets" class="py-20 flex flex-col items-center justify-center gap-4">
-            <i class="fas fa-circle-notch fa-spin text-3xl text-primary-400"></i>
-            <span class="text-xs font-black text-slate-400 uppercase tracking-widest">Cargando tu bandeja...</span>
+          <div v-if="loadingMyTickets" class="pt-4">
+            <Skeleton preset="table" :rows="6" :cols="6" />
           </div>
 
-          <table v-else class="w-full text-left border-collapse mt-4">
+          <table v-else class="w-full text-left border-collapse mt-4 motion-content-in">
             <thead>
               <tr class="border-b border-slate-100">
                 <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
@@ -740,6 +739,7 @@
 </template>
 
 <script setup lang="ts">
+import Skeleton from '@/components/ui/Skeleton.vue'
 import PersonAvatar from '../../components/ui/PersonAvatar.vue'
 import { ref, computed, onMounted, watch, reactive } from 'vue'
 import { ticketService } from '../../services/ticketService'

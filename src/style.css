@@ -20,8 +20,8 @@ body {
 
 /* Premium Minimal Scrollbar - Ultra Thin & Subtle */
 ::-webkit-scrollbar {
-  width: 3px;
-  height: 3px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -29,7 +29,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(203, 213, 225, 0.2); /* Nearly invisible */
+  background: rgba(148, 163, 184, 0.35); /* Nearly invisible */
   border-radius: 20px;
   border: 1px solid transparent; /* Separador */
   background-clip: content-box;
@@ -37,11 +37,11 @@ body {
 }
 
 *:hover::-webkit-scrollbar-thumb {
-  background: rgba(203, 213, 225, 0.6); /* Subtle hint on hover */
+  background: rgba(148, 163, 184, 0.5); /* Subtle hint on hover */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.8) !important; /* Clearly visible when interacting */
+  background: rgba(148, 163, 184, 0.7) !important; /* Clearly visible when interacting */
 }
 
 /* Specific class for even more space-saving */
@@ -65,7 +65,7 @@ body {
 /* Firefox Support */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(203, 213, 225, 0.2) transparent;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
 }
 
 /* Custom animations */

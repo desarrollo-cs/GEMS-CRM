@@ -413,8 +413,16 @@
               </div>
             </div>
             <div class="px-6 py-5">
-              <div v-if="kpiTrendsLoading" class="flex items-center justify-center py-12">
-                <div class="w-5 h-5 border-2 border-primary-200 border-t-primary-500 rounded-full animate-spin"></div>
+              <div v-if="kpiTrendsLoading" class="motion-stagger" aria-busy="true">
+                <div class="flex items-end gap-2.5 h-44 px-1">
+                  <div v-for="n in 7" :key="n" class="flex-1 flex flex-col items-center justify-end gap-1.5 min-w-0 h-full">
+                    <Skeleton shape="line" width="18" height="10" />
+                    <Skeleton shape="block" wrapper-class="w-full max-w-[52px] rounded-t-lg" :height="30 + ((n * 41) % 110)" />
+                  </div>
+                </div>
+                <div class="flex gap-2.5 mt-2.5 px-1">
+                  <div v-for="n in 7" :key="'tl' + n" class="flex-1 flex justify-center"><Skeleton width="28" height="8" /></div>
+                </div>
               </div>
               <div v-else>
                 <div class="flex items-end gap-2.5 h-44 px-1">
@@ -442,18 +450,17 @@
               <h3 class="text-base font-black text-slate-800 tracking-tight">Rendimiento por Persona</h3>
               <p class="text-xs text-slate-400 font-bold mt-0.5">Completadas, cumplimiento, carga y vencidas</p>
             </div>
-            <div v-if="kpiLoading" class="flex items-center justify-center py-12">
-              <div class="w-5 h-5 border-2 border-primary-200 border-t-primary-500 rounded-full animate-spin"></div>
+            <div v-if="kpiLoading" class="p-4">
+              <Skeleton preset="cards" :rows="4" :cols="2" />
             </div>
-            <div v-else-if="kpiData.kpis.length === 0" class="py-12 text-center">
-              <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-3">
-                <i class="fas fa-users text-slate-300 text-lg"></i>
-              </div>
-              <p class="text-xs text-slate-400 font-bold">Sin datos para el período seleccionado</p>
+            <div v-else-if="kpiData.kpis.length === 0" class="empty-state m-4">
+              <div class="empty-state__icon"><i class="fas fa-users"></i></div>
+              <p class="empty-state__title">Sin datos para el período seleccionado</p>
+              <p class="empty-state__text">Prueba con otro rango de fechas o actualiza los KPIs.</p>
             </div>
-            <div v-else class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div v-else class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 motion-stagger">
               <div v-for="kpi in kpiData.kpis" :key="kpi.user._id"
-                class="border border-slate-100/80 rounded-xl p-4 hover:border-slate-200 hover:shadow-md transition-all bg-white/50">
+                class="card-interactive border border-slate-100/80 rounded-xl p-4 bg-white/50">
                 <!-- Header -->
                 <div class="flex items-center gap-3 mb-3">
                   <PersonAvatar :name="kpi.user.name" :photo="kpi.user.photo" class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-400 to-indigo-500 text-white text-[10px] font-black shadow-sm" />
@@ -569,6 +576,7 @@
 </template>
 
 <script setup lang="ts">
+import Skeleton from '@/components/ui/Skeleton.vue'
 import PersonAvatar from '../components/ui/PersonAvatar.vue'
 import { ref, onMounted, nextTick, computed, watch } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'

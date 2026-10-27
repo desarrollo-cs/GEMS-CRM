@@ -103,10 +103,13 @@
         <div class="w-32 text-right">Acciones</div>
       </div>
 
-      <div 
-        v-for="member in filteredMembers" 
+      <Skeleton v-if="teamStore.loading && teamStore.members.length === 0" preset="list" :rows="7" />
+
+
+      <div
+        v-for="member in filteredMembers"
         :key="member._id"
-        class="group bg-white border border-slate-100 rounded-2xl p-2 px-6 shadow-sm hover:shadow-md hover:border-violet-200 transition-all duration-200 flex items-center justify-between gap-6"
+        class="group bg-white border border-slate-100 rounded-2xl p-2 px-6 shadow-sm hover:shadow-md hover:border-violet-200 transition-all duration-200 flex items-center justify-between gap-6 motion-content-in"
       >
         <!-- Left: Basic Info & Avatar -->
         <div class="flex items-center gap-4 min-w-[280px]">
@@ -172,9 +175,10 @@
       </div>
     </div>
       <!-- Empty State -->
-      <div v-if="filteredMembers.length === 0" class="py-20 text-center bg-white border border-slate-100 rounded-3xl">
-        <i class="fas fa-users text-4xl text-slate-100 mb-4"></i>
-        <p class="text-sm font-bold text-slate-400">No se encontraron miembros</p>
+      <div v-if="filteredMembers.length === 0 && !(teamStore.loading && teamStore.members.length === 0)" class="empty-state py-20 rounded-3xl">
+        <div class="empty-state__icon"><i class="fas fa-users"></i></div>
+        <p class="empty-state__title">No se encontraron miembros</p>
+        <p class="empty-state__text">Prueba con otro nombre o quita los filtros de departamento, rol y estado.</p>
       </div>
     
     <!-- Pagination Controls (Premium) -->
@@ -332,6 +336,7 @@
 
 <script setup lang="ts">
 import PersonAvatar from '../components/ui/PersonAvatar.vue'
+import Skeleton from '@/components/ui/Skeleton.vue'
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useTeamStore } from '../stores'

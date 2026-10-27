@@ -11,7 +11,7 @@
           :key="tab.id"
           @click="activeTab = tab.id"
           :class="[
-            'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+            'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:-translate-y-px',
             activeTab === tab.id
               ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
               : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
@@ -82,14 +82,14 @@
     </div>
 
     <!-- Content -->
-    <div v-if="activeTab === 'summary'" class="animate-fade-in">
+    <div v-if="activeTab === 'summary'" class="motion-content-in">
       <AccountingSummary 
         :summary="summaryData"
         @markAsPaid="markRecurringPaymentAsPaid"
       />
     </div>
 
-    <div v-else-if="activeTab === 'transactions'" class="animate-fade-in">
+    <div v-else-if="activeTab === 'transactions'" class="motion-content-in">
       <TransactionsList 
         :transactions="transactions"
         :loading="loading"
@@ -100,7 +100,7 @@
       />
     </div>
 
-    <div v-else-if="activeTab === 'fixed-expenses'" class="animate-fade-in">
+    <div v-else-if="activeTab === 'fixed-expenses'" class="motion-content-in">
       <FixedExpensesList 
         :expenses="fixedExpenses"
         :loading="loading"
@@ -112,7 +112,7 @@
       />
     </div>
 
-    <div v-else-if="activeTab === 'recurring-payments'" class="animate-fade-in">
+    <div v-else-if="activeTab === 'recurring-payments'" class="motion-content-in">
       <RecurringPaymentsList 
         ref="recurringPaymentsRef"
         @edit="editRecurringPayment"

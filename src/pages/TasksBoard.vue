@@ -164,13 +164,13 @@
     </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="flex flex-col items-center justify-center py-24 gap-4">
-      <div class="w-16 h-16 border-4 border-primary-100 border-t-primary-500 rounded-full animate-spin"></div>
-      <p class="text-[10px] font-black text-primary-500 uppercase tracking-[0.2em]">Sincronizando Customer Touch...</p>
+    <div v-if="loading" class="pb-6">
+      <Skeleton v-if="currentView === 'list'" preset="table" :rows="7" />
+      <Skeleton v-else preset="board" />
     </div>
 
     <!-- Kanban View -->
-    <div v-else-if="currentView === 'kanban' && selectedBoardId" class="overflow-x-auto custom-scrollbar pb-6">
+    <div v-else-if="currentView === 'kanban' && selectedBoardId" class="overflow-x-auto custom-scrollbar pb-6 motion-content-in">
       <div class="flex space-x-6 min-w-max px-1">
         <div
           v-for="column in columns"
@@ -272,7 +272,7 @@
     </div>
 
     <!-- List View -->
-    <div v-else-if="currentView === 'list' && selectedBoardId" class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+    <div v-else-if="currentView === 'list' && selectedBoardId" class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden motion-content-in">
       <div class="overflow-x-auto">
         <table class="w-full">
           <thead class="bg-slate-50">
@@ -364,6 +364,7 @@
 </template>
 
 <script setup lang="ts">
+import Skeleton from '@/components/ui/Skeleton.vue'
 import PersonAvatar from '../components/ui/PersonAvatar.vue'
 import { ref, computed, onMounted, watch } from 'vue'
 import { useBoardsStore } from '@/stores/boards'

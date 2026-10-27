@@ -18,8 +18,8 @@
         </div>
 
         <div class="flex-1 overflow-y-auto p-3 custom-scrollbar">
-          <div v-if="chatStore.isLoading" class="py-10 text-center text-gray-400">
-            Cargando…
+          <div v-if="chatStore.isLoading" class="py-2 opacity-30">
+            <Skeleton preset="list" :rows="5" />
           </div>
 
           <div v-else-if="chatStore.chatRooms.length === 0" class="py-10 text-center">
@@ -121,10 +121,14 @@
 
           <div v-else>
             <!-- Loading messages -->
-            <div v-if="chatStore.isLoading" class="py-10 text-center text-gray-400">Cargando mensajes…</div>
+            <div v-if="chatStore.isLoading" class="py-4 opacity-30"><Skeleton preset="chat" :rows="6" /></div>
 
             <!-- Empty state -->
-            <div v-else-if="currentMessages.length === 0" class="py-10 text-center text-gray-300">Sin mensajes aún</div>
+            <div v-else-if="currentMessages.length === 0" class="py-16 text-center text-gray-300 motion-content-in">
+              <ChatBubbleLeftEllipsisIcon class="w-10 h-10 text-purple-400/50 mx-auto mb-2" />
+              <p class="text-sm">Sin mensajes aún</p>
+              <p class="text-xs text-gray-500 mt-1">Escribe el primero abajo.</p>
+            </div>
 
             <!-- Messages list -->
             <div v-else class="space-y-4">
@@ -341,6 +345,7 @@
 </template>
 
 <script setup lang="ts">
+import Skeleton from '@/components/ui/Skeleton.vue'
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { useChatStore } from '@/stores/chatStore';
 import { useAuthStore } from '@/stores/auth';

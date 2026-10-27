@@ -37,7 +37,7 @@
     <!-- ══ Quick actions row ══════════════════════════════════════════ -->
     <div class="grid gap-2.5" style="grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));">
       <router-link v-for="qa in quickActions" :key="qa.label" :to="qa.to"
-        class="flex items-center gap-3 bg-white border border-slate-200 hover:shadow-md rounded-xl px-3.5 py-2.5 sm:px-4 sm:py-3 transition-all group"
+        class="card-interactive flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 sm:px-4 sm:py-3 group"
         :class="qa.hover">
         <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-colors shrink-0"
           :class="qa.iconBg">
@@ -50,7 +50,7 @@
     <!-- ══ Stats row ══════════════════════════════════════════════════ -->
     <div class="grid gap-2.5" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
       <div v-for="card in statCards" :key="card.label"
-        class="bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 sm:px-4 sm:py-3">
+        class="bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 sm:px-4 sm:py-3 transition-shadow duration-200 hover:shadow-md">
         <div class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 sm:mb-1.5 truncate">{{ card.label }}</div>
         <div class="flex items-end justify-between gap-2">
           <div class="flex items-baseline gap-1.5 sm:gap-2 min-w-0">
@@ -84,8 +84,10 @@
               Ver todas
             </router-link>
           </div>
-          <div v-if="agendaActivities.length === 0" class="py-8">
-            <p class="text-[12px] text-slate-400 text-center">Sin actividades próximas</p>
+          <div v-if="agendaActivities.length === 0" class="empty-state border-0 rounded-none py-10">
+            <div class="empty-state__icon"><i class="fas fa-calendar-check"></i></div>
+            <p class="empty-state__title">Sin actividades próximas</p>
+            <p class="empty-state__text">Cuando tengas tareas con fecha aparecerán aquí.</p>
           </div>
           <div v-else class="max-h-[420px] overflow-y-auto divide-y divide-slate-50">
             <div v-for="act in agendaActivities" :key="act._id"

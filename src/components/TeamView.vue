@@ -62,10 +62,7 @@
     </div>
 
     <!-- Team Grid -->
-    <div v-if="loading" class="text-center py-8">
-      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400"></div>
-      <p class="mt-2 text-gray-300">Cargando miembros del equipo...</p>
-    </div>
+    <Skeleton v-if="loading" preset="cards" :rows="6" :cols="3" wrapper-class="opacity-40" />
 
     <div v-else-if="filteredMembers.length === 0" class="text-center py-12">
       <i class="fas fa-users text-4xl text-gray-500 mb-4"></i>
@@ -137,6 +134,7 @@
 </template>
 
 <script setup lang="ts">
+import Skeleton from '@/components/ui/Skeleton.vue'
 import { ref, computed, onMounted } from 'vue'
 import { teamService, type TeamMember } from '../services/teamService'
 import TeamForm from './TeamForm.vue'

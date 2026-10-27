@@ -37,20 +37,21 @@
       <!-- Tabs -->
       <div class="flex gap-2 p-3 border-b border-slate-100 bg-slate-50 overflow-x-auto scroll-smooth">
         <button v-for="t in tabs" :key="t.key" @click="activeTab = t.key"
+          :aria-pressed="activeTab === t.key"
           :class="[
-            'px-4 py-2.5 rounded-lg whitespace-nowrap text-sm font-bold transition-colors flex items-center min-w-max',
-            activeTab === t.key 
-              ? 'bg-primary-600 text-white shadow-sm' 
-              : 'text-slate-600 hover:bg-white hover:text-slate-900 border border-transparent hover:border-slate-200'
+            'px-4 py-2.5 rounded-lg whitespace-nowrap text-sm font-bold transition-all duration-200 flex items-center min-w-max border',
+            activeTab === t.key
+              ? 'bg-primary-600 text-white shadow-md shadow-primary-600/20 border-primary-600'
+              : 'text-slate-600 hover:bg-white hover:text-slate-900 border-transparent hover:border-slate-200 hover:shadow-sm'
           ]">
-          <i :class="[t.icon, 'mr-2', activeTab === t.key ? 'opacity-100' : 'opacity-70']"></i>{{ t.label }}
+          <i :class="[t.icon, 'mr-2 transition-transform duration-200', activeTab === t.key ? 'opacity-100 scale-110' : 'opacity-70']"></i>{{ t.label }}
         </button>
       </div>
 
       <!-- Contenido de las Tabs -->
       <div class="p-6 md:p-8">
         <!-- Overview -->
-        <div v-if="activeTab === 'overview'" class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div v-if="activeTab === 'overview'" class="motion-content-in grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           <div class="lg:col-span-2 space-y-6">
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Acerca de</label>
@@ -121,7 +122,7 @@
         </div>
 
         <!-- Services -->
-        <div v-else-if="activeTab === 'projects'" class="space-y-5">
+        <div v-else-if="activeTab === 'projects'" class="motion-content-in space-y-5">
           <!-- Encabezado -->
           <div class="flex items-center justify-between gap-3">
             <div class="flex items-center gap-3">
@@ -238,7 +239,7 @@
           </div>
         </div>
 
-        <div v-else-if="activeTab === 'services'" class="space-y-6">
+        <div v-else-if="activeTab === 'services'" class="motion-content-in space-y-6">
           <div class="flex justify-between items-center border-b border-slate-100 pb-3">
             <h3 class="text-lg font-black text-slate-800">Servicios Contratados</h3>
           </div>
@@ -319,7 +320,7 @@
         </div>
 
         <!-- Commitments -->
-        <div v-else-if="activeTab === 'commitments'" class="space-y-6">
+        <div v-else-if="activeTab === 'commitments'" class="motion-content-in space-y-6">
           <div class="flex justify-between items-center border-b border-slate-100 pb-3">
             <h3 class="text-lg font-black text-slate-800">Compromisos y Tareas</h3>
           </div>
@@ -399,7 +400,7 @@
         </div>
 
         <!-- Preferences -->
-        <div v-else-if="activeTab === 'preferences'" class="space-y-6">
+        <div v-else-if="activeTab === 'preferences'" class="motion-content-in space-y-6">
           <div class="flex justify-between items-center border-b border-slate-100 pb-3">
             <h3 class="text-lg font-black text-slate-800">Preferencias del Cliente</h3>
           </div>
@@ -432,7 +433,7 @@
         </div>
 
         <!-- Notes -->
-        <div v-else-if="activeTab === 'notes'" class="space-y-6">
+        <div v-else-if="activeTab === 'notes'" class="motion-content-in space-y-6">
           <div class="flex justify-between items-center border-b border-slate-100 pb-3">
             <h3 class="text-lg font-black text-slate-800">Notas Adicionales</h3>
           </div>
@@ -472,7 +473,7 @@
         </div>
 
         <!-- Custom Fields -->
-        <div v-else-if="activeTab === 'custom'" class="space-y-6">
+        <div v-else-if="activeTab === 'custom'" class="motion-content-in space-y-6">
           <div class="flex justify-between items-center border-b border-slate-100 pb-3">
             <h3 class="text-lg font-black text-slate-800">Campos Personalizados</h3>
           </div>

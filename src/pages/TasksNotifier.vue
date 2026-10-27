@@ -87,11 +87,9 @@
       </div>
       
       <!-- Componente TaskNotifier con tareas cargadas -->
-      <div v-if="loading" class="flex items-center justify-center p-8">
-        <AppLoader label="Cargando tareas…" :padded="false" />
-      </div>
-      
-      <div v-else>
+      <Skeleton v-if="loading" preset="list" :rows="6" />
+
+      <div v-else class="motion-content-in">
         <TaskNotifierEmbed :activities="activities" />
       </div>
     </div>
@@ -99,7 +97,7 @@
 </template>
 
 <script setup lang="ts">
-import AppLoader from '@/components/ui/AppLoader.vue'
+import Skeleton from '@/components/ui/Skeleton.vue'
 import { ref, onMounted } from 'vue'
 import Layout from '../components/Layout.vue'
 import TaskNotifierEmbed from '../components/notifications/TaskNotifierEmbed.vue'

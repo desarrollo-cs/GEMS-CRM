@@ -17,7 +17,8 @@
           <!-- Filters -->
           <button
             @click="showFilters = !showFilters"
-            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+            class="px-4 py-2 text-sm font-medium bg-white border rounded-lg transition-all hover:bg-gray-50 hover:border-gray-400"
+            :class="showFilters ? 'text-blue-700 border-blue-300 bg-blue-50' : 'text-gray-700 border-gray-300'"
           >
             <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -30,7 +31,7 @@
             v-if="board?.type === 'scrum' && sprints.length > 0"
             v-model="selectedSprintId"
             @change="loadTasks"
-            class="px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            class="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all"
           >
             <option :value="null">Backlog</option>
             <option 
@@ -45,7 +46,7 @@
           <!-- Add Task -->
           <button
             @click="openTaskModal()"
-            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-md shadow-blue-600/20 transition-all"
           >
             <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -56,7 +57,8 @@
       </div>
 
       <!-- Filters Panel -->
-      <div v-if="showFilters" class="mt-4 p-4 bg-gray-50 rounded-lg">
+      <transition name="expand">
+      <div v-if="showFilters" class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
         <div class="grid grid-cols-4 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
@@ -98,16 +100,17 @@
           </div>
         </div>
       </div>
+      </transition>
     </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="flex-1 flex items-center justify-center">
-      <AppLoader label="Cargando tablero…" :padded="false" />
+    <div v-if="loading" class="flex-1 p-6">
+      <Skeleton preset="board" />
     </div>
 
     <!-- Board Columns -->
-    <div v-else class="flex-1 overflow-x-auto">
-      <div class="flex space-x-4 p-6 h-full">
+    <div v-else class="flex-1 overflow-x-auto motion-content-in">
+      <div class="flex space-x-4 p-6 h-full motion-stagger">
         <BoardColumn
           v-for="column in columns"
           :key="column.id"
@@ -131,7 +134,7 @@
 </template>
 
 <script setup lang="ts">
-import AppLoader from '@/components/ui/AppLoader.vue'
+import Skeleton from '@/components/ui/Skeleton.vue'
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useBoardsStore } from '@/stores/boards'
