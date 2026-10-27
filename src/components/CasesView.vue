@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen bg-white text-slate-900 flex overflow-hidden">
+  <div class="h-full min-h-0 bg-white text-slate-900 flex overflow-hidden">
 
     <!-- Panel lateral: Workspace -->
-    <aside class="w-64 md:w-72 bg-slate-50/70 border-r border-slate-200 flex flex-col h-screen shrink-0">
+    <aside class="w-64 md:w-72 bg-slate-50/70 border-r border-slate-200 flex flex-col h-full min-h-0 shrink-0">
       <!-- Cabecera del panel -->
       <div class="px-3 pt-3 pb-2 flex items-center justify-between gap-2">
         <div class="flex items-center gap-2 min-w-0">
