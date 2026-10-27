@@ -900,12 +900,7 @@ const STATUS_LABELS: Record<string, string> = {
   overdue: 'Vencida',
   cancelled: 'Cancelada'
 }
-// Las features son bloques amplios de tiempo: solo Nueva o Terminada (no pasan por el Kanban)
-const FEATURE_STATUS_LABELS: Record<string, string> = { pending: 'Nueva', completed: 'Terminada' }
 const statusOptions = computed(() => {
-  if (form.type === 'feature') {
-    return Object.entries(FEATURE_STATUS_LABELS).map(([value, label]) => ({ value, label }))
-  }
   // Vencida no se elige a mano: la pone el sistema cuando pasa la entrega, y
   // entonces solo queda completarla (o que el líder cambie la entrega).
   if (isPastDue.value) {
@@ -933,9 +928,6 @@ watch(isPastDue, (past) => {
   if (past && form.status !== 'completed') form.status = 'overdue'
   else if (!past && form.status === 'overdue') form.status = (form.completionPercentage || 0) > 0 ? 'in-progress' : 'pending'
 }, { immediate: true })
-watch(() => form.type, (type) => {
-  if (type === 'feature' && !(form.status in FEATURE_STATUS_LABELS)) form.status = 'pending'
-})
 
 // ── Etiquetas ───────────────────────────────────────────────────────────────
 const tagInput = ref('')

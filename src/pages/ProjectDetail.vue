@@ -513,8 +513,6 @@ const TASK_STATUS_LABELS: Record<string, string> = {
 const ACTIVITY_STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente', 'in-progress': 'En proceso', completed: 'Completada', cancelled: 'Cancelada', overdue: 'Vencida'
 }
-// Las features solo tienen dos estados
-const FEATURE_STATUS_LABELS: Record<string, string> = { pending: 'Nueva', completed: 'Terminada' }
 const isDone = (item: LinkedItem) => ['done', 'completed', 'cancelled'].includes(item.status)
 const isInProgress = (item: LinkedItem) => ['in-progress', 'review', 'testing'].includes(item.status)
 
@@ -543,10 +541,9 @@ const statusGroups = computed(() => [
   { key: 'done', label: 'Completada', dot: 'bg-emerald-500', items: filteredLinked.value.filter(isDone) }
 ])
 
-// El tablero no muestra features abiertas (bloques amplios: se ven en Lista y
-// Backlog), pero las terminadas sí van a Completada para que no se pierdan.
+// Todas (features incluidas) pasan por Pendiente, En progreso y Completada
 const boardGroups = computed(() =>
-  statusGroups.value.map(g => ({ ...g, items: g.items.filter(i => i.type !== 'feature' || g.key === 'done') }))
+  statusGroups.value.map(g => ({ ...g, items: g.items }))
 )
 
 // ── Vista de Lista (TaskListView, la misma que usa /activities) ──
@@ -636,7 +633,7 @@ const loadLinkedItems = async () => {
     activities.filter(a => a.projectId === project.value!._id).forEach(a => {
       items.push({
         id: a._id!, title: a.title, description: a.description, status: a.status,
-        statusLabel: (a.type === 'feature' ? FEATURE_STATUS_LABELS[a.status] : undefined) || ACTIVITY_STATUS_LABELS[a.status] || a.status,
+        statusLabel: ACTIVITY_STATUS_LABELS[a.status] || a.status,
         kind: 'activity',
         assignedTo: a.assignedTo, dueDate: a.dueDate as any, priority: a.priority,
         type: a.type || 'task', featureId: a.featureId || null, tags: a.tags || [], raw: a
