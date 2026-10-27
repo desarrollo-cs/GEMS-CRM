@@ -1,29 +1,29 @@
-import WppVinculacion from './pages/WppVinculacion.vue'
+const WppVinculacion = () => import('./pages/WppVinculacion.vue')
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 
 // Pages
-import Dashboard from './pages/Dashboard.vue'
+const Dashboard = () => import('./pages/Dashboard.vue')
 import Login from './pages/Login.vue'
-import Clients from './pages/Clients.vue'
-import Activities from './pages/Activities.vue'
-import ReportsView from './pages/ReportsView.vue'
-import Team from './pages/Team.vue'
-import TeamActivities from './pages/TeamActivities.vue'
-import AccountingView from './components/AccountingView.vue'
-import CasesView from './components/CasesView.vue'
-import ProfileView from './pages/ProfileView.vue'
-import ChatPage from './pages/ChatPage.vue'
-import ClientDetail from './pages/ClientDetail.vue'
-import ProjectDetail from './pages/ProjectDetail.vue'
-import BoardsPage from './pages/BoardsPage.vue'
-import BoardView from './pages/BoardView.vue'
-import TasksBoard from './pages/TasksBoard.vue'
-import InternalTickets from './pages/tickets/InternalTickets.vue'
-import ExternalTickets from './pages/tickets/ExternalTickets.vue'
-import DailyScrum from './pages/DailyScrum.vue'
-import Prospects from './pages/Prospects.vue'
-import TaskApprovals from './pages/TaskApprovals.vue'
+const Clients = () => import('./pages/Clients.vue')
+const Activities = () => import('./pages/Activities.vue')
+const ReportsView = () => import('./pages/ReportsView.vue')
+const Team = () => import('./pages/Team.vue')
+const TeamActivities = () => import('./pages/TeamActivities.vue')
+const AccountingView = () => import('./components/AccountingView.vue')
+const CasesView = () => import('./components/CasesView.vue')
+const ProfileView = () => import('./pages/ProfileView.vue')
+const ChatPage = () => import('./pages/ChatPage.vue')
+const ClientDetail = () => import('./pages/ClientDetail.vue')
+const ProjectDetail = () => import('./pages/ProjectDetail.vue')
+const BoardsPage = () => import('./pages/BoardsPage.vue')
+const BoardView = () => import('./pages/BoardView.vue')
+const TasksBoard = () => import('./pages/TasksBoard.vue')
+const InternalTickets = () => import('./pages/tickets/InternalTickets.vue')
+const ExternalTickets = () => import('./pages/tickets/ExternalTickets.vue')
+const DailyScrum = () => import('./pages/DailyScrum.vue')
+const Prospects = () => import('./pages/Prospects.vue')
+const TaskApprovals = () => import('./pages/TaskApprovals.vue')
 
 const routes = [
   {
@@ -287,6 +287,18 @@ router.beforeEach(async (to, _from, next) => {
   }
   
   next()
+})
+
+// Las páginas se cargan bajo demanda; cuando el navegador queda libre después
+// de la primera navegación se precargan las más usadas para que abrirlas sea inmediato.
+const PREFETCH = [Dashboard, Activities, Clients, TasksBoard, ProjectDetail, ClientDetail, TaskApprovals, Team]
+let prefetched = false
+router.afterEach(() => {
+  if (prefetched) return
+  prefetched = true
+  const run = () => PREFETCH.forEach(load => load().catch(() => {}))
+  const idle = (window as any).requestIdleCallback as ((cb: () => void, o?: { timeout: number }) => void) | undefined
+  idle ? idle(run, { timeout: 4000 }) : setTimeout(run, 2000)
 })
 
 export default router

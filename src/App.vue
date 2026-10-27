@@ -178,8 +178,8 @@ const handleResize = () => {
 }
 
 onMounted(async () => {
-  // Check authentication on app load
-  await authStore.checkAuth()
+  // El guard del router ya restaura la sesión; solo se verifica si no lo hizo (evita un /verify duplicado)
+  if (!authStore.isAuthenticated) await authStore.checkAuth()
   
   handleResize()
   window.addEventListener('resize', handleResize)
@@ -194,7 +194,6 @@ onMounted(async () => {
 </script>
 
 <style>
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
 
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(10px); }
