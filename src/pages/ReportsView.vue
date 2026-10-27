@@ -1,583 +1,486 @@
 <template>
-  <div class="flex flex-col gap-6 h-full min-h-0 bg-slate-50/50 p-4 lg:p-8 relative">
-    <!-- Background Accents -->
-    <div class="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-primary-50/40 to-transparent pointer-events-none"></div>
+  <div class="flex flex-col gap-4 h-full min-h-0 motion-page">
 
-    <!-- ══ Page Tabs ══════════════════════════════════════════════════ -->
-    <div class="flex-shrink-0 flex items-center gap-1 bg-white/80 backdrop-blur-md rounded-2xl p-1.5 border border-white/60 shadow-[0_4px_20px_rgb(0,0,0,0.03)] self-start relative z-20">
-      <button @click="activePageTab = 'reports'"
-        class="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
-        :class="activePageTab === 'reports' ? 'bg-gradient-to-r from-primary-600 to-indigo-500 text-white shadow-[0_4px_12px_rgb(99,102,241,0.3)]' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'">
-        <i class="fas fa-chart-pie mr-1.5 text-[10px]"></i>Reportes
-      </button>
-      <button @click="activePageTab = 'kpis'"
-        class="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
-        :class="activePageTab === 'kpis' ? 'bg-gradient-to-r from-primary-600 to-indigo-500 text-white shadow-[0_4px_12px_rgb(99,102,241,0.3)]' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'">
-        <i class="fas fa-users-cog mr-1.5 text-[10px]"></i>KPIs del Equipo
-      </button>
-    </div>
-
-    <!-- ══════════════════════════════════════════════════════════════ -->
-    <!-- TAB: REPORTES (contenido original)                           -->
-    <!-- ══════════════════════════════════════════════════════════════ -->
-    <template v-if="activePageTab === 'reports'">
-
-    <!-- Header -->
-    <div class="flex-shrink-0 flex flex-col md:flex-row md:items-center justify-end gap-4">
-      <div class="flex flex-wrap items-center gap-3">
-        <!-- Filtros Rápidos -->
-        <div class="flex flex-wrap items-center gap-2">
-          <div class="min-w-[150px]">
-            <CustomSelect
-              v-model="selectedPeriod"
-              @change="loadData"
-              :options="periodOptions"
-              size="sm"
-            />
-          </div>
-
-          <div class="min-w-[170px]">
-            <CustomSelect
-              v-model="filters.department"
-              @change="loadData"
-              :options="departmentOptions"
-              placeholder="Todos los Equipos"
-              size="sm"
-            />
-          </div>
-
-          <div class="min-w-[180px]">
-            <CustomSelect
-              v-model="filters.clientId"
-              @change="loadData"
-              :options="clientOptions"
-              placeholder="Todos los Clientes"
-              size="sm"
-              searchable
-            />
-          </div>
-
-          <div class="min-w-[170px]">
-            <CustomSelect
-              v-model="filters.assignedTo"
-              @change="loadData"
-              :options="memberOptions"
-              placeholder="Todo el Personal"
-              size="sm"
-              searchable
-            />
-          </div>
-        </div>
-
-        <div class="h-8 w-[1px] bg-slate-200 hidden md:block"></div>
-
-        <button
-          @click="refreshData"
-          :disabled="loading"
-          class="px-5 py-2.5 bg-gradient-to-r from-primary-600 to-indigo-500 hover:from-primary-500 hover:to-indigo-400 text-white font-black rounded-xl text-xs flex items-center gap-2 shadow-[0_8px_20px_rgb(99,102,241,0.25)] hover:shadow-[0_8px_25px_rgb(99,102,241,0.4)] transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:transform-none"
-        >
-          <i :class="loading ? 'fas fa-spinner fa-spin' : 'fas fa-sync-alt'" class="text-xs"></i>
-          {{ loading ? 'Actualizar' : 'Actualizar' }}
+    <!-- Barra superior: pestañas + filtros -->
+    <div class="flex-shrink-0 flex flex-wrap items-center gap-3 bg-slate-50/50 p-2 rounded-xl border border-slate-100 shadow-sm">
+      <div class="seg">
+        <button @click="activePageTab = 'reports'" :aria-pressed="activePageTab === 'reports'" class="flex items-center gap-1.5">
+          <i class="fas fa-chart-pie text-[10px]"></i>Reportes
+        </button>
+        <button @click="activePageTab = 'kpis'" :aria-pressed="activePageTab === 'kpis'" class="flex items-center gap-1.5">
+          <i class="fas fa-users text-[10px]"></i>KPIs del equipo
         </button>
       </div>
-    </div>
 
-    <!-- KPI Row -->
-    <div class="flex-shrink-0 grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
-      <div
-        v-for="kpi in kpis"
-        :key="kpi.label"
-        class="bg-white/80 backdrop-blur-xl rounded-2xl p-5 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(99,102,241,0.08)] transition-all duration-300 relative overflow-hidden group"
-      >
-        <div class="absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br from-current to-transparent opacity-5 rounded-full group-hover:scale-150 transition-transform duration-700" :class="kpi.iconColor"></div>
-        <div class="flex items-start justify-between mb-4">
-          <div :class="kpi.iconBg" class="w-10 h-10 rounded-2xl flex items-center justify-center border shadow-inner">
-            <i :class="[kpi.icon, kpi.iconColor]" class="text-base"></i>
-          </div>
-          <span
-            class="text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm"
-            :class="kpi.trend >= 0 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100/50' : 'bg-red-50 text-red-500 border border-red-100/50'"
+      <template v-if="activePageTab === 'reports'">
+        <div class="flex flex-wrap items-center gap-2 ml-auto">
+          <div class="w-36"><CustomSelect v-model="selectedPeriod" @change="loadData" :options="periodOptions" size="sm" /></div>
+          <div class="w-40"><CustomSelect v-model="filters.department" @change="loadData" :options="departmentOptions" placeholder="Todos los equipos" size="sm" /></div>
+          <div class="w-44"><CustomSelect v-model="filters.clientId" @change="loadData" :options="clientOptions" placeholder="Todos los clientes" size="sm" searchable /></div>
+          <div class="w-44"><CustomSelect v-model="filters.assignedTo" @change="loadData" :options="memberOptions" placeholder="Todo el personal" size="sm" searchable /></div>
+          <button
+            @click="refreshData"
+            :disabled="loading"
+            title="Actualizar"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-slate-500 bg-white border border-slate-200 rounded-lg hover:text-primary-600 hover:border-primary-200 disabled:opacity-50 transition-colors"
           >
-            <i :class="kpi.trend >= 0 ? 'fas fa-arrow-trend-up' : 'fas fa-arrow-trend-down'" class="text-[8px]"></i>
-            {{ Math.abs(kpi.trend) }}%
-          </span>
+            <i class="fas fa-rotate text-[10px]" :class="{ 'animate-spin': loading }"></i>
+            Actualizar
+          </button>
         </div>
-        <div class="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-500 leading-none mb-2 tracking-tight">{{ kpi.value }}</div>
-        <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.2em]">{{ kpi.label }}</div>
-      </div>
-    </div>
+      </template>
 
-    <!-- Charts + Tables -->
-    <div class="flex-1 min-h-0 grid grid-cols-3 gap-4 overflow-hidden">
-
-      <!-- Left: 2 charts stacked -->
-      <div class="col-span-2 flex flex-col gap-4 min-h-0 overflow-y-auto">
-
-
-        <!-- Activities + Clients row -->
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 flex-shrink-0">
-          <!-- Activities Donut -->
-          <div class="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-5 hover:shadow-md transition-shadow relative overflow-hidden group">
-            <div class="absolute inset-0 bg-gradient-to-br from-primary-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div class="relative z-10">
-              <h3 class="text-base font-black text-slate-800 mb-1">Actividades por Estado</h3>
-              <p class="text-xs text-slate-500 font-medium mb-3">Distribución actual de las tareas</p>
-              <div class="h-64 flex items-center justify-center">
-                <apexchart type="donut" height="100%" width="100%" :options="activitiesChartOptions" :series="activitiesChartSeries"></apexchart>
-              </div>
-            </div>
-          </div>
-          <!-- Client Growth Bar -> Workload -->
-          <div class="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-5 hover:shadow-md transition-shadow relative overflow-hidden group">
-            <div class="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div class="relative z-10">
-              <h3 class="text-base font-black text-slate-800 mb-1">Carga de Trabajo</h3>
-              <p class="text-xs text-slate-500 font-medium mb-3">Tareas activas por miembro del equipo</p>
-              <div class="h-64">
-                <apexchart type="bar" height="100%" width="100%" :options="workloadChartOptions" :series="workloadChartSeries"></apexchart>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Team Performance -->
-        <div class="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex-shrink-0 relative overflow-hidden group">
-          <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary-400 to-indigo-600"></div>
-          <div class="flex items-center justify-between mb-6">
-            <div>
-              <h3 class="text-base font-black text-slate-800 tracking-tight">Rendimiento del Equipo</h3>
-              <p class="text-xs text-slate-400 font-bold mt-0.5">Actividades completadas vs asignadas</p>
-            </div>
-          </div>
-          <div class="space-y-4">
-            <div v-for="member in teamMembers" :key="member.name" class="flex items-center gap-4 p-2 -mx-2 hover:bg-slate-50/50 rounded-xl transition-colors">
-              <PersonAvatar :name="member.name" :photo="member.photo" class="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary-50 to-indigo-50 border border-primary-100/50 shadow-inner text-xs font-black text-primary-600" />
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between mb-1.5">
-                  <span class="text-xs font-extrabold text-slate-700 truncate">{{ member.name }}</span>
-                  <span class="text-xs font-black text-slate-800 ml-2 tracking-tight">{{ member.completed }}/<span class="text-slate-400">{{ member.total }}</span></span>
-                </div>
-                <div class="h-2 bg-slate-100/80 rounded-full overflow-hidden shadow-inner">
-                  <div
-                    class="h-full rounded-full transition-all duration-1000 relative"
-                    :class="member.rate >= 80 ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' : member.rate >= 60 ? 'bg-gradient-to-r from-amber-400 to-amber-500' : 'bg-gradient-to-r from-red-400 to-red-500'"
-                    :style="{ width: member.rate + '%' }"
-                  >
-                    <div class="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite]"></div>
-                  </div>
-                </div>
-              </div>
-              <span
-                class="text-[10px] font-black px-2 py-1 rounded-lg flex-shrink-0 shadow-sm border"
-                :class="member.rate >= 80 ? 'bg-emerald-50 text-emerald-600 border-emerald-100/50' : member.rate >= 60 ? 'bg-amber-50 text-amber-600 border-amber-100/50' : 'bg-red-50 text-red-500 border-red-100/50'"
-              >{{ member.rate }}%</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Right panel: exec summary + top clients -->
-      <div class="flex flex-col gap-4 min-h-0 overflow-y-auto">
-
-        <!-- Resumen ejecutivo -->
-        <div class="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex-shrink-0">
-          <h3 class="text-base font-black text-slate-800 tracking-tight mb-4">Métricas Globales</h3>
-          <div class="space-y-3">
-            <div v-for="row in executiveRows" :key="row.label" class="flex items-center justify-between py-2.5 border-b border-slate-100/50 last:border-0 group">
-              <div class="flex items-center gap-3">
-                <div :class="row.iconBg" class="w-8 h-8 rounded-xl flex items-center justify-center border shadow-sm group-hover:scale-110 transition-transform">
-                  <i :class="[row.icon, row.iconColor]" class="text-[11px]"></i>
-                </div>
-                <span class="text-xs font-bold text-slate-600">{{ row.label }}</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="text-sm font-black text-slate-800">{{ row.value }}</span>
-                <span
-                  class="text-[9px] font-black px-2 py-0.5 rounded-full border"
-                  :class="row.growth >= 0 ? 'bg-emerald-50 text-emerald-600 border-emerald-100/50' : 'bg-red-50 text-red-500 border-red-100/50'"
-                >{{ row.growth >= 0 ? '+' : '' }}{{ row.growth }}%</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Top Clientes -->
-        <div class="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex-shrink-0 relative overflow-hidden">
-          <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-amber-100 to-transparent opacity-20 rounded-bl-full pointer-events-none"></div>
-          <h3 class="text-base font-black text-slate-800 tracking-tight mb-4">Top Clientes Activos</h3>
-          <div class="space-y-3">
-            <div v-for="(client, i) in topClients" :key="client.name" class="flex items-center gap-3 p-2.5 -mx-2 hover:bg-white rounded-xl transition-all hover:shadow-sm border border-transparent hover:border-slate-100/50">
-              <div
-                class="w-7 h-7 rounded-xl flex items-center justify-center text-[10px] font-black flex-shrink-0 shadow-inner"
-                :class="i === 0 ? 'bg-gradient-to-br from-amber-100 to-amber-200 text-amber-700 border border-amber-300/50' : i === 1 ? 'bg-gradient-to-br from-slate-100 to-slate-200 text-slate-600 border border-slate-300/50' : 'bg-gradient-to-br from-orange-50 to-orange-100 text-orange-600 border border-orange-200/50'"
-              >{{ i + 1 }}</div>
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-extrabold text-slate-800 truncate tracking-tight">{{ client.name }}</p>
-                <p class="text-[10px] text-slate-400 font-bold mt-0.5">{{ client.activities }} operaciones</p>
-              </div>
-              <div class="text-right flex-shrink-0">
-                <div class="text-sm font-black bg-clip-text text-transparent bg-gradient-to-r from-emerald-500 to-teal-500">{{ client.rate }}%</div>
-                <div class="text-[8px] text-slate-400 font-black uppercase tracking-wider mt-0.5">Éxito</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tiempo resolución -->
-        <div class="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex-shrink-0">
-          <h3 class="text-base font-black text-slate-800 tracking-tight mb-4">Velocidad de Resolución</h3>
-          <div class="grid grid-cols-3 gap-3">
-            <div class="text-center p-3 bg-gradient-to-br from-emerald-50/80 to-emerald-100/40 rounded-2xl border border-emerald-100/50 shadow-sm hover:shadow-md transition-shadow">
-              <div class="text-xl font-black text-emerald-600 tracking-tight">{{ resolutionTime.min }}<span class="text-[10px] ml-0.5 text-emerald-500/80">d</span></div>
-              <div class="text-[9px] font-black text-emerald-500 uppercase tracking-widest mt-1">Mínimo</div>
-            </div>
-            <div class="text-center p-3 bg-gradient-to-br from-blue-50/80 to-blue-100/40 rounded-2xl border border-blue-100/50 shadow-sm hover:shadow-md transition-shadow">
-              <div class="text-xl font-black text-blue-600 tracking-tight">{{ resolutionTime.avg }}<span class="text-[10px] ml-0.5 text-blue-500/80">d</span></div>
-              <div class="text-[9px] font-black text-blue-500 uppercase tracking-widest mt-1">Promedio</div>
-            </div>
-            <div class="text-center p-3 bg-gradient-to-br from-red-50/80 to-red-100/40 rounded-2xl border border-red-100/50 shadow-sm hover:shadow-md transition-shadow">
-              <div class="text-xl font-black text-red-500 tracking-tight">{{ resolutionTime.max }}<span class="text-[10px] ml-0.5 text-red-400/80">d</span></div>
-              <div class="text-[9px] font-black text-red-400 uppercase tracking-widest mt-1">Máximo</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Comparativa mensual -->
-        <div class="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex-shrink-0">
-          <h3 class="text-base font-black text-slate-800 tracking-tight mb-4">Progreso vs Periodo Anterior</h3>
-          <div class="space-y-4">
-            <div v-for="comp in monthlyComparison" :key="comp.label">
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="text-xs font-bold text-slate-600">{{ comp.label }}</span>
-                <span class="text-xs font-black bg-white px-2 py-0.5 rounded-md shadow-sm border border-slate-100" :class="comp.growth >= 0 ? 'text-emerald-500' : 'text-red-500'">
-                  {{ comp.growth >= 0 ? '+' : '' }}{{ comp.growth }}%
-                </span>
-              </div>
-              <div class="flex items-center gap-2 text-[10px] text-slate-400 font-bold bg-slate-50/50 p-1.5 rounded-lg border border-slate-100/50">
-                <span class="flex-1 text-center">Actual: <strong class="text-slate-700">{{ comp.current }}</strong></span>
-                <span class="text-slate-300">|</span>
-                <span class="flex-1 text-center">Previo: <strong class="text-slate-500">{{ comp.previous }}</strong></span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Email Report Panel -->
-        <div class="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex-shrink-0 overflow-hidden">
-          <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100/50">
-            <div>
-              <h3 class="text-base font-black text-slate-800 tracking-tight">Enviar Reporte por Email</h3>
-              <p class="text-xs text-slate-400 font-bold mt-0.5">Envío manual o programado</p>
-            </div>
-            <div class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100/50">
-              <i class="fas fa-envelope text-indigo-500 text-sm"></i>
-            </div>
-          </div>
-          <div class="px-6 py-5 space-y-4">
-            <!-- Manual send -->
-            <div>
-              <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1.5">Destinatarios</label>
-              <input v-model="reportEmail" type="text" placeholder="email1@ejemplo.com, email2@ejemplo.com"
-                class="w-full px-4 py-2.5 text-xs font-bold border border-slate-200 rounded-xl focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all bg-white" />
-            </div>
-            <div>
-              <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1.5">Período del reporte</label>
-              <CustomSelect
-                v-model="reportPeriod"
-                :options="[{ value: 'week', label: 'Semanal' }, { value: 'month', label: 'Mensual' }, { value: 'quarter', label: 'Trimestral' }]"
-                size="dense"
-              />
-            </div>
-            <button @click="sendManualReport" :disabled="sendingReport"
-              class="w-full py-3 bg-gradient-to-r from-primary-600 to-indigo-500 hover:from-primary-500 hover:to-indigo-400 text-white text-xs font-black rounded-xl shadow-[0_8px_20px_rgb(99,102,241,0.25)] hover:shadow-[0_8px_25px_rgb(99,102,241,0.4)] transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:transform-none flex items-center justify-center gap-2">
-              <i class="fas text-[11px]" :class="sendingReport ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
-              {{ sendingReport ? 'Enviando...' : 'Enviar reporte ahora' }}
-            </button>
-            <p v-if="reportMsg" class="text-[11px] font-bold text-center" :class="reportMsgType === 'ok' ? 'text-emerald-500' : 'text-red-500'">{{ reportMsg }}</p>
-          </div>
-
-          <!-- Schedule config -->
-          <div class="border-t border-slate-100/50 px-6 py-4 space-y-3">
-            <div class="flex items-center justify-between">
-              <div>
-                <span class="text-xs font-black text-slate-700">Envío automático</span>
-                <p class="text-[10px] text-slate-400 font-bold mt-0.5">Programa reportes recurrentes</p>
-              </div>
-              <button @click="toggleSchedule"
-                class="relative w-10 h-5.5 rounded-full transition-colors"
-                :class="scheduleEnabled ? 'bg-primary-500' : 'bg-slate-200'">
-                <span class="absolute top-0.5 left-0.5 w-4.5 h-4.5 bg-white rounded-full shadow-sm transition-transform"
-                  :class="scheduleEnabled ? 'translate-x-[18px]' : ''"></span>
-              </button>
-            </div>
-            <div v-if="scheduleEnabled" class="space-y-3 pt-2">
-              <div class="flex gap-2">
-                <div class="flex-1">
-                  <CustomSelect
-                    v-model="scheduleFrequency"
-                    @change="saveSchedule"
-                    :options="[{ value: 'daily', label: 'Diario (L-V)' }, { value: 'weekly', label: 'Semanal' }, { value: 'monthly', label: 'Mensual' }]"
-                    size="sm"
-                  />
-                </div>
-                <div v-if="scheduleFrequency === 'weekly'" class="flex-1">
-                  <CustomSelect
-                    v-model="scheduleDayOfWeek"
-                    @change="saveSchedule"
-                    :options="[{ value: 1, label: 'Lunes' }, { value: 2, label: 'Martes' }, { value: 3, label: 'Miércoles' }, { value: 4, label: 'Jueves' }, { value: 5, label: 'Viernes' }]"
-                    size="sm"
-                  />
-                </div>
-              </div>
-              <div class="flex gap-2 items-center">
-                <label class="text-[10px] text-slate-400 font-black shrink-0">Hora:</label>
-                <input type="number" v-model.number="scheduleHour" min="0" max="23" @change="saveSchedule"
-                  class="w-16 px-3 py-2 text-xs font-bold border border-slate-200 rounded-xl outline-none text-center bg-white" />
-                <span class="text-xs text-slate-400 font-bold">:</span>
-                <input type="number" v-model.number="scheduleMinute" min="0" max="59" @change="saveSchedule"
-                  class="w-16 px-3 py-2 text-xs font-bold border border-slate-200 rounded-xl outline-none text-center bg-white" />
-              </div>
-              <p v-if="scheduleLastRun" class="text-[10px] text-slate-400 font-bold">
-                <i class="fas fa-clock text-[8px] mr-1"></i>Último envío: {{ new Date(scheduleLastRun).toLocaleString('es-CO') }}
-              </p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    </template><!-- end reports tab -->
-
-    <!-- ══════════════════════════════════════════════════════════════ -->
-    <!-- TAB: KPIs DEL EQUIPO                                         -->
-    <!-- ══════════════════════════════════════════════════════════════ -->
-    <template v-if="activePageTab === 'kpis'">
-
-      <!-- KPI Header + Period Selector -->
-      <div class="flex-shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
-        <div>
-          <h2 class="text-lg font-black text-slate-800 tracking-tight">KPIs del Equipo</h2>
-          <p class="text-xs text-slate-400 font-bold mt-0.5">Métricas de rendimiento por persona</p>
-        </div>
-        <div class="flex items-center gap-2">
-          <div class="flex bg-white/90 backdrop-blur-md border border-white/60 rounded-xl overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
-            <button v-for="p in kpiPeriods" :key="p.value" @click="kpiPeriod = p.value; fetchKPIs()"
-              class="px-3.5 py-2 text-[10px] font-black uppercase tracking-widest transition-colors"
-              :class="kpiPeriod === p.value ? 'bg-gradient-to-r from-primary-600 to-indigo-500 text-white' : 'text-slate-500 hover:bg-slate-50'">
+      <template v-else>
+        <div class="flex items-center gap-2 ml-auto">
+          <div class="seg">
+            <button v-for="p in kpiPeriods" :key="p.value" @click="kpiPeriod = p.value; fetchKPIs()" :aria-pressed="kpiPeriod === p.value">
               {{ p.label }}
             </button>
           </div>
-          <button title="Actualizar KPIs" @click="fetchKPIs" :disabled="kpiLoading"
-            class="px-4 py-2 bg-gradient-to-r from-primary-600 to-indigo-500 hover:from-primary-500 hover:to-indigo-400 text-white font-black rounded-xl text-xs shadow-[0_8px_20px_rgb(99,102,241,0.25)] transition-all disabled:opacity-50">
-            <i :class="kpiLoading ? 'fas fa-spinner fa-spin' : 'fas fa-sync-alt'" class="text-xs"></i>
+          <button
+            title="Actualizar KPIs"
+            @click="fetchKPIs"
+            :disabled="kpiLoading"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-slate-500 bg-white border border-slate-200 rounded-lg hover:text-primary-600 hover:border-primary-200 disabled:opacity-50 transition-colors"
+          >
+            <i class="fas fa-rotate text-[10px]" :class="{ 'animate-spin': kpiLoading }"></i>
+            Actualizar
           </button>
         </div>
-      </div>
+      </template>
+    </div>
 
-      <!-- KPI Summary Cards -->
-      <div class="flex-shrink-0 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 relative z-10">
-        <div v-for="card in kpiStatCards" :key="card.label"
-          class="bg-white/80 backdrop-blur-xl rounded-2xl p-4 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(99,102,241,0.08)] transition-all">
-          <div class="flex items-center gap-2.5 mb-2.5">
-            <div class="w-8 h-8 rounded-xl flex items-center justify-center border shadow-sm" :class="card.iconBg">
-              <i :class="['fas', card.icon, card.iconColor, 'text-[11px]']"></i>
+    <!-- ══ REPORTES ═══════════════════════════════════════════════════ -->
+    <div v-if="activePageTab === 'reports'" class="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+      <!-- Las gráficas se montan desde el inicio (como antes): sólo las cifras muestran skeleton -->
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 motion-stagger">
+
+        <!-- Columna principal -->
+        <div class="xl:col-span-2 flex flex-col gap-4 min-w-0">
+
+          <!-- Cifras del periodo: una sola tarjeta con celdas -->
+          <section class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <header class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+              <h3 class="text-sm font-extrabold text-slate-800">Resumen del periodo</h3>
+              <span class="text-[11px] text-slate-400">{{ periodLabel }}</span>
+            </header>
+            <div v-if="loading && !dashboardStats" class="p-4"><Skeleton preset="stats" :rows="4" /></div>
+            <div v-else class="grid grid-cols-2 md:grid-cols-4 divide-x divide-slate-100">
+              <div v-for="kpi in kpis" :key="kpi.label" class="px-4 py-3.5">
+                <p class="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-slate-400">{{ kpi.label }}</p>
+                <div class="mt-1 flex items-baseline gap-2">
+                  <span class="text-2xl font-black text-slate-800 tabular-nums leading-none">{{ kpi.value }}</span>
+                  <span v-if="kpi.trend" class="text-[11px] font-bold tabular-nums" :class="kpi.trend > 0 ? 'text-emerald-600' : 'text-rose-600'">
+                    {{ kpi.trend > 0 ? '+' : '' }}{{ kpi.trend }}%
+                  </span>
+                </div>
+              </div>
             </div>
-            <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 truncate">{{ card.label }}</span>
+          </section>
+
+          <!-- Gráficos -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <section class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+              <header class="px-4 py-3 border-b border-slate-100">
+                <h3 class="text-sm font-extrabold text-slate-800">Actividades por estado</h3>
+              </header>
+              <div class="p-3 h-60">
+                <apexchart type="donut" height="100%" width="100%" :options="activitiesChartOptions" :series="activitiesChartSeries"></apexchart>
+              </div>
+            </section>
+            <section class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+              <header class="px-4 py-3 border-b border-slate-100">
+                <h3 class="text-sm font-extrabold text-slate-800">Carga de trabajo</h3>
+              </header>
+              <div class="p-3 h-60">
+                <apexchart type="bar" height="100%" width="100%" :options="workloadChartOptions" :series="workloadChartSeries"></apexchart>
+              </div>
+            </section>
           </div>
-          <div class="flex items-baseline gap-1">
-            <span class="text-2xl font-black leading-none" :class="card.valueColor">{{ kpiLoading ? '—' : card.value }}</span>
-            <span v-if="card.suffix" class="text-[10px] font-bold text-slate-400">{{ card.suffix }}</span>
-          </div>
+
+          <!-- Rendimiento del equipo: tabla -->
+          <section class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <header class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+              <h3 class="text-sm font-extrabold text-slate-800">Rendimiento del equipo</h3>
+              <span class="text-[11px] text-slate-400">Completadas / asignadas</span>
+            </header>
+            <div v-if="teamMembers.length === 0" class="empty-state empty-state--sm">
+              <div class="empty-state__icon"><i class="fas fa-users"></i></div>
+              <p class="empty-state__title">Sin actividad en el periodo</p>
+            </div>
+            <table v-else class="w-full text-[13px]">
+              <thead>
+                <tr class="text-[10.5px] uppercase tracking-[0.07em] text-slate-400 font-semibold">
+                  <th class="text-left font-semibold px-4 py-2">Persona</th>
+                  <th class="text-right font-semibold px-4 py-2 w-28">Completadas</th>
+                  <th class="font-semibold px-4 py-2 w-48">Avance</th>
+                  <th class="text-right font-semibold px-4 py-2 w-20">Tasa</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr v-for="member in teamMembers" :key="member.name" class="hover:bg-slate-50/60 transition-colors">
+                  <td class="px-4 py-2">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                      <PersonAvatar :name="member.name" :photo="member.photo" class="w-7 h-7 rounded-lg bg-primary-50 text-[10px] font-black text-primary-600 shrink-0" />
+                      <span class="font-semibold text-slate-700 truncate">{{ member.name }}</span>
+                    </div>
+                  </td>
+                  <td class="px-4 py-2 text-right tabular-nums text-slate-700">{{ member.completed }}<span class="text-slate-400"> / {{ member.total }}</span></td>
+                  <td class="px-4 py-2">
+                    <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div class="h-full rounded-full transition-all duration-700" :class="rateBar(member.rate)" :style="{ width: member.rate + '%' }"></div>
+                    </div>
+                  </td>
+                  <td class="px-4 py-2 text-right tabular-nums font-bold" :class="rateText(member.rate)">{{ member.rate }}%</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
         </div>
-      </div>
 
-      <!-- Trends + KPIs Grid -->
-      <div class="flex-1 min-h-0 grid grid-cols-1 xl:grid-cols-3 gap-4 overflow-y-auto">
+        <!-- Columna lateral -->
+        <div class="flex flex-col gap-4 min-w-0">
 
-        <!-- Left: Trends + Per-person KPIs -->
-        <div class="xl:col-span-2 flex flex-col gap-4">
+          <section class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <header class="px-4 py-3 border-b border-slate-100">
+              <h3 class="text-sm font-extrabold text-slate-800">Frente al periodo anterior</h3>
+            </header>
+            <table class="w-full text-[13px]">
+              <thead>
+                <tr class="text-[10.5px] uppercase tracking-[0.07em] text-slate-400 font-semibold">
+                  <th class="text-left font-semibold px-4 py-2">Indicador</th>
+                  <th class="text-right font-semibold px-3 py-2">Actual</th>
+                  <th class="text-right font-semibold px-3 py-2">Previo</th>
+                  <th class="text-right font-semibold px-4 py-2">Var.</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr v-for="comp in monthlyComparison" :key="comp.label">
+                  <td class="px-4 py-2 text-slate-600">{{ comp.label }}</td>
+                  <td class="px-3 py-2 text-right tabular-nums font-bold text-slate-800">{{ comp.current }}</td>
+                  <td class="px-3 py-2 text-right tabular-nums text-slate-400">{{ comp.previous }}</td>
+                  <td class="px-4 py-2 text-right tabular-nums font-bold" :class="comp.growth > 0 ? 'text-emerald-600' : comp.growth < 0 ? 'text-rose-600' : 'text-slate-400'">
+                    {{ comp.growth > 0 ? '+' : '' }}{{ comp.growth }}%
+                  </td>
+                </tr>
+                <tr v-for="row in executiveRows.filter(r => r.label === 'Total clientes')" :key="row.label">
+                  <td class="px-4 py-2 text-slate-600">{{ row.label }}</td>
+                  <td class="px-3 py-2 text-right tabular-nums font-bold text-slate-800">{{ row.value }}</td>
+                  <td class="px-3 py-2 text-right text-slate-300">—</td>
+                  <td class="px-4 py-2 text-right text-slate-300">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
 
-          <!-- Trend Chart -->
-          <div class="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex-shrink-0">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100/50">
-              <div>
-                <h3 class="text-base font-black text-slate-800 tracking-tight">Tendencias</h3>
-                <p class="text-xs text-slate-400 font-bold mt-0.5">Actividad completada por período</p>
+          <section class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <header class="px-4 py-3 border-b border-slate-100">
+              <h3 class="text-sm font-extrabold text-slate-800">Tiempo de resolución</h3>
+            </header>
+            <div class="grid grid-cols-3 divide-x divide-slate-100">
+              <div class="px-4 py-3">
+                <p class="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-slate-400">Mínimo</p>
+                <p class="mt-1 text-xl font-black text-slate-800 tabular-nums leading-none">{{ resolutionTime.min }}<span class="text-xs font-semibold text-slate-400 ml-0.5">d</span></p>
               </div>
-              <div class="flex bg-slate-100/80 rounded-xl overflow-hidden">
-                <button @click="kpiTrendTab = 'weekly'"
-                  class="px-3.5 py-2 text-[10px] font-black uppercase tracking-widest transition-colors"
-                  :class="kpiTrendTab === 'weekly' ? 'bg-gradient-to-r from-primary-600 to-indigo-500 text-white' : 'text-slate-500 hover:text-slate-700'">
-                  Semanal
-                </button>
-                <button @click="kpiTrendTab = 'monthly'"
-                  class="px-3.5 py-2 text-[10px] font-black uppercase tracking-widest transition-colors"
-                  :class="kpiTrendTab === 'monthly' ? 'bg-gradient-to-r from-primary-600 to-indigo-500 text-white' : 'text-slate-500 hover:text-slate-700'">
-                  Mensual
-                </button>
+              <div class="px-4 py-3">
+                <p class="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-slate-400">Promedio</p>
+                <p class="mt-1 text-xl font-black text-primary-700 tabular-nums leading-none">{{ resolutionTime.avg }}<span class="text-xs font-semibold text-slate-400 ml-0.5">d</span></p>
+              </div>
+              <div class="px-4 py-3">
+                <p class="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-slate-400">Máximo</p>
+                <p class="mt-1 text-xl font-black text-slate-800 tabular-nums leading-none">{{ resolutionTime.max }}<span class="text-xs font-semibold text-slate-400 ml-0.5">d</span></p>
               </div>
             </div>
-            <div class="px-6 py-5">
-              <div v-if="kpiTrendsLoading" class="motion-stagger" aria-busy="true">
-                <div class="flex items-end gap-2.5 h-44 px-1">
-                  <div v-for="n in 7" :key="n" class="flex-1 flex flex-col items-center justify-end gap-1.5 min-w-0 h-full">
-                    <Skeleton shape="line" width="18" height="10" />
-                    <Skeleton shape="block" wrapper-class="w-full max-w-[52px] rounded-t-lg" :height="30 + ((n * 41) % 110)" />
+          </section>
+
+          <section class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <header class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+              <h3 class="text-sm font-extrabold text-slate-800">Clientes más activos</h3>
+              <span class="text-[11px] text-slate-400">Top 5</span>
+            </header>
+            <div v-if="topClients.length === 0" class="empty-state empty-state--sm">
+              <div class="empty-state__icon"><i class="fas fa-building"></i></div>
+              <p class="empty-state__title">Sin actividad de clientes</p>
+            </div>
+            <table v-else class="w-full text-[13px]">
+              <tbody class="divide-y divide-slate-100">
+                <tr v-for="(client, i) in topClients" :key="client.name" class="hover:bg-slate-50/60 transition-colors">
+                  <td class="pl-4 pr-2 py-2 w-8 text-[11px] font-bold text-slate-400 tabular-nums">{{ i + 1 }}</td>
+                  <td class="px-2 py-2 min-w-0">
+                    <p class="font-semibold text-slate-700 truncate">{{ client.name }}</p>
+                    <p class="text-[11px] text-slate-400">{{ client.activities }} actividades</p>
+                  </td>
+                  <td class="pl-2 pr-4 py-2 text-right tabular-nums font-bold" :class="rateText(client.rate)">{{ client.rate }}%</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <!-- Envío por correo -->
+          <section class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <header class="px-4 py-3 border-b border-slate-100">
+              <h3 class="text-sm font-extrabold text-slate-800">Enviar reporte por correo</h3>
+            </header>
+            <div class="px-4 py-3 space-y-3">
+              <div class="space-y-1.5">
+                <label class="text-[11px] font-semibold text-slate-500">Destinatarios</label>
+                <input v-model="reportEmail" type="text" placeholder="correo1@empresa.com, correo2@empresa.com"
+                  class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-primary-400 outline-none transition-all" />
+              </div>
+              <div class="flex items-end gap-2">
+                <div class="flex-1 space-y-1.5">
+                  <label class="text-[11px] font-semibold text-slate-500">Periodo</label>
+                  <CustomSelect
+                    v-model="reportPeriod"
+                    :options="[{ value: 'week', label: 'Semanal' }, { value: 'month', label: 'Mensual' }, { value: 'quarter', label: 'Trimestral' }]"
+                    size="sm"
+                  />
+                </div>
+                <button @click="sendManualReport" :disabled="sendingReport"
+                  class="inline-flex items-center gap-1.5 px-3 py-[7px] bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold rounded-lg disabled:opacity-50 transition-colors shrink-0">
+                  <i class="fas text-[10px]" :class="sendingReport ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
+                  {{ sendingReport ? 'Enviando…' : 'Enviar ahora' }}
+                </button>
+              </div>
+              <p v-if="reportMsg" class="text-[11px] font-semibold" :class="reportMsgType === 'ok' ? 'text-emerald-600' : 'text-rose-600'">{{ reportMsg }}</p>
+            </div>
+
+            <div class="border-t border-slate-100 px-4 py-3 space-y-3">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <p class="text-xs font-bold text-slate-700">Envío automático</p>
+                  <p class="text-[11px] text-slate-400">Programa el reporte de forma recurrente</p>
+                </div>
+                <button
+                  @click="toggleSchedule"
+                  role="switch"
+                  :aria-checked="scheduleEnabled"
+                  class="relative w-9 h-5 rounded-full transition-colors shrink-0"
+                  :class="scheduleEnabled ? 'bg-primary-600' : 'bg-slate-200'"
+                >
+                  <span class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform" :class="scheduleEnabled ? 'translate-x-4' : ''"></span>
+                </button>
+              </div>
+              <transition name="expand">
+                <div v-if="scheduleEnabled" class="space-y-2.5">
+                  <div class="flex gap-2">
+                    <div class="flex-1">
+                      <CustomSelect
+                        v-model="scheduleFrequency"
+                        @change="saveSchedule"
+                        :options="[{ value: 'daily', label: 'Diario (L-V)' }, { value: 'weekly', label: 'Semanal' }, { value: 'monthly', label: 'Mensual' }]"
+                        size="sm"
+                      />
+                    </div>
+                    <div v-if="scheduleFrequency === 'weekly'" class="flex-1">
+                      <CustomSelect
+                        v-model="scheduleDayOfWeek"
+                        @change="saveSchedule"
+                        :options="[{ value: 1, label: 'Lunes' }, { value: 2, label: 'Martes' }, { value: 3, label: 'Miércoles' }, { value: 4, label: 'Jueves' }, { value: 5, label: 'Viernes' }]"
+                        size="sm"
+                      />
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label class="text-[11px] font-semibold text-slate-500 shrink-0">Hora</label>
+                    <input type="number" v-model.number="scheduleHour" min="0" max="23" @change="saveSchedule"
+                      class="w-14 px-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg outline-none text-center focus:bg-white focus:border-primary-400 tabular-nums" />
+                    <span class="text-xs text-slate-400">:</span>
+                    <input type="number" v-model.number="scheduleMinute" min="0" max="59" @change="saveSchedule"
+                      class="w-14 px-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg outline-none text-center focus:bg-white focus:border-primary-400 tabular-nums" />
+                    <span v-if="scheduleLastRun" class="ml-auto text-[11px] text-slate-400">Último envío: {{ new Date(scheduleLastRun).toLocaleString('es-CO') }}</span>
                   </div>
                 </div>
-                <div class="flex gap-2.5 mt-2.5 px-1">
+              </transition>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ KPIs DEL EQUIPO ════════════════════════════════════════════ -->
+    <div v-else class="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 motion-stagger">
+
+        <div class="xl:col-span-2 flex flex-col gap-4 min-w-0">
+
+          <!-- Totales del equipo -->
+          <section class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <header class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+              <h3 class="text-sm font-extrabold text-slate-800">Totales del equipo</h3>
+              <span class="text-[11px] text-slate-400">{{ kpiPeriodLabel }}</span>
+            </header>
+            <div class="grid grid-cols-3 lg:grid-cols-6 divide-x divide-slate-100">
+              <div v-for="card in kpiStatCards" :key="card.label" class="px-4 py-3">
+                <p class="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-slate-400 truncate">{{ card.label }}</p>
+                <p class="mt-1 text-xl font-black tabular-nums leading-none" :class="card.valueColor">
+                  <template v-if="kpiLoading">—</template>
+                  <template v-else>{{ card.value }}<span v-if="card.suffix" class="text-xs font-semibold text-slate-400 ml-0.5">{{ card.suffix }}</span></template>
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Tendencia -->
+          <section class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <header class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+              <h3 class="text-sm font-extrabold text-slate-800">Completadas por periodo</h3>
+              <div class="seg">
+                <button @click="kpiTrendTab = 'weekly'" :aria-pressed="kpiTrendTab === 'weekly'">Semanal</button>
+                <button @click="kpiTrendTab = 'monthly'" :aria-pressed="kpiTrendTab === 'monthly'">Mensual</button>
+              </div>
+            </header>
+            <div class="px-4 py-4">
+              <div v-if="kpiTrendsLoading" class="motion-stagger" aria-busy="true">
+                <div class="flex items-end gap-2.5 h-40 px-1">
+                  <div v-for="n in 7" :key="n" class="flex-1 flex flex-col items-center justify-end gap-1.5 min-w-0 h-full">
+                    <Skeleton shape="line" width="18" height="10" />
+                    <Skeleton shape="block" wrapper-class="w-full max-w-[48px] rounded-t-md" :height="30 + ((n * 41) % 100)" />
+                  </div>
+                </div>
+                <div class="flex gap-2.5 mt-2 px-1">
                   <div v-for="n in 7" :key="'tl' + n" class="flex-1 flex justify-center"><Skeleton width="28" height="8" /></div>
                 </div>
               </div>
+              <div v-else-if="kpiCurrentTrend.length === 0" class="empty-state empty-state--sm">
+                <div class="empty-state__icon"><i class="fas fa-chart-column"></i></div>
+                <p class="empty-state__title">Sin datos de tendencia</p>
+              </div>
               <div v-else>
-                <div class="flex items-end gap-2.5 h-44 px-1">
-                  <div v-for="(point, i) in kpiCurrentTrend" :key="i" class="flex-1 flex flex-col items-center gap-1.5 min-w-0">
-                    <span class="text-[10px] font-black text-slate-600 tabular-nums">{{ point.completed }}</span>
-                    <div class="w-full max-w-[52px] rounded-t-lg transition-all duration-700 min-h-[4px] mx-auto shadow-sm"
-                      :class="kpiTrendTab === 'weekly' ? 'bg-gradient-to-t from-primary-600 to-primary-400' : 'bg-gradient-to-t from-indigo-600 to-indigo-400'"
-                      :style="{ height: kpiTrendBarHeight(point.completed) }">
-                    </div>
+                <div class="flex items-end gap-2.5 h-40 px-1">
+                  <div v-for="(point, i) in kpiCurrentTrend" :key="i" class="flex-1 flex flex-col items-center justify-end gap-1.5 min-w-0 h-full">
+                    <span class="text-[10px] font-bold text-slate-500 tabular-nums">{{ point.completed }}</span>
+                    <div class="w-full max-w-[48px] rounded-t-md bg-primary-500/90 hover:bg-primary-600 transition-all duration-700 min-h-[3px]"
+                      :style="{ height: kpiTrendBarHeight(point.completed) }"></div>
                   </div>
                 </div>
-                <div class="flex gap-2.5 mt-2.5 px-1">
-                  <div v-for="(point, i) in kpiCurrentTrend" :key="'tl'+i"
-                    class="flex-1 text-center text-[9px] font-black text-slate-400 uppercase tracking-wider truncate min-w-0">
+                <div class="flex gap-2.5 mt-2 px-1 border-t border-slate-100 pt-2">
+                  <div v-for="(point, i) in kpiCurrentTrend" :key="'tl'+i" class="flex-1 text-center text-[10px] text-slate-400 truncate min-w-0">
                     {{ point.label }}
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </section>
 
-          <!-- Per-person KPI Cards -->
-          <div class="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex-shrink-0">
-            <div class="px-6 py-4 border-b border-slate-100/50">
-              <h3 class="text-base font-black text-slate-800 tracking-tight">Rendimiento por Persona</h3>
-              <p class="text-xs text-slate-400 font-bold mt-0.5">Completadas, cumplimiento, carga y vencidas</p>
-            </div>
-            <div v-if="kpiLoading" class="p-4">
-              <Skeleton preset="cards" :rows="4" :cols="2" />
-            </div>
-            <div v-else-if="kpiData.kpis.length === 0" class="empty-state m-4">
+          <!-- Por persona: tabla -->
+          <section class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <header class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+              <h3 class="text-sm font-extrabold text-slate-800">Rendimiento por persona</h3>
+              <span class="text-[11px] text-slate-400">Cumplimiento, carga y vencidas</span>
+            </header>
+            <div v-if="kpiLoading" class="p-4"><Skeleton preset="table" :rows="5" /></div>
+            <div v-else-if="kpiData.kpis.length === 0" class="empty-state">
               <div class="empty-state__icon"><i class="fas fa-users"></i></div>
-              <p class="empty-state__title">Sin datos para el período seleccionado</p>
+              <p class="empty-state__title">Sin datos para el periodo</p>
               <p class="empty-state__text">Prueba con otro rango de fechas o actualiza los KPIs.</p>
             </div>
-            <div v-else class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 motion-stagger">
-              <div v-for="kpi in kpiData.kpis" :key="kpi.user._id"
-                class="card-interactive border border-slate-100/80 rounded-xl p-4 bg-white/50">
-                <!-- Header -->
-                <div class="flex items-center gap-3 mb-3">
-                  <PersonAvatar :name="kpi.user.name" :photo="kpi.user.photo" class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-400 to-indigo-500 text-white text-[10px] font-black shadow-sm" />
-                  <div class="min-w-0 flex-1">
-                    <div class="text-xs font-black text-slate-800 truncate">{{ kpi.user.name }}</div>
-                    <div class="text-[10px] text-slate-400 font-bold truncate">{{ kpi.user.department || kpi.user.role }}</div>
-                  </div>
-                  <span class="text-xs font-black px-2.5 py-1 rounded-full shrink-0 border shadow-sm"
-                    :class="kpi.complianceRate >= 70 ? 'bg-emerald-50 text-emerald-600 border-emerald-100/50' : kpi.complianceRate >= 40 ? 'bg-amber-50 text-amber-600 border-amber-100/50' : 'bg-red-50 text-red-600 border-red-100/50'">
-                    {{ kpi.complianceRate }}%
-                  </span>
-                </div>
-                <!-- Bar -->
-                <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-3">
-                  <div class="h-full rounded-full transition-all duration-700"
-                    :class="kpi.complianceRate >= 70 ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' : kpi.complianceRate >= 40 ? 'bg-gradient-to-r from-amber-400 to-amber-500' : 'bg-gradient-to-r from-red-400 to-red-500'"
-                    :style="{ width: kpi.complianceRate + '%' }"></div>
-                </div>
-                <!-- Stats -->
-                <div class="grid grid-cols-4 gap-1 text-center">
-                  <div>
-                    <div class="text-sm font-black text-slate-800">{{ kpi.totalCompleted }}</div>
-                    <div class="text-[8px] font-black uppercase tracking-wider text-slate-400 mt-0.5">Hechas</div>
-                  </div>
-                  <div>
-                    <div class="text-sm font-black text-slate-600">{{ kpi.currentWorkload }}</div>
-                    <div class="text-[8px] font-black uppercase tracking-wider text-slate-400 mt-0.5">Pend.</div>
-                  </div>
-                  <div>
-                    <div class="text-sm font-black" :class="kpi.overdueCount > 0 ? 'text-red-500' : 'text-slate-300'">{{ kpi.overdueCount }}</div>
-                    <div class="text-[8px] font-black uppercase tracking-wider text-slate-400 mt-0.5">Venc.</div>
-                  </div>
-                  <div>
-                    <div class="text-sm font-black text-slate-500">{{ kpi.avgResolutionDays }}d</div>
-                    <div class="text-[8px] font-black uppercase tracking-wider text-slate-400 mt-0.5">Prom.</div>
-                  </div>
-                </div>
-              </div>
+            <div v-else class="overflow-x-auto">
+              <table class="w-full text-[13px] min-w-[560px]">
+                <thead>
+                  <tr class="text-[10.5px] uppercase tracking-[0.07em] text-slate-400 font-semibold">
+                    <th class="text-left font-semibold px-4 py-2">Persona</th>
+                    <th class="font-semibold px-3 py-2 w-40">Cumplimiento</th>
+                    <th class="text-right font-semibold px-3 py-2">Hechas</th>
+                    <th class="text-right font-semibold px-3 py-2">Pendientes</th>
+                    <th class="text-right font-semibold px-3 py-2">Vencidas</th>
+                    <th class="text-right font-semibold px-4 py-2">Resolución</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  <tr v-for="kpi in kpiData.kpis" :key="kpi.user._id" class="hover:bg-slate-50/60 transition-colors">
+                    <td class="px-4 py-2">
+                      <div class="flex items-center gap-2.5 min-w-0">
+                        <PersonAvatar :name="kpi.user.name" :photo="kpi.user.photo" class="w-7 h-7 rounded-lg bg-primary-50 text-[10px] font-black text-primary-600 shrink-0" />
+                        <div class="min-w-0">
+                          <p class="font-semibold text-slate-700 truncate">{{ kpi.user.name }}</p>
+                          <p class="text-[11px] text-slate-400 truncate">{{ kpi.user.department || kpi.user.role }}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-3 py-2">
+                      <div class="flex items-center gap-2">
+                        <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div class="h-full rounded-full transition-all duration-700" :class="rateBar(kpi.complianceRate, 70, 40)" :style="{ width: kpi.complianceRate + '%' }"></div>
+                        </div>
+                        <span class="w-10 text-right text-xs font-bold tabular-nums" :class="rateText(kpi.complianceRate, 70, 40)">{{ kpi.complianceRate }}%</span>
+                      </div>
+                    </td>
+                    <td class="px-3 py-2 text-right tabular-nums text-slate-700">{{ kpi.totalCompleted }}</td>
+                    <td class="px-3 py-2 text-right tabular-nums text-slate-700">{{ kpi.currentWorkload }}</td>
+                    <td class="px-3 py-2 text-right tabular-nums font-bold" :class="kpi.overdueCount > 0 ? 'text-rose-600' : 'text-slate-300'">{{ kpi.overdueCount }}</td>
+                    <td class="px-4 py-2 text-right tabular-nums text-slate-500">{{ kpi.avgResolutionDays }} d</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-          </div>
-
+          </section>
         </div>
 
-        <!-- Right: Overload alerts + Workload ranking -->
-        <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-4 min-w-0">
 
-          <!-- Overload Alerts -->
-          <div v-if="kpiOverloaded.length > 0"
-            class="bg-amber-50/80 backdrop-blur-xl rounded-2xl border border-amber-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5 flex-shrink-0">
-            <div class="flex items-center gap-2 mb-3">
-              <div class="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center border border-amber-200/50">
-                <i class="fas fa-exclamation-triangle text-amber-600 text-xs"></i>
-              </div>
-              <div>
-                <h3 class="text-xs font-black text-amber-800">Sobrecarga Detectada</h3>
-                <p class="text-[10px] text-amber-600 font-bold">Personas con carga excesiva</p>
-              </div>
-            </div>
-            <div class="space-y-2">
-              <div v-for="m in kpiOverloaded" :key="m.user._id"
-                class="flex items-center justify-between p-2.5 bg-white/60 rounded-xl border border-amber-100/50">
-                <span class="text-xs font-bold text-amber-900 truncate">{{ m.user.name }}</span>
-                <div class="flex items-center gap-2 shrink-0">
-                  <span class="text-[10px] font-black text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">{{ m.currentWorkload }} pend.</span>
-                  <span v-if="m.overdueCount > 0" class="text-[10px] font-black text-red-600 bg-red-50 px-2 py-0.5 rounded-full">{{ m.overdueCount }} venc.</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <section v-if="kpiOverloaded.length > 0" class="bg-amber-50/60 border border-amber-200 rounded-2xl">
+            <header class="flex items-center gap-2 px-4 py-3 border-b border-amber-100">
+              <i class="fas fa-triangle-exclamation text-amber-600 text-xs"></i>
+              <h3 class="text-sm font-extrabold text-amber-900">Sobrecarga</h3>
+              <span class="ml-auto text-[11px] text-amber-700">{{ kpiOverloaded.length }}</span>
+            </header>
+            <ul class="divide-y divide-amber-100">
+              <li v-for="m in kpiOverloaded" :key="m.user._id" class="flex items-center justify-between gap-2 px-4 py-2 text-[13px]">
+                <span class="font-semibold text-amber-900 truncate">{{ m.user.name }}</span>
+                <span class="shrink-0 text-[11px] tabular-nums text-amber-800">
+                  {{ m.currentWorkload }} pend.<template v-if="m.overdueCount > 0"> · <span class="text-rose-600 font-bold">{{ m.overdueCount }} venc.</span></template>
+                </span>
+              </li>
+            </ul>
+          </section>
 
-          <!-- Workload Ranking -->
-          <div class="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5 flex-shrink-0">
-            <h3 class="text-base font-black text-slate-800 tracking-tight mb-1">Ranking de Carga</h3>
-            <p class="text-xs text-slate-400 font-bold mb-4">Ordenado por tareas pendientes</p>
-            <div class="space-y-3">
-              <div v-for="(kpi, i) in kpiSortedByWorkload" :key="kpi.user._id"
-                class="flex items-center gap-3 p-2 -mx-2 hover:bg-slate-50/50 rounded-xl transition-colors">
-                <div class="w-7 h-7 rounded-xl flex items-center justify-center text-[10px] font-black shrink-0 shadow-inner"
-                  :class="i === 0 ? 'bg-gradient-to-br from-red-100 to-red-200 text-red-700 border border-red-300/50' : i === 1 ? 'bg-gradient-to-br from-amber-100 to-amber-200 text-amber-700 border border-amber-300/50' : 'bg-gradient-to-br from-slate-100 to-slate-200 text-slate-600 border border-slate-300/50'">
-                  {{ i + 1 }}
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-xs font-extrabold text-slate-800 truncate">{{ kpi.user.name }}</p>
-                  <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden mt-1.5">
-                    <div class="h-full rounded-full bg-gradient-to-r from-primary-400 to-indigo-500 transition-all duration-700"
-                      :style="{ width: Math.min((kpi.currentWorkload / Math.max(...kpiSortedByWorkload.map(k => k.currentWorkload), 1)) * 100, 100) + '%' }"></div>
-                  </div>
-                </div>
-                <span class="text-sm font-black text-slate-700 shrink-0">{{ kpi.currentWorkload }}</span>
-              </div>
+          <section class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <header class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+              <h3 class="text-sm font-extrabold text-slate-800">Carga pendiente</h3>
+              <span class="text-[11px] text-slate-400">Tareas abiertas</span>
+            </header>
+            <div v-if="kpiSortedByWorkload.length === 0" class="empty-state empty-state--sm">
+              <div class="empty-state__icon"><i class="fas fa-list-check"></i></div>
+              <p class="empty-state__title">Sin carga registrada</p>
             </div>
-          </div>
+            <table v-else class="w-full text-[13px]">
+              <tbody class="divide-y divide-slate-100">
+                <tr v-for="(kpi, i) in kpiSortedByWorkload" :key="kpi.user._id">
+                  <td class="pl-4 pr-2 py-2 w-8 text-[11px] font-bold text-slate-400 tabular-nums">{{ i + 1 }}</td>
+                  <td class="px-2 py-2 min-w-0">
+                    <p class="font-semibold text-slate-700 truncate">{{ kpi.user.name }}</p>
+                    <div class="h-1 bg-slate-100 rounded-full overflow-hidden mt-1">
+                      <div class="h-full rounded-full bg-primary-500 transition-all duration-700" :style="{ width: workloadWidth(kpi.currentWorkload) }"></div>
+                    </div>
+                  </td>
+                  <td class="pl-2 pr-4 py-2 text-right tabular-nums font-bold text-slate-700">{{ kpi.currentWorkload }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
 
-          <!-- Hours Worked -->
-          <div class="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5 flex-shrink-0">
-            <h3 class="text-base font-black text-slate-800 tracking-tight mb-1">Horas Registradas</h3>
-            <p class="text-xs text-slate-400 font-bold mb-4">Tiempo invertido por persona</p>
-            <div class="space-y-2.5">
-              <div v-for="kpi in kpiSortedByHours" :key="'h'+kpi.user._id"
-                class="flex items-center justify-between py-1.5">
-                <span class="text-xs font-bold text-slate-600 truncate">{{ kpi.user.name }}</span>
-                <span class="text-sm font-black bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-indigo-500 shrink-0">{{ kpi.hoursWorked }}h</span>
-              </div>
+          <section class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <header class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+              <h3 class="text-sm font-extrabold text-slate-800">Horas registradas</h3>
+              <span class="text-[11px] text-slate-400">{{ kpiPeriodLabel }}</span>
+            </header>
+            <div v-if="kpiSortedByHours.length === 0" class="empty-state empty-state--sm">
+              <div class="empty-state__icon"><i class="fas fa-stopwatch"></i></div>
+              <p class="empty-state__title">Sin horas registradas</p>
             </div>
-          </div>
-
+            <table v-else class="w-full text-[13px]">
+              <tbody class="divide-y divide-slate-100">
+                <tr v-for="kpi in kpiSortedByHours" :key="'h'+kpi.user._id">
+                  <td class="px-4 py-2 font-semibold text-slate-700 truncate">{{ kpi.user.name }}</td>
+                  <td class="px-4 py-2 text-right tabular-nums font-bold text-slate-700 w-20">{{ kpi.hoursWorked }} h</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
         </div>
       </div>
-
-    </template><!-- end kpis tab -->
+    </div>
 
   </div>
 </template>
@@ -636,6 +539,13 @@ const periods = [
 ]
 
 const periodOptions = computed(() => periods.map(p => ({ value: p.value, label: p.label })))
+const periodLabel = computed(() => periods.find(p => p.value === selectedPeriod.value)?.label ?? '')
+
+// Semáforo de cumplimiento: verde / ámbar / rojo según umbrales
+const rateBar = (rate: number, good = 80, ok = 60) =>
+  rate >= good ? 'bg-emerald-500' : rate >= ok ? 'bg-amber-500' : 'bg-rose-500'
+const rateText = (rate: number, good = 80, ok = 60) =>
+  rate >= good ? 'text-emerald-600' : rate >= ok ? 'text-amber-600' : 'text-rose-600'
 const departmentOptions = computed(() => [
   { value: '', label: 'Todos los Equipos' },
   ...departments.value.map((dept: string) => ({ value: dept, label: dept }))
@@ -766,9 +676,10 @@ const monthlyComparison = computed(() => [
 ])
 
 // -- ApexCharts Configuration --
+// Paleta de la app: sky como acento, slate para lo neutro
 const CHART_COLORS = {
   emerald: '#10b981',
-  primary: '#6366f1',
+  primary: '#0ea5e9',
   amber: '#f59e0b',
   red: '#ef4444',
   text: '#64748b'
@@ -790,15 +701,15 @@ const activitiesChartSeries = computed(() => {
 })
 
 const activitiesChartOptions = computed(() => ({
-  chart: { type: 'donut', fontFamily: 'inherit', dropShadow: { enabled: true, top: 2, left: 0, blur: 4, opacity: 0.05 } },
-  labels: ['Completadas', 'En Proceso', 'Pendientes'],
-  colors: [CHART_COLORS.emerald, CHART_COLORS.primary, CHART_COLORS.amber],
+  chart: { type: 'donut', fontFamily: 'inherit' },
+  labels: ['Completadas', 'En proceso', 'Pendientes'],
+  colors: [CHART_COLORS.primary, '#7dd3fc', '#cbd5e1'],
   plotOptions: {
-    pie: { donut: { size: '70%', labels: { show: true, name: { fontSize: '12px' }, value: { fontSize: '20px', fontWeight: 900 } } } }
+    pie: { donut: { size: '72%', labels: { show: true, name: { fontSize: '11px', color: CHART_COLORS.text }, value: { fontSize: '20px', fontWeight: 800, color: '#1e293b' } } } }
   },
   dataLabels: { enabled: false },
-  stroke: { width: 0 },
-  legend: { position: 'bottom', fontSize: '12px', fontWeight: 600, markers: { radius: 12 } }
+  stroke: { width: 2, colors: ['#fff'] },
+  legend: { position: 'bottom', fontSize: '11px', fontWeight: 600, labels: { colors: CHART_COLORS.text }, markers: { radius: 12 } }
 }))
 
 // Bar Chart for Workload
@@ -825,10 +736,11 @@ const workloadChartOptions = computed(() => {
   return {
     chart: { type: 'bar', fontFamily: 'inherit', toolbar: { show: false } },
     plotOptions: {
-      bar: { borderRadius: 6, columnWidth: '45%', distributed: true }
+      bar: { borderRadius: 4, columnWidth: '42%' }
     },
-    colors: [CHART_COLORS.primary, '#8b5cf6', '#3b82f6', '#14b8a6', '#f59e0b'],
-    dataLabels: { enabled: true, formatter: (val: any) => val, style: { fontSize: '10px', fontWeight: 900 } },
+    colors: [CHART_COLORS.primary],
+    dataLabels: { enabled: false },
+    tooltip: { y: { title: { formatter: () => 'Tareas activas' } } },
     legend: { show: false },
     xaxis: {
       categories,
@@ -900,11 +812,15 @@ const kpiTrendsLoading = ref(false)
 const kpiTrendTab = ref<'weekly' | 'monthly'>('weekly')
 
 const kpiPeriods = [
-  { value: 'week', label: 'Sem' },
+  { value: 'week', label: 'Semana' },
   { value: 'month', label: 'Mes' },
-  { value: 'quarter', label: 'Trim' },
+  { value: 'quarter', label: 'Trimestre' },
   { value: 'year', label: 'Año' },
 ]
+const kpiPeriodLabel = computed(() => {
+  const labels: Record<string, string> = { week: 'Esta semana', month: 'Este mes', quarter: 'Este trimestre', year: 'Este año' }
+  return labels[kpiPeriod.value] ?? ''
+})
 
 const kpiStatCards = computed(() => {
   const t = kpiData.value.teamTotals
@@ -922,6 +838,11 @@ const kpiOverloaded = computed(() => kpiData.value.kpis.filter(k => k.currentWor
 const kpiSortedByWorkload = computed(() => [...kpiData.value.kpis].sort((a, b) => b.currentWorkload - a.currentWorkload).slice(0, 8))
 const kpiSortedByHours = computed(() => [...kpiData.value.kpis].filter(k => k.hoursWorked > 0).sort((a, b) => b.hoursWorked - a.hoursWorked).slice(0, 8))
 const kpiCurrentTrend = computed(() => kpiTrendTab.value === 'weekly' ? weeklyTrends.value : monthlyTrends.value)
+
+function workloadWidth(value: number) {
+  const max = Math.max(...kpiSortedByWorkload.value.map(k => k.currentWorkload), 1)
+  return Math.min((value / max) * 100, 100) + '%'
+}
 
 function kpiTrendBarHeight(value: number) {
   const max = Math.max(...kpiCurrentTrend.value.map(p => p.completed), 1)

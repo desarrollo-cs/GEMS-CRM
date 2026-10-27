@@ -1,145 +1,182 @@
 <template>
-  <div class="min-h-screen bg-white font-['Inter',sans-serif] text-slate-900 flex overflow-hidden">
-    
-    <!-- Notion-Style Sidebar -->
-    <aside class="w-64 md:w-72 bg-[#FBFBFA] border-r border-[#EFEFEF] flex flex-col h-screen transition-all duration-300">
-      <div class="p-4 flex items-center justify-between">
-        <div class="flex items-center gap-2 px-2">
-          <div class="w-6 h-6 bg-slate-900 rounded flex items-center justify-center text-white text-[10px] font-black">W</div>
-          <span class="text-sm font-semibold text-slate-700">Workspace</span>
+  <div class="min-h-screen bg-white text-slate-900 flex overflow-hidden">
+
+    <!-- Panel lateral: Workspace -->
+    <aside class="w-64 md:w-72 bg-slate-50/70 border-r border-slate-200 flex flex-col h-screen shrink-0">
+      <!-- Cabecera del panel -->
+      <div class="px-3 pt-3 pb-2 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <div class="w-7 h-7 rounded-lg bg-primary-50 border border-primary-100 text-primary-600 flex items-center justify-center shrink-0">
+            <i class="fas fa-layer-group text-[11px]"></i>
+          </div>
+          <span class="text-sm font-extrabold text-slate-800 truncate">Workspace</span>
         </div>
-        <button title="Nuevo caso" @click="openCreateModal" class="p-1.5 hover:bg-slate-200 rounded-md text-slate-500 transition-colors">
-          <i class="fas fa-plus text-xs"></i>
+        <button
+          type="button"
+          :title="viewMode === 'cases' ? 'Nuevo caso' : 'Nuevo artículo'"
+          @click="openCreateModal"
+          class="w-7 h-7 rounded-lg bg-primary-600 hover:bg-primary-700 text-white flex items-center justify-center shadow-sm transition-colors shrink-0"
+        >
+          <i class="fas fa-plus text-[10px]"></i>
         </button>
       </div>
 
-      <!-- Mode Switcher -->
-      <div class="px-4 py-2">
-        <div class="flex bg-slate-200/50 p-1 rounded-lg">
-          <button 
-            @click="viewMode = 'cases'"
-            :class="viewMode === 'cases' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
-            class="flex-1 py-1 text-[10px] font-bold rounded-md transition-all flex items-center justify-center gap-1.5"
-          >
-            <i class="fas fa-tasks text-[9px]"></i>
-            Casos
+      <!-- Pestañas Casos / Wiki -->
+      <div class="px-3 pb-2">
+        <div class="seg w-full">
+          <button type="button" class="flex-1 flex items-center justify-center gap-1.5" @click="viewMode = 'cases'" :aria-pressed="viewMode === 'cases'">
+            <i class="fas fa-folder text-[10px]"></i> Casos
+            <span class="badge badge-slate">{{ cases.length }}</span>
           </button>
-          <button 
-            @click="viewMode = 'wiki'"
-            :class="viewMode === 'wiki' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
-            class="flex-1 py-1 text-[10px] font-bold rounded-md transition-all flex items-center justify-center gap-1.5"
-          >
-            <i class="fas fa-book text-[9px]"></i>
-            Wiki
+          <button type="button" class="flex-1 flex items-center justify-center gap-1.5" @click="viewMode = 'wiki'" :aria-pressed="viewMode === 'wiki'">
+            <i class="fas fa-book text-[10px]"></i> Wiki
+            <span class="badge badge-slate">{{ wikiArticles.length }}</span>
           </button>
         </div>
       </div>
 
-      <!-- Árbol / Tabla -->
-      <div class="px-4 pb-2">
-        <div class="flex bg-slate-200/50 p-1 rounded-lg">
-          <button
-            @click="listDisplayMode = 'tree'"
-            :class="listDisplayMode === 'tree' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
-            class="flex-1 py-1 text-[10px] font-bold rounded-md transition-all flex items-center justify-center gap-1.5"
-          >
-            <i class="fas fa-sitemap text-[9px]"></i>
-            Árbol
-          </button>
-          <button
-            @click="listDisplayMode = 'grid'"
-            :class="listDisplayMode === 'grid' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
-            class="flex-1 py-1 text-[10px] font-bold rounded-md transition-all flex items-center justify-center gap-1.5"
-          >
-            <i class="fas fa-table text-[9px]"></i>
-            Tabla
-          </button>
-        </div>
-      </div>
-
-      <!-- Search Box -->
-      <div class="px-4 py-2">
-        <div class="relative group">
-          <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]"></i>
-          <input 
+      <!-- Buscador + Árbol / Tabla -->
+      <div class="px-3 pb-2 flex items-center gap-1.5">
+        <div class="relative flex-1 min-w-0">
+          <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]"></i>
+          <input
             v-model="searchTerm"
-            placeholder="Buscar..."
-            class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
+            type="search"
+            :placeholder="viewMode === 'cases' ? 'Buscar caso' : 'Buscar artículo'"
+            class="w-full h-8 pl-7 pr-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-300 transition-colors"
           />
         </div>
+        <div class="seg shrink-0" role="group" aria-label="Modo de lista">
+          <button type="button" title="Ver como árbol" class="!px-2" @click="listDisplayMode = 'tree'" :aria-pressed="listDisplayMode === 'tree'">
+            <i class="fas fa-sitemap text-[10px]"></i>
+          </button>
+          <button type="button" title="Ver como tabla" class="!px-2" @click="listDisplayMode = 'grid'" :aria-pressed="listDisplayMode === 'grid'">
+            <i class="fas fa-table text-[10px]"></i>
+          </button>
+        </div>
       </div>
 
-      <!-- Tree Structure (Grouped by Category/Client) -->
-      <nav class="flex-1 overflow-y-auto px-2 py-4 space-y-1 custom-scrollbar">
-        <div v-if="viewMode === 'cases'">
-          <div v-for="(group, clientName) in groupedCases" :key="clientName" class="mb-4">
-            <button 
+      <!-- Árbol -->
+      <nav class="flex-1 overflow-y-auto px-2 py-1 custom-scrollbar">
+        <div v-if="listLoading" class="px-1 py-2">
+          <Skeleton preset="list" :rows="6" />
+        </div>
+
+        <template v-else-if="viewMode === 'cases'">
+          <div v-if="Object.keys(groupedCases).length === 0" class="empty-state empty-state--sm">
+            <div class="empty-state__icon"><i class="fas fa-folder-open"></i></div>
+            <p class="empty-state__title">{{ searchTerm ? 'Sin coincidencias' : 'Aún no hay casos' }}</p>
+            <p class="empty-state__text">{{ searchTerm ? 'Prueba con otro término.' : 'Crea el primero con el botón +.' }}</p>
+          </div>
+          <div v-for="(group, clientName) in groupedCases" :key="clientName" class="mb-1">
+            <button
+              type="button"
               @click="toggleGroup(clientName)"
-              class="w-full flex items-center gap-2 px-2 py-1 text-xs font-semibold text-slate-500 hover:bg-slate-200/50 rounded-md transition-colors"
+              :title="String(clientName)"
+              class="w-full flex items-center gap-1.5 px-2 h-8 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200/60 transition-colors"
             >
-              <i :class="expandedGroups.includes(clientName) ? 'fa-chevron-down' : 'fa-chevron-right'" class="fas text-[8px] w-2"></i>
-              <i class="fas fa-building text-[10px]"></i>
+              <i :class="expandedGroups.includes(clientName) ? 'fa-chevron-down' : 'fa-chevron-right'" class="fas text-[8px] w-3 text-slate-400"></i>
+              <i class="fas fa-building text-[10px] text-slate-400"></i>
               <span class="truncate">{{ clientName }}</span>
-              <span class="ml-auto text-[10px] opacity-50">{{ group.length }}</span>
+              <span class="ml-auto badge badge-slate">{{ group.length }}</span>
             </button>
-            <div v-if="expandedGroups.includes(clientName)" class="mt-1 ml-4 space-y-0.5">
-              <button 
-                v-for="c in group" :key="c._id"
-                @click="selectCase(c)"
-                :class="selectedCase?._id === c._id ? 'bg-[#EFEFEF] text-slate-900' : 'text-slate-600 hover:bg-slate-200/50'"
-                class="w-full text-left px-3 py-1.5 rounded-md text-xs transition-all flex items-center gap-2 group"
-              >
-                <i class="far fa-file-alt text-[10px] text-slate-400 group-hover:text-primary-500"></i>
-                <span class="truncate">{{ c.titulo }}</span>
-              </button>
-            </div>
+            <transition name="expand">
+              <div v-if="expandedGroups.includes(clientName)" class="ml-[13px] pl-2 border-l border-slate-200 space-y-px py-0.5">
+                <button
+                  v-for="c in group" :key="c._id"
+                  type="button"
+                  @click="selectCase(c)"
+                  :title="c.titulo"
+                  class="group relative w-full text-left pl-2.5 pr-2 h-8 rounded-lg text-xs transition-colors flex items-center gap-2"
+                  :class="selectedCase?._id === c._id && listDisplayMode === 'tree'
+                    ? 'bg-primary-50 text-primary-700 font-bold'
+                    : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-800'"
+                >
+                  <span
+                    class="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full bg-primary-500 transition-opacity"
+                    :class="selectedCase?._id === c._id && listDisplayMode === 'tree' ? 'opacity-100' : 'opacity-0'"
+                  ></span>
+                  <span class="w-1.5 h-1.5 rounded-full shrink-0" :class="getStatusDot(c.estado)" :title="c.estado?.replace('_', ' ')"></span>
+                  <span class="truncate flex-1">{{ c.titulo }}</span>
+                  <i class="fas fa-chevron-right text-[8px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                </button>
+              </div>
+            </transition>
           </div>
-        </div>
+        </template>
 
-        <div v-else>
-          <div v-for="(group, cat) in groupedWiki" :key="cat" class="mb-4">
-            <button 
+        <template v-else>
+          <div v-if="Object.keys(groupedWiki).length === 0" class="empty-state empty-state--sm">
+            <div class="empty-state__icon"><i class="fas fa-book"></i></div>
+            <p class="empty-state__title">{{ searchTerm ? 'Sin coincidencias' : 'Aún no hay artículos' }}</p>
+            <p class="empty-state__text">{{ searchTerm ? 'Prueba con otro término.' : 'Documenta un proceso con el botón +.' }}</p>
+          </div>
+          <div v-for="(group, cat) in groupedWiki" :key="cat" class="mb-1">
+            <button
+              type="button"
               @click="toggleGroup(cat)"
-              class="w-full flex items-center gap-2 px-2 py-1 text-xs font-semibold text-slate-500 hover:bg-slate-200/50 rounded-md transition-colors"
+              class="w-full flex items-center gap-1.5 px-2 h-8 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200/60 transition-colors"
             >
-              <i :class="expandedGroups.includes(cat) ? 'fa-chevron-down' : 'fa-chevron-right'" class="fas text-[8px] w-2"></i>
-              <i :class="getWikiIcon(cat)" class="text-[10px]"></i>
-              <span class="capitalize">{{ cat }}</span>
-              <span class="ml-auto text-[10px] opacity-50">{{ group.length }}</span>
+              <i :class="expandedGroups.includes(cat) ? 'fa-chevron-down' : 'fa-chevron-right'" class="fas text-[8px] w-3 text-slate-400"></i>
+              <i :class="getWikiIcon(cat)" class="text-[10px] text-slate-400"></i>
+              <span class="capitalize truncate">{{ cat }}</span>
+              <span class="ml-auto badge badge-slate">{{ group.length }}</span>
             </button>
-            <div v-if="expandedGroups.includes(cat)" class="mt-1 ml-4 space-y-0.5">
-              <button 
-                v-for="w in group" :key="w._id"
-                @click="selectedWiki = w"
-                :class="selectedWiki?._id === w._id ? 'bg-[#EFEFEF] text-slate-900' : 'text-slate-600 hover:bg-slate-200/50'"
-                class="w-full text-left px-3 py-1.5 rounded-md text-xs transition-all flex items-center gap-2 group"
-              >
-                <i class="far fa-file-alt text-[10px] text-slate-400 group-hover:text-primary-500"></i>
-                <span class="truncate">{{ w.titulo }}</span>
-              </button>
-            </div>
+            <transition name="expand">
+              <div v-if="expandedGroups.includes(cat)" class="ml-[13px] pl-2 border-l border-slate-200 space-y-px py-0.5">
+                <button
+                  v-for="w in group" :key="w._id"
+                  type="button"
+                  @click="selectedWiki = w"
+                  :title="w.titulo"
+                  class="group relative w-full text-left pl-2.5 pr-2 h-8 rounded-lg text-xs transition-colors flex items-center gap-2"
+                  :class="selectedWiki?._id === w._id && listDisplayMode === 'tree'
+                    ? 'bg-primary-50 text-primary-700 font-bold'
+                    : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-800'"
+                >
+                  <span
+                    class="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full bg-primary-500 transition-opacity"
+                    :class="selectedWiki?._id === w._id && listDisplayMode === 'tree' ? 'opacity-100' : 'opacity-0'"
+                  ></span>
+                  <i class="far fa-file-alt text-[10px] text-slate-400 shrink-0"></i>
+                  <span class="truncate flex-1">{{ w.titulo }}</span>
+                  <i class="fas fa-chevron-right text-[8px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                </button>
+              </div>
+            </transition>
           </div>
-        </div>
+        </template>
       </nav>
-
     </aside>
 
-    <!-- Main Content Area -->
-    <main class="flex-1 overflow-y-auto relative bg-white custom-scrollbar">
+    <!-- Contenido principal -->
+    <main class="flex-1 min-w-0 overflow-y-auto relative bg-white custom-scrollbar">
 
-      <!-- Vista de tabla: catálogo completo, ordenable y filtrable -->
-      <div v-if="listDisplayMode === 'grid'" class="max-w-6xl mx-auto px-6 md:px-12 py-10 animate-fade-in">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-2xl font-black text-slate-900">{{ viewMode === 'cases' ? 'Todos los casos' : 'Todos los artículos' }}</h2>
-          <span class="text-xs font-bold text-slate-400">{{ viewMode === 'cases' ? casesGridRows.length : wikiGridRows.length }} resultados</span>
+      <!-- Vista de tabla -->
+      <div v-if="listDisplayMode === 'grid'" class="max-w-6xl mx-auto px-4 md:px-8 py-6 motion-page">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-black text-slate-800 tracking-tight">{{ viewMode === 'cases' ? 'Todos los casos' : 'Todos los artículos' }}</h2>
+            <p class="text-xs text-slate-500">{{ viewMode === 'cases' ? casesGridRows.length : wikiGridRows.length }} resultados</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 bg-slate-50/50 p-2 rounded-xl border border-slate-100 shadow-sm">
+            <template v-if="viewMode === 'cases'">
+              <div class="w-40">
+                <CustomSelect v-model="gridFilterEstado" size="sm" placeholder="Todos los estados" :options="[{ value: null, label: 'Todos los estados' }, { value: 'abierto', label: 'Abierto' }, { value: 'en_progreso', label: 'En progreso' }, { value: 'resuelto', label: 'Resuelto' }, { value: 'cerrado', label: 'Cerrado' }]" />
+              </div>
+              <div class="w-44">
+                <CustomSelect v-model="gridFilterPrioridad" size="sm" placeholder="Todas las prioridades" :options="[{ value: null, label: 'Todas las prioridades' }, { value: 'baja', label: 'Baja' }, { value: 'media', label: 'Media' }, { value: 'alta', label: 'Alta' }, { value: 'critica', label: 'Crítica' }]" />
+              </div>
+            </template>
+            <div v-else class="w-44">
+              <CustomSelect v-model="gridFilterCategoria" size="sm" placeholder="Todas las categorías" :options="[{ value: null, label: 'Todas las categorías' }, { value: 'proceso', label: 'Proceso' }, { value: 'codigo', label: 'Código' }, { value: 'manual', label: 'Manual' }, { value: 'otros', label: 'Otros' }]" />
+            </div>
+          </div>
         </div>
 
-        <template v-if="viewMode === 'cases'">
-          <div class="flex flex-wrap gap-2 mb-4">
-            <CustomSelect v-model="gridFilterEstado" size="sm" placeholder="Todos los estados" :options="[{ value: null, label: 'Todos los estados' }, { value: 'abierto', label: 'Abierto' }, { value: 'en_progreso', label: 'En progreso' }, { value: 'resuelto', label: 'Resuelto' }, { value: 'cerrado', label: 'Cerrado' }]" />
-            <CustomSelect v-model="gridFilterPrioridad" size="sm" placeholder="Todas las prioridades" :options="[{ value: null, label: 'Todas las prioridades' }, { value: 'baja', label: 'Baja' }, { value: 'media', label: 'Media' }, { value: 'alta', label: 'Alta' }, { value: 'critica', label: 'Crítica' }]" />
-          </div>
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
           <DataGridTable
+            v-if="viewMode === 'cases'"
             :columns="casesGridColumns"
             :items="casesGridRows"
             :row-key="(c: Case) => c._id!"
@@ -152,18 +189,14 @@
             <template #cell-estado="{ item }">
               <span class="inline-flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full" :class="getStatusDot(item.estado)"></span><span class="capitalize text-xs font-medium">{{ item.estado?.replace('_', ' ') }}</span></span>
             </template>
-            <template #cell-prioridad="{ item }"><span :class="getPriorityClass(item.prioridad)" class="px-2 py-0.5 rounded-md text-[10px] font-bold capitalize">{{ item.prioridad }}</span></template>
+            <template #cell-prioridad="{ item }"><span class="badge capitalize" :class="getPriorityClass(item.prioridad)">{{ item.prioridad }}</span></template>
             <template #cell-cliente="{ item }"><span class="text-xs text-slate-600">{{ getClientName(item.cliente_id) }}</span></template>
             <template #cell-updatedAt="{ item }"><span class="text-xs text-slate-400">{{ formatDateRelative(item.updatedAt) }}</span></template>
             <template #empty>No hay casos que coincidan con los filtros.</template>
           </DataGridTable>
-        </template>
 
-        <template v-else>
-          <div class="flex flex-wrap gap-2 mb-4">
-            <CustomSelect v-model="gridFilterCategoria" size="sm" placeholder="Todas las categorías" :options="[{ value: null, label: 'Todas las categorías' }, { value: 'proceso', label: 'Proceso' }, { value: 'codigo', label: 'Código' }, { value: 'manual', label: 'Manual' }, { value: 'otros', label: 'Otros' }]" />
-          </div>
           <DataGridTable
+            v-else
             :columns="wikiGridColumns"
             :items="wikiGridRows"
             :row-key="(w: WikiArticle) => w._id!"
@@ -173,97 +206,97 @@
             @row-click="selectWikiFromGrid"
           >
             <template #cell-titulo="{ item }"><span class="font-bold text-slate-800">{{ item.titulo }}</span></template>
-            <template #cell-categoria="{ item }"><span :class="getWikiCatClass(item.categoria)" class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase">{{ item.categoria }}</span></template>
+            <template #cell-categoria="{ item }"><span class="badge capitalize" :class="getWikiCatClass(item.categoria)">{{ item.categoria }}</span></template>
             <template #cell-vistas="{ item }"><span class="text-xs text-slate-500">{{ item.vistas || 0 }}</span></template>
             <template #cell-updatedAt="{ item }"><span class="text-xs text-slate-400">{{ formatDateRelative(item.updatedAt) }}</span></template>
             <template #empty>No hay artículos que coincidan con los filtros.</template>
           </DataGridTable>
-        </template>
+        </div>
       </div>
 
-      <!-- Cases Detail Mode -->
+      <!-- Detalle de caso -->
       <template v-else-if="viewMode === 'cases'">
-        <div v-if="selectedCase" class="max-w-4xl mx-auto px-6 md:px-12 py-10 animate-fade-in">
-          <!-- Page Cover -->
-          <div class="h-40 md:h-52 w-full rounded-2xl mb-8 overflow-hidden relative group no-print">
-            <div :class="getCoverGradient(selectedCase.prioridad)" class="absolute inset-0 opacity-80"></div>
-            <div class="absolute inset-0 flex items-center justify-center">
-              <i :class="getCaseIcon(selectedCase.tipo)" class="text-white/20 text-7xl md:text-9xl"></i>
+        <div v-if="selectedCase" class="max-w-4xl mx-auto px-4 md:px-8 py-6 motion-page">
+
+          <!-- Cabecera plana -->
+          <div class="flex flex-wrap items-start justify-between gap-3 mb-4 no-print">
+            <div class="flex items-start gap-3 min-w-[260px] flex-1">
+              <div class="w-10 h-10 rounded-xl bg-primary-50 border border-primary-100 text-primary-600 flex items-center justify-center shrink-0">
+                <i :class="getCaseIcon(selectedCase.tipo)" class="text-sm"></i>
+              </div>
+              <div class="min-w-0">
+                <h1 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight leading-tight">{{ selectedCase.titulo }}</h1>
+                <p class="text-xs text-slate-500 mt-0.5 capitalize">
+                  {{ selectedCase.tipo }}<template v-if="selectedCase.categoria"> · {{ selectedCase.categoria }}</template>
+                </p>
+              </div>
             </div>
-            <!-- Actions Overlay -->
-            <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all flex gap-2">
-              <button @click="exportToPDF" class="px-3 py-1.5 bg-white/90 hover:bg-white text-slate-900 rounded-lg text-[10px] font-bold shadow-sm backdrop-blur-md">
-                <i class="fas fa-file-pdf mr-1"></i> Exportar
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button type="button" @click="exportToPDF" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:border-slate-300 hover:text-slate-800 transition-colors">
+                <i class="fas fa-file-pdf text-[10px]"></i> Exportar
               </button>
-              <button @click="openEditCase" class="px-3 py-1.5 bg-white/90 hover:bg-white text-slate-900 rounded-lg text-[10px] font-bold shadow-sm backdrop-blur-md">Editar</button>
-              <button @click="deleteCurrentCase" class="px-3 py-1.5 bg-rose-500/90 hover:bg-rose-500 text-white rounded-lg text-[10px] font-bold shadow-sm backdrop-blur-md">Eliminar</button>
+              <button type="button" @click="openEditCase" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-bold text-primary-700 bg-primary-50 border border-primary-100 rounded-lg hover:bg-primary-100 transition-colors">
+                <i class="fas fa-pen text-[10px]"></i> Editar
+              </button>
+              <button type="button" @click="deleteCurrentCase" title="Eliminar caso" class="w-8 h-[30px] flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-lg transition-colors">
+                <i class="fas fa-trash-alt text-[11px]"></i>
+              </button>
             </div>
           </div>
 
-          <!-- Title & Emoji -->
-          <div class="mb-10 relative">
-            <div class="absolute -top-16 left-0 text-6xl drop-shadow-sm">📂</div>
-            <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight mb-4">
-              {{ selectedCase.titulo }}
-            </h1>
-            
-            <!-- Metadata Grid -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 border-y border-slate-100 py-6 no-print">
-              <div class="space-y-1">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estado</p>
-                <div class="flex items-center gap-2">
-                  <div class="w-2 h-2 rounded-full" :class="getStatusDot(selectedCase.estado)"></div>
-                  <span class="text-xs font-bold text-slate-700 capitalize">{{ selectedCase.estado?.replace('_', ' ') }}</span>
-                </div>
+          <!-- Metadatos -->
+          <div class="grid grid-cols-2 xl:grid-cols-4 bg-white border border-slate-200 rounded-2xl shadow-sm mb-4 no-print [&>*]:border-slate-100 [&>*:nth-child(even)]:border-l [&>*:nth-child(n+3)]:border-t xl:[&>*:not(:first-child)]:border-l xl:[&>*]:border-t-0">
+            <div class="px-4 py-3">
+              <p class="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-slate-400">Estado</p>
+              <div class="mt-1 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full" :class="getStatusDot(selectedCase.estado)"></span>
+                <span class="text-sm font-bold text-slate-800 capitalize">{{ selectedCase.estado?.replace('_', ' ') }}</span>
               </div>
-              <div class="space-y-1">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Prioridad</p>
-                <span :class="getPriorityClass(selectedCase.prioridad)" class="px-2 py-0.5 rounded-md text-[10px] font-bold inline-block">
-                  {{ selectedCase.prioridad }}
-                </span>
+            </div>
+            <div class="px-4 py-3">
+              <p class="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-slate-400">Prioridad</p>
+              <span class="badge capitalize mt-1.5" :class="getPriorityClass(selectedCase.prioridad)">{{ selectedCase.prioridad }}</span>
+            </div>
+            <div class="px-4 py-3">
+              <p class="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-slate-400">Cliente</p>
+              <div class="mt-1 flex items-center gap-1.5 min-w-0">
+                <span class="w-5 h-5 rounded-md bg-slate-100 flex items-center justify-center text-[9px] font-black text-slate-500 shrink-0">{{ getClientInitials(selectedCase.cliente_id) }}</span>
+                <span class="text-sm font-bold text-slate-800 truncate">{{ getClientName(selectedCase.cliente_id) }}</span>
               </div>
-              <div class="space-y-1">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cliente</p>
-                <div class="flex items-center gap-1.5">
-                  <div class="w-4 h-4 rounded bg-slate-100 flex items-center justify-center text-[8px] font-bold text-slate-500">
-                    {{ getClientInitials(selectedCase.cliente_id) }}
-                  </div>
-                  <span class="text-xs font-medium text-slate-700">{{ getClientName(selectedCase.cliente_id) }}</span>
-                </div>
-              </div>
-              <div class="space-y-1">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Actualizado</p>
-                <span class="text-xs font-medium text-slate-500">{{ formatDateRelative(selectedCase.updatedAt) }}</span>
-              </div>
+            </div>
+            <div class="px-4 py-3">
+              <p class="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-slate-400">Actualizado</p>
+              <p class="mt-1 text-sm font-bold text-slate-800">{{ formatDateRelative(selectedCase.updatedAt) }}</p>
             </div>
           </div>
 
-          <!-- Document Content Tabs -->
-          <div class="mb-8 flex gap-6 border-b border-slate-100 no-print">
-            <button 
-              v-for="tab in tabs" :key="tab.id" 
+          <!-- Pestañas del caso -->
+          <div class="mb-4 flex gap-1 overflow-x-auto border-b border-slate-200 no-print">
+            <button
+              v-for="tab in tabs" :key="tab.id"
+              type="button"
               @click="activeViewTab = tab.id"
-              :class="activeViewTab === tab.id ? 'text-slate-900 border-b-2 border-slate-900' : 'text-slate-400 hover:text-slate-600'"
-              class="pb-2 text-xs font-bold transition-all flex items-center gap-2"
+              :class="activeViewTab === tab.id ? 'text-primary-700 border-primary-500' : 'text-slate-500 border-transparent hover:text-slate-800'"
+              class="-mb-px px-3 py-2 text-xs font-bold border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap"
             >
               <i :class="tab.icon" class="text-[10px]"></i>
               {{ tab.label }}
-              <span v-if="tab.count" class="text-[9px] px-1.5 py-0.5 bg-slate-100 rounded-full">{{ tab.count }}</span>
+              <span v-if="tab.count" class="badge" :class="activeViewTab === tab.id ? 'badge-primary' : 'badge-slate'">{{ tab.count }}</span>
             </button>
           </div>
 
-          <!-- Tab Contents -->
+          <!-- Contenido de pestañas -->
           <div class="prose prose-slate max-w-none">
-            <!-- Wiki Section -->
+            <!-- Documentación -->
             <div v-if="activeViewTab === 'wiki'" class="animate-content-in">
-              <div v-if="isEditingWiki" class="space-y-4">
+              <div v-if="isEditingWiki" class="space-y-3">
                 <WikiEditor
                   v-model="selectedCase.wikiContent"
                   placeholder="Escribe la documentación del caso aquí..."
                 />
-                <div class="flex justify-end gap-3">
-                  <button @click="isEditingWiki = false" class="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 rounded-lg">Cancelar</button>
-                  <button @click="saveWiki" class="px-6 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg shadow-lg hover:bg-slate-800 transition-all">Guardar cambios</button>
+                <div class="flex justify-end gap-2">
+                  <button type="button" @click="isEditingWiki = false" class="px-4 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors">Cancelar</button>
+                  <button type="button" @click="saveWiki" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold rounded-lg shadow-sm transition-colors">Guardar cambios</button>
                 </div>
               </div>
               <div v-else class="group relative">
@@ -271,77 +304,85 @@
                   v-if="selectedCase.wikiContent"
                   :content="selectedCase.wikiContent"
                 />
-                <div v-else @click="isEditingWiki = true" class="py-12 border-2 border-dashed border-slate-100 rounded-3xl flex flex-col items-center justify-center text-slate-300 hover:border-primary-200 hover:text-primary-300 transition-all cursor-pointer">
-                  <i class="fas fa-feather-alt text-3xl mb-4"></i>
-                  <p class="text-sm font-bold uppercase tracking-widest">Documentar este caso</p>
-                </div>
-                <button title="Editar wiki" 
+                <button v-else type="button" @click="isEditingWiki = true" class="w-full empty-state border border-dashed border-slate-200 rounded-2xl hover:border-primary-300 hover:bg-primary-50/30 transition-colors">
+                  <div class="empty-state__icon"><i class="fas fa-feather-alt"></i></div>
+                  <p class="empty-state__title">Documentar este caso</p>
+                  <p class="empty-state__text">Escribe el contexto, los acuerdos y los pasos a seguir.</p>
+                </button>
+                <button
                   v-if="selectedCase.wikiContent"
-                  @click="isEditingWiki = true" 
-                  class="absolute top-0 right-0 opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-primary-600 transition-all"
+                  type="button"
+                  title="Editar documentación"
+                  @click="isEditingWiki = true"
+                  class="absolute top-0 right-0 opacity-0 group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-all"
                 >
-                  <i class="fas fa-edit"></i>
+                  <i class="fas fa-pen text-[11px]"></i>
                 </button>
               </div>
             </div>
 
-            <!-- Daily Logs -->
-            <div v-if="activeViewTab === 'dailies'" class="animate-content-in space-y-8">
+            <!-- Bitácora -->
+            <div v-if="activeViewTab === 'dailies'" class="animate-content-in space-y-4">
               <div class="flex items-center justify-between">
-                <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest m-0">Registro de Actividad</h3>
-                <button @click="showAddDailyLog = true" class="px-4 py-1.5 bg-slate-900 text-white text-[10px] font-bold rounded-lg shadow-md hover:shadow-lg transition-all">Nueva Entrada</button>
+                <h3 class="text-sm font-extrabold text-slate-800 m-0">Registro de actividad</h3>
+                <button type="button" @click="showAddDailyLog = true" class="inline-flex items-center gap-1.5 px-3 py-[7px] bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold rounded-lg shadow-sm transition-colors">
+                  <i class="fas fa-plus text-[10px]"></i> Nueva entrada
+                </button>
               </div>
-              <div class="space-y-6 relative pl-6 border-l border-slate-100">
-                <div v-for="log in sortedDailyLogs" :key="log._id" class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm relative group hover:shadow-md transition-all">
-                  <div class="absolute -left-[31px] top-6 w-2.5 h-2.5 bg-white rounded-full border-2 border-slate-200 group-hover:border-primary-500 transition-colors"></div>
-                  <div class="flex items-center justify-between mb-3">
-                    <div class="flex items-center gap-3">
-                      <span class="text-lg">{{ log.sentimiento }}</span>
-                      <span class="text-[10px] font-bold text-slate-400">{{ formatDateRelative(log.fecha) }}</span>
-                    </div>
+              <div v-if="!sortedDailyLogs.length" class="empty-state empty-state--sm border border-dashed border-slate-200 rounded-2xl">
+                <div class="empty-state__icon"><i class="fas fa-history"></i></div>
+                <p class="empty-state__title">Sin entradas todavía</p>
+                <p class="empty-state__text">Registra qué se hizo hoy en este caso.</p>
+              </div>
+              <div v-else class="space-y-3 relative pl-5 border-l border-slate-200">
+                <div v-for="log in sortedDailyLogs" :key="log._id" class="bg-white px-4 py-3 rounded-xl border border-slate-200 relative group">
+                  <div class="absolute -left-[25px] top-4 w-2.5 h-2.5 bg-white rounded-full border-2 border-slate-300 group-hover:border-primary-500 transition-colors"></div>
+                  <div class="flex items-center gap-2 mb-1.5">
+                    <span class="text-base leading-none">{{ log.sentimiento }}</span>
+                    <span class="text-[11px] font-semibold text-slate-400">{{ formatDateRelative(log.fecha) }}</span>
                   </div>
-                  <p class="text-sm text-slate-700 font-medium m-0 leading-relaxed">{{ log.que_se_hizo }}</p>
+                  <p class="text-sm text-slate-700 m-0 leading-relaxed">{{ log.que_se_hizo }}</p>
                 </div>
               </div>
             </div>
 
-            <!-- Files -->
-            <div v-if="activeViewTab === 'files'" class="animate-content-in space-y-6">
-               <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest m-0">Documentos Adjuntos</h3>
-               <FileDropzone label="Subir archivos al caso" @files-selected="uploadFilesToCase" />
-               <div v-if="selectedCase.archivos?.length" class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <div v-for="(file, idx) in selectedCase.archivos" :key="idx" class="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-3 hover:bg-white hover:shadow-md transition-all cursor-pointer group">
-                    <div class="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center group-hover:border-primary-200">
-                      <i :class="getFileIcon(file.nombre)" class="text-lg text-slate-400 group-hover:text-primary-500"></i>
-                    </div>
-                    <div class="min-w-0 flex-1">
-                      <p class="text-xs font-bold text-slate-800 truncate m-0">{{ file.nombre }}</p>
-                      <a :href="file.url" target="_blank" download class="text-[9px] text-slate-400 font-medium m-0 no-underline hover:text-primary-600 uppercase tracking-tighter">Descargar</a>
-                    </div>
+            <!-- Adjuntos -->
+            <div v-if="activeViewTab === 'files'" class="animate-content-in space-y-5">
+              <h3 class="text-sm font-extrabold text-slate-800 m-0">Documentos adjuntos</h3>
+              <FileDropzone label="Subir archivos al caso" @files-selected="uploadFilesToCase" />
+              <div v-if="selectedCase.archivos?.length" class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div v-for="(file, idx) in selectedCase.archivos" :key="idx" class="bg-white px-3 py-2.5 rounded-xl border border-slate-200 flex items-center gap-3 hover:border-primary-200 transition-colors group">
+                  <div class="w-9 h-9 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
+                    <i :class="getFileIcon(file.nombre)" class="text-base text-slate-400 group-hover:text-primary-500"></i>
                   </div>
-               </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-xs font-bold text-slate-800 truncate m-0" :title="file.nombre">{{ file.nombre }}</p>
+                    <a :href="file.url" target="_blank" download class="text-[11px] text-primary-600 font-semibold m-0 no-underline hover:underline">Descargar</a>
+                  </div>
+                </div>
+              </div>
 
-               <!-- Enlaces externos -->
-               <div class="pt-4 border-t border-slate-100 space-y-3">
-                 <h4 class="text-[11px] font-black text-slate-400 uppercase tracking-widest m-0">Enlaces externos</h4>
-                 <div class="flex gap-2">
-                   <input v-model="newLinkName" placeholder="Nombre (ej: Manual en Drive)" class="flex-1 px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs font-medium outline-none focus:bg-white" />
-                   <input v-model="newLinkUrl" placeholder="https://..." class="flex-1 px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs font-medium outline-none focus:bg-white" />
-                   <button @click="addLinkToCase" :disabled="!newLinkName || !newLinkUrl" class="px-4 py-2 bg-slate-900 text-white text-[10px] font-bold rounded-xl disabled:opacity-30 disabled:cursor-not-allowed">Agregar</button>
-                 </div>
-                 <div v-if="selectedCase.enlacesExternos?.length" class="space-y-2">
-                   <div v-for="link in selectedCase.enlacesExternos" :key="link._id" class="flex items-center justify-between bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-100">
-                     <a :href="link.url" target="_blank" class="text-xs font-bold text-primary-600 hover:underline truncate mr-2"><i class="fas fa-external-link-alt mr-1.5 text-[10px]"></i>{{ link.nombre }}</a>
-                     <button title="Quitar enlace del caso" @click="removeLinkFromCase(link._id!)" class="text-slate-300 hover:text-rose-500 transition-colors flex-shrink-0"><i class="fas fa-times-circle text-xs"></i></button>
-                   </div>
-                 </div>
-               </div>
+              <!-- Enlaces externos -->
+              <div class="pt-4 border-t border-slate-100 space-y-3">
+                <h4 class="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-slate-400 m-0">Enlaces externos</h4>
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <input v-model="newLinkName" placeholder="Nombre (ej: Manual en Drive)" class="flex-1 h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors" />
+                  <input v-model="newLinkUrl" placeholder="https://..." class="flex-1 h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors" />
+                  <button type="button" @click="addLinkToCase" :disabled="!newLinkName || !newLinkUrl" class="h-9 px-4 bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold rounded-lg shadow-sm disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Agregar</button>
+                </div>
+                <div v-if="selectedCase.enlacesExternos?.length" class="space-y-1.5">
+                  <div v-for="link in selectedCase.enlacesExternos" :key="link._id" class="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-slate-200">
+                    <a :href="link.url" target="_blank" class="text-xs font-bold text-primary-600 hover:underline truncate mr-2 no-underline"><i class="fas fa-external-link-alt mr-1.5 text-[10px]"></i>{{ link.nombre }}</a>
+                    <button type="button" title="Quitar enlace del caso" @click="removeLinkFromCase(link._id!)" class="text-slate-300 hover:text-rose-500 transition-colors shrink-0"><i class="fas fa-times-circle text-xs"></i></button>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <!-- Linked Items Section (tickets + tareas + actividades) -->
-            <div v-if="activeViewTab === 'links'" class="animate-content-in space-y-8">
+            <!-- Vinculados -->
+            <div v-if="activeViewTab === 'links'" class="animate-content-in space-y-6">
               <div>
-                <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fas fa-ticket-alt text-slate-300"></i>Tickets</h3>
+                <h3 class="text-sm font-extrabold text-slate-800 mb-2 flex items-center gap-2 m-0"><i class="fas fa-ticket-alt text-slate-400 text-xs"></i>Tickets</h3>
                 <LinkedItemsSelector
                   :model-value="linkedTicketIds"
                   :items="ticketLinkItems"
@@ -353,7 +394,7 @@
                 />
               </div>
               <div>
-                <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fas fa-calendar-check text-slate-300"></i>Actividades</h3>
+                <h3 class="text-sm font-extrabold text-slate-800 mb-2 flex items-center gap-2 m-0"><i class="fas fa-calendar-check text-slate-400 text-xs"></i>Actividades</h3>
                 <LinkedItemsSelector
                   :model-value="linkedActivityIds"
                   :items="activityLinkItems"
@@ -379,143 +420,149 @@
           </div>
         </div>
 
-        <!-- Empty State Cases -->
-        <div v-else class="h-full flex flex-col items-center justify-center p-12 text-center opacity-40">
-          <div class="w-32 h-32 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-200 mb-8 border border-slate-100">
-            <i class="fas fa-folder-open text-5xl"></i>
+        <!-- Sin caso seleccionado -->
+        <div v-else class="h-full flex items-center justify-center p-8">
+          <div class="empty-state max-w-sm">
+            <div class="empty-state__icon"><i class="fas fa-folder-open"></i></div>
+            <p class="empty-state__title">Selecciona un caso</p>
+            <p class="empty-state__text">Elige uno en el panel lateral para ver su documentación, bitácora y adjuntos.</p>
+            <button type="button" @click="openCreateModal" class="mt-3 inline-flex items-center gap-1.5 px-3 py-[7px] bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold rounded-lg shadow-sm transition-colors">
+              <i class="fas fa-plus text-[10px]"></i> Nuevo caso
+            </button>
           </div>
-          <h3 class="text-xl font-black text-slate-900 mb-2">Selecciona un Proyecto</h3>
-          <p class="text-sm text-slate-500 max-w-sm">Explora la lista lateral para ver el progreso y la documentación de cada caso operativo.</p>
         </div>
       </template>
 
-      <!-- Wiki Detail Mode -->
+      <!-- Detalle de wiki -->
       <template v-else>
-        <div v-if="selectedWiki" class="max-w-4xl mx-auto px-6 md:px-12 py-10 animate-fade-in no-print">
-          
-          <!-- Page Header (Minimalist Notion Style) -->
-          <div class="group relative mb-12">
-            <!-- Icon/Emoji Placeholder -->
-            <div class="text-6xl mb-6 select-none cursor-default">📖</div>
-            
-            <template v-if="isEditingWikiItem">
-              <input 
-                v-model="selectedWiki.titulo" 
-                class="w-full text-4xl font-black text-slate-900 border-none outline-none focus:ring-0 placeholder-slate-200 bg-transparent mb-4" 
-                placeholder="Sin título"
-              />
-              <textarea 
-                v-model="selectedWiki.descripcion" 
-                rows="2" 
-                class="w-full text-lg text-slate-400 border-none outline-none focus:ring-0 placeholder-slate-200 bg-transparent resize-none font-medium mb-8" 
-                placeholder="Añade una descripción..."
-              ></textarea>
-            </template>
-            <template v-else>
-              <h1 class="text-4xl font-black text-slate-900 tracking-tight leading-tight mb-4">{{ selectedWiki.titulo || 'Sin título' }}</h1>
-              <p class="text-lg text-slate-400 font-medium leading-relaxed">{{ selectedWiki.descripcion || 'Sin descripción' }}</p>
-            </template>
+        <div v-if="selectedWiki" class="max-w-4xl mx-auto px-4 md:px-8 py-6 motion-page no-print">
 
-            <!-- Metadata Grid Wiki (Clean) -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 py-8 border-y border-slate-100 my-8">
-              <div class="space-y-1">
-                <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Categoría</p>
-                <div v-if="isEditingWikiItem">
-                  <CustomSelect v-model="selectedWiki.categoria" size="sm" :options="[{ value: 'proceso', label: 'Proceso' }, { value: 'codigo', label: 'Código' }, { value: 'manual', label: 'Manual' }]" />
-                </div>
-                <span v-else :class="getWikiCatClass(selectedWiki.categoria)" class="px-2 py-0.5 rounded-md text-[10px] font-bold inline-block uppercase">
-                  {{ selectedWiki.categoria }}
-                </span>
+          <!-- Cabecera -->
+          <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+            <div class="flex items-start gap-3 min-w-[260px] flex-1">
+              <div class="w-10 h-10 rounded-xl bg-primary-50 border border-primary-100 text-primary-600 flex items-center justify-center shrink-0">
+                <i :class="getWikiIcon(selectedWiki.categoria)" class="text-sm"></i>
               </div>
-              <div class="space-y-1">
-                <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Lectura</p>
-                <div class="flex items-center gap-1.5 text-slate-500 font-bold text-xs">
-                  <i class="fas fa-eye text-slate-200"></i>
-                  {{ selectedWiki.vistas || 0 }} vistas
-                </div>
+              <div class="min-w-0 flex-1">
+                <template v-if="isEditingWikiItem">
+                  <input
+                    v-model="selectedWiki.titulo"
+                    class="w-full text-xl md:text-2xl font-black text-slate-800 tracking-tight bg-white border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder-slate-300"
+                    placeholder="Sin título"
+                  />
+                  <textarea
+                    v-model="selectedWiki.descripcion"
+                    rows="2"
+                    class="w-full mt-2 text-sm text-slate-600 bg-white border border-slate-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder-slate-300"
+                    placeholder="Añade una descripción..."
+                  ></textarea>
+                </template>
+                <template v-else>
+                  <h1 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight leading-tight">{{ selectedWiki.titulo || 'Sin título' }}</h1>
+                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">{{ selectedWiki.descripcion || 'Sin descripción' }}</p>
+                </template>
               </div>
-              <div class="space-y-1 text-right">
-                <div class="flex gap-2 justify-end">
-                  <button v-if="!isEditingWikiItem" @click="isEditingWikiItem = true" class="px-4 py-1.5 bg-slate-900 text-white rounded-lg text-[10px] font-bold hover:bg-slate-800 transition-all flex items-center gap-2">
-                    <i class="fas fa-edit"></i>
-                    Editar
-                  </button>
-                  <button v-if="!isEditingWikiItem" @click="exportToPDF" class="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 transition-all" title="Exportar PDF"><i class="fas fa-file-pdf"></i></button>
-                  <button v-if="!isEditingWikiItem" @click="deleteWikiItem" class="p-1.5 hover:bg-rose-50 text-rose-300 rounded-lg transition-all" title="Eliminar"><i class="fas fa-trash"></i></button>
-                </div>
-              </div>
+            </div>
+            <div v-if="!isEditingWikiItem" class="flex items-center gap-1.5 shrink-0">
+              <button type="button" @click="exportToPDF" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:border-slate-300 hover:text-slate-800 transition-colors">
+                <i class="fas fa-file-pdf text-[10px]"></i> Exportar
+              </button>
+              <button type="button" @click="isEditingWikiItem = true" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-bold text-primary-700 bg-primary-50 border border-primary-100 rounded-lg hover:bg-primary-100 transition-colors">
+                <i class="fas fa-pen text-[10px]"></i> Editar
+              </button>
+              <button type="button" @click="deleteWikiItem" title="Eliminar artículo" class="w-8 h-[30px] flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-lg transition-colors">
+                <i class="fas fa-trash-alt text-[11px]"></i>
+              </button>
             </div>
           </div>
 
-          <!-- Content Section -->
-          <div class="prose prose-slate max-w-none min-h-[400px]">
+          <!-- Metadatos -->
+          <div class="grid grid-cols-2 xl:grid-cols-3 bg-white border border-slate-200 rounded-2xl shadow-sm mb-5 [&>*]:border-slate-100 [&>*:nth-child(even)]:border-l [&>*:nth-child(n+3)]:border-t xl:[&>*:not(:first-child)]:border-l xl:[&>*]:border-t-0">
+            <div class="px-4 py-3">
+              <p class="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-slate-400">Categoría</p>
+              <div v-if="isEditingWikiItem" class="mt-1.5">
+                <CustomSelect v-model="selectedWiki.categoria" size="sm" :options="[{ value: 'proceso', label: 'Proceso' }, { value: 'codigo', label: 'Código' }, { value: 'manual', label: 'Manual' }]" />
+              </div>
+              <span v-else class="badge capitalize mt-1.5" :class="getWikiCatClass(selectedWiki.categoria)">{{ selectedWiki.categoria }}</span>
+            </div>
+            <div class="px-4 py-3">
+              <p class="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-slate-400">Lectura</p>
+              <p class="mt-1 text-sm font-bold text-slate-800 flex items-center gap-1.5"><i class="fas fa-eye text-slate-300 text-xs"></i>{{ selectedWiki.vistas || 0 }} vistas</p>
+            </div>
+            <div class="px-4 py-3 col-span-2 md:col-span-1">
+              <p class="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-slate-400">Actualizado</p>
+              <p class="mt-1 text-sm font-bold text-slate-800">{{ formatDateRelative(selectedWiki.updatedAt) || '—' }}</p>
+            </div>
+          </div>
+
+          <!-- Contenido -->
+          <div class="prose prose-slate max-w-none min-h-[320px]">
             <template v-if="isEditingWikiItem">
-              <div class="space-y-4">
+              <div class="space-y-3">
                 <WikiEditor
                   v-model="selectedWiki.contenido"
                   placeholder="Comienza a escribir tu documentación..."
                 />
-                <div class="flex justify-end gap-3 pt-2">
-                  <label class="mr-auto cursor-pointer px-4 py-2 bg-slate-100 text-slate-500 text-[10px] font-bold rounded-lg hover:bg-slate-200 transition-all flex items-center gap-2">
-                    <i class="fas fa-paperclip"></i>
+                <div class="flex flex-wrap items-center justify-end gap-2 pt-1">
+                  <label class="mr-auto cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg hover:bg-slate-50 transition-colors">
+                    <i class="fas fa-paperclip text-[10px]"></i>
                     Adjuntar archivos
                     <input type="file" multiple class="hidden" @change="(e: any) => selectedWiki!.archivos = [...(selectedWiki!.archivos || []), ...Array.from(e.target.files)]">
                   </label>
-                  <button @click="isEditingWikiItem = false" class="px-4 py-2 text-xs font-bold text-slate-400 hover:text-slate-900">Cancelar</button>
-                  <button @click="handleUpdateWiki" class="px-6 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl shadow-lg hover:bg-slate-800 transition-all">Guardar página</button>
+                  <button type="button" @click="isEditingWikiItem = false" class="px-4 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors">Cancelar</button>
+                  <button type="button" @click="handleUpdateWiki" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold rounded-lg shadow-sm transition-colors">Guardar página</button>
                 </div>
               </div>
             </template>
             <template v-else>
               <div v-if="selectedWiki.categoria === 'codigo' && !isHtmlContent(selectedWiki.contenido)" class="relative">
-                <div class="bg-[#F8F9FA] rounded-2xl p-8 border border-slate-100 overflow-x-auto">
-                  <pre class="font-mono text-xs leading-relaxed text-slate-700 m-0">{{ selectedWiki.contenido }}</pre>
+                <div class="bg-slate-50 rounded-2xl p-5 border border-slate-200 overflow-x-auto">
+                  <pre class="font-mono text-xs leading-relaxed text-slate-700 m-0 bg-transparent p-0">{{ selectedWiki.contenido }}</pre>
                 </div>
               </div>
               <WikiContent v-else :content="selectedWiki.contenido" />
-              
-              <!-- Attached Files Section -->
-              <div v-if="selectedWiki.archivos && selectedWiki.archivos.length > 0" class="mt-12 pt-8 border-t border-slate-100">
-                <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-4">Archivos Adjuntos</p>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <a v-for="(file, idx) in selectedWiki.archivos" :key="idx" 
-                     :href="file.url" 
-                     target="_blank" 
+
+              <!-- Archivos adjuntos -->
+              <div v-if="selectedWiki.archivos && selectedWiki.archivos.length > 0" class="mt-8 pt-6 border-t border-slate-100">
+                <h4 class="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-slate-400 m-0 mb-3">Archivos adjuntos</h4>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <a v-for="(file, idx) in selectedWiki.archivos" :key="idx"
+                     :href="file.url"
+                     target="_blank"
                      download
-                     class="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-3 hover:bg-white hover:shadow-md transition-all cursor-pointer no-underline group"
+                     class="bg-white px-3 py-2.5 rounded-xl border border-slate-200 flex items-center gap-3 hover:border-primary-200 transition-colors no-underline group"
                   >
-                    <div class="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center group-hover:border-primary-200">
-                      <i :class="getFileIcon(file.nombre)" class="text-lg text-slate-400 group-hover:text-primary-500"></i>
+                    <div class="w-9 h-9 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
+                      <i :class="getFileIcon(file.nombre)" class="text-base text-slate-400 group-hover:text-primary-500"></i>
                     </div>
                     <div class="min-w-0 flex-1">
-                      <p class="text-xs font-bold text-slate-800 truncate m-0">{{ file.nombre }}</p>
-                      <p class="text-[9px] text-slate-400 font-medium m-0 uppercase tracking-tighter">Descargar</p>
+                      <p class="text-xs font-bold text-slate-800 truncate m-0" :title="file.nombre">{{ file.nombre }}</p>
+                      <p class="text-[11px] text-primary-600 font-semibold m-0">Descargar</p>
                     </div>
                   </a>
                 </div>
               </div>
 
-              <!-- Wiki: Enlaces externos + Adjuntos rápidos -->
-              <div v-if="!isEditingWikiItem" class="mt-12 pt-8 border-t border-slate-100 space-y-3">
-                <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-2">Enlaces externos</p>
-                <div class="flex gap-2">
-                  <input v-model="newLinkName" placeholder="Nombre (ej: Manual en Drive)" class="flex-1 px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs font-medium outline-none focus:bg-white" />
-                  <input v-model="newLinkUrl" placeholder="https://..." class="flex-1 px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs font-medium outline-none focus:bg-white" />
-                  <button @click="addLinkToWiki" :disabled="!newLinkName || !newLinkUrl" class="px-4 py-2 bg-slate-900 text-white text-[10px] font-bold rounded-xl disabled:opacity-30 disabled:cursor-not-allowed">Agregar</button>
+              <!-- Enlaces externos -->
+              <div v-if="!isEditingWikiItem" class="mt-8 pt-6 border-t border-slate-100 space-y-3">
+                <h4 class="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-slate-400 m-0">Enlaces externos</h4>
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <input v-model="newLinkName" placeholder="Nombre (ej: Manual en Drive)" class="flex-1 h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors" />
+                  <input v-model="newLinkUrl" placeholder="https://..." class="flex-1 h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors" />
+                  <button type="button" @click="addLinkToWiki" :disabled="!newLinkName || !newLinkUrl" class="h-9 px-4 bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold rounded-lg shadow-sm disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Agregar</button>
                 </div>
-                <div v-if="selectedWiki.enlacesExternos?.length" class="space-y-2">
-                  <div v-for="link in selectedWiki.enlacesExternos" :key="link._id" class="flex items-center justify-between bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-100">
-                    <a :href="link.url" target="_blank" class="text-xs font-bold text-primary-600 hover:underline truncate mr-2"><i class="fas fa-external-link-alt mr-1.5 text-[10px]"></i>{{ link.nombre }}</a>
-                    <button title="Quitar enlace de la wiki" @click="removeLinkFromWiki(link._id!)" class="text-slate-300 hover:text-rose-500 transition-colors flex-shrink-0"><i class="fas fa-times-circle text-xs"></i></button>
+                <div v-if="selectedWiki.enlacesExternos?.length" class="space-y-1.5">
+                  <div v-for="link in selectedWiki.enlacesExternos" :key="link._id" class="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-slate-200">
+                    <a :href="link.url" target="_blank" class="text-xs font-bold text-primary-600 hover:underline truncate mr-2 no-underline"><i class="fas fa-external-link-alt mr-1.5 text-[10px]"></i>{{ link.nombre }}</a>
+                    <button type="button" title="Quitar enlace de la wiki" @click="removeLinkFromWiki(link._id!)" class="text-slate-300 hover:text-rose-500 transition-colors shrink-0"><i class="fas fa-times-circle text-xs"></i></button>
                   </div>
                 </div>
               </div>
 
-              <!-- Wiki: Vinculados (tickets + tareas + actividades) -->
-              <div v-if="!isEditingWikiItem" class="mt-12 pt-8 border-t border-slate-100 space-y-8">
-                <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Vinculados</p>
+              <!-- Vinculados -->
+              <div v-if="!isEditingWikiItem" class="mt-8 pt-6 border-t border-slate-100 space-y-6">
                 <div>
-                  <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fas fa-ticket-alt text-slate-300"></i>Tickets</h3>
+                  <h3 class="text-sm font-extrabold text-slate-800 mb-2 flex items-center gap-2 m-0"><i class="fas fa-ticket-alt text-slate-400 text-xs"></i>Tickets</h3>
                   <LinkedItemsSelector
                     :model-value="linkedTicketIds"
                     :items="ticketLinkItems"
@@ -527,7 +574,7 @@
                   />
                 </div>
                 <div>
-                  <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fas fa-calendar-check text-slate-300"></i>Actividades</h3>
+                  <h3 class="text-sm font-extrabold text-slate-800 mb-2 flex items-center gap-2 m-0"><i class="fas fa-calendar-check text-slate-400 text-xs"></i>Actividades</h3>
                   <LinkedItemsSelector
                     :model-value="linkedActivityIds"
                     :items="activityLinkItems"
@@ -540,13 +587,13 @@
                 </div>
               </div>
 
-              <!-- Wiki: Hoja de cálculo (sección plegable, no se monta hasta abrirla) -->
-              <div v-if="!isEditingWikiItem" class="mt-12 pt-8 border-t border-slate-100">
-                <button @click="showWikiSpreadsheet = !showWikiSpreadsheet" class="flex items-center gap-2 text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-slate-500 transition-colors">
-                  <i class="fas fa-table"></i> Hoja de cálculo
-                  <i :class="showWikiSpreadsheet ? 'fa-chevron-up' : 'fa-chevron-down'" class="fas text-[8px]"></i>
+              <!-- Hoja de cálculo (plegable) -->
+              <div v-if="!isEditingWikiItem" class="mt-8 pt-6 border-t border-slate-100">
+                <button type="button" @click="showWikiSpreadsheet = !showWikiSpreadsheet" class="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-primary-700 transition-colors">
+                  <i class="fas fa-table text-[10px]"></i> Hoja de cálculo
+                  <i :class="showWikiSpreadsheet ? 'fa-chevron-up' : 'fa-chevron-down'" class="fas text-[8px] text-slate-400"></i>
                 </button>
-                <div v-if="showWikiSpreadsheet" class="mt-4">
+                <div v-if="showWikiSpreadsheet" class="mt-3">
                   <EmbeddedSpreadsheet
                     v-if="selectedWiki._id"
                     :key="selectedWiki._id"
@@ -557,195 +604,230 @@
                 </div>
               </div>
 
-              <!-- Placeholder for empty content -->
-              <div v-if="!selectedWiki.contenido" @click="isEditingWikiItem = true" class="py-20 border-2 border-dashed border-slate-50 rounded-3xl flex flex-col items-center justify-center text-slate-200 hover:border-slate-100 hover:text-slate-300 transition-all cursor-pointer">
-                <p class="text-xs font-bold uppercase tracking-widest">Esta página está vacía. Pulsa para editar.</p>
-              </div>
+              <!-- Página vacía -->
+              <button v-if="!selectedWiki.contenido" type="button" @click="isEditingWikiItem = true" class="w-full mt-4 empty-state empty-state--sm border border-dashed border-slate-200 rounded-2xl hover:border-primary-300 hover:bg-primary-50/30 transition-colors">
+                <div class="empty-state__icon"><i class="fas fa-feather-alt"></i></div>
+                <p class="empty-state__title">Esta página está vacía</p>
+                <p class="empty-state__text">Pulsa para empezar a escribir.</p>
+              </button>
             </template>
-
           </div>
         </div>
 
-        <!-- Empty State Wiki -->
-        <div v-else class="h-full flex flex-col items-center justify-center p-12 text-center opacity-40">
-          <div class="w-32 h-32 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-200 mb-8 border border-slate-100">
-            <i class="fas fa-brain text-5xl"></i>
+        <!-- Sin artículo seleccionado -->
+        <div v-else class="h-full flex items-center justify-center p-8">
+          <div class="empty-state max-w-sm">
+            <div class="empty-state__icon"><i class="fas fa-book"></i></div>
+            <p class="empty-state__title">Base de conocimiento</p>
+            <p class="empty-state__text">Documenta procesos, fragmentos de código y manuales para estandarizar la operación del equipo.</p>
+            <button type="button" @click="openCreateWiki" class="mt-3 inline-flex items-center gap-1.5 px-3 py-[7px] bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold rounded-lg shadow-sm transition-colors">
+              <i class="fas fa-plus text-[10px]"></i> Nuevo artículo
+            </button>
           </div>
-          <h3 class="text-xl font-black text-slate-900 mb-2">Base de Conocimiento</h3>
-          <p class="text-sm text-slate-500 max-w-sm">Documenta procesos, snippets de código y manuales para estandarizar la operación del equipo.</p>
-          <button @click="openCreateWiki" class="mt-8 px-6 py-2.5 bg-slate-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-primary-600 transition-all shadow-lg">Empezar a Documentar</button>
         </div>
       </template>
 
     </main>
 
-    <!-- Notion-Style Modals -->
-    <div v-if="showCreateModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in">
-       <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]" @click="showCreateModal = false"></div>
-       <div class="relative bg-white w-full max-w-2xl rounded-[1.5rem] shadow-2xl p-0 animate-scale-up border border-slate-200 overflow-hidden">
-          
-          <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-[#FBFBFA]">
-            <div>
-              <h3 class="text-lg font-bold text-slate-900 leading-none mb-1">
-                {{ modalMode === 'create' ? (viewMode === 'cases' ? 'Nuevo Proyecto' : 'Nuevo Artículo') : (viewMode === 'cases' ? 'Editar Proyecto' : 'Editar Artículo') }}
-              </h3>
-              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                {{ modalMode === 'create' ? 'Crear nueva página en' : 'Actualizar página en' }} {{ viewMode }}
+    <!-- Modal crear / editar (caso o artículo) -->
+    <div
+      v-if="showCreateModal"
+      class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in duration-300"
+      @click="showCreateModal = false"
+    >
+      <div
+        class="bg-white rounded-3xl shadow-2xl border border-slate-200/60 w-full max-w-2xl max-h-[95vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300"
+        @click.stop
+      >
+        <div class="flex items-center justify-between gap-4 px-5 py-3 border-b border-slate-100 bg-slate-50/30 shrink-0">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 bg-primary-50 rounded-xl flex items-center justify-center border border-primary-100 shrink-0">
+              <i :class="viewMode === 'cases' ? 'fas fa-folder-plus' : 'fas fa-book'" class="text-primary-500 text-sm"></i>
+            </div>
+            <div class="min-w-0">
+              <h2 class="text-lg font-black text-slate-800 tracking-tight leading-tight">
+                {{ modalMode === 'create' ? (viewMode === 'cases' ? 'Nuevo caso' : 'Nuevo artículo') : (viewMode === 'cases' ? 'Editar caso' : 'Editar artículo') }}
+              </h2>
+              <p class="text-[11px] text-slate-400 truncate">
+                {{ viewMode === 'cases' ? 'Seguimiento, incidencia o documento de un cliente.' : 'Proceso, fragmento de código o manual para el equipo.' }}
               </p>
             </div>
-            <button title="Cerrar" @click="showCreateModal = false" class="w-8 h-8 hover:bg-slate-200 rounded-lg flex items-center justify-center text-slate-400 transition-colors"><i class="fas fa-times"></i></button>
           </div>
-          
-          <div class="p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
-             <template v-if="viewMode === 'cases'">
-                <div class="space-y-4">
-                  <div class="space-y-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Título de la Página</label>
-                    <input v-model="newCase.titulo" placeholder="Ej: Implementación API v2" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:bg-white focus:ring-2 focus:ring-primary-500/10 transition-all">
-                  </div>
-                  
-                  <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1">
-                      <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Cliente</label>
-                      <CustomSelect v-model="newCase.cliente_id" size="dense" searchable placeholder="Seleccionar cliente..." :options="newCaseClientOptions" />
-                    </div>
-                    <div class="space-y-1">
-                      <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Categoría</label>
-                      <input v-model="newCase.categoria" placeholder="Ej: Backend, Legal..." class="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none">
-                    </div>
-                  </div>
+          <button type="button" title="Cerrar" @click="showCreateModal = false" class="w-9 h-9 shrink-0 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all border border-transparent hover:border-rose-100">
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
 
-                  <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1">
-                      <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Prioridad</label>
-                      <div class="flex gap-1 p-1 bg-slate-50 rounded-xl">
-                        <button v-for="p in ['baja', 'media', 'alta', 'critica']" :key="p" @click="newCase.prioridad = p" :class="newCase.prioridad === p ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'" class="flex-1 py-2 text-[8px] font-black uppercase rounded-lg transition-all">{{ p }}</button>
-                      </div>
-                    </div>
-                    <div class="space-y-1">
-                      <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Tipo</label>
-                      <div class="flex gap-1 p-1 bg-slate-50 rounded-xl">
-                        <button v-for="t in ['seguimiento', 'incidencia', 'documento']" :key="t" @click="newCase.tipo = t" :class="newCase.tipo === t ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'" class="flex-1 py-2 text-[8px] font-black uppercase rounded-lg transition-all">{{ t }}</button>
-                      </div>
-                    </div>
-                  </div>
+        <div class="px-5 py-4 overflow-y-auto custom-scrollbar">
+          <template v-if="viewMode === 'cases'">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Título *</label>
+                <input v-model="newCase.titulo" placeholder="Ej: Implementación API v2" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors text-sm">
+              </div>
 
-                  <div class="space-y-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Descripción Breve</label>
-                    <textarea v-model="newCase.descripcion" rows="3" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium outline-none focus:bg-white"></textarea>
-                  </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Cliente</label>
+                  <CustomSelect v-model="newCase.cliente_id" size="md" searchable placeholder="Seleccionar cliente" :options="newCaseClientOptions" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Categoría</label>
+                  <input v-model="newCase.categoria" placeholder="Ej: Backend, Legal" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors text-sm">
+                </div>
+              </div>
 
-                  <div class="space-y-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Adjuntos (Opcional)</label>
-                    <FileDropzone
-                      :label="newCase.archivos?.length ? `${newCase.archivos.length} seleccionados` : 'Subir archivos'"
-                      @files-selected="(files) => newCase.archivos = [...(newCase.archivos || []), ...files]"
-                    />
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Prioridad</label>
+                  <div class="seg w-full">
+                    <button v-for="p in ['baja', 'media', 'alta', 'critica']" :key="p" type="button" @click="newCase.prioridad = p" :aria-pressed="newCase.prioridad === p" class="flex-1 capitalize !px-1">{{ p }}</button>
                   </div>
                 </div>
-             </template>
-
-             <template v-else>
-                <div class="space-y-4">
-                  <div class="space-y-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Título (síntoma exacto o pregunta del usuario)</label>
-                    <input v-model="newWiki.titulo" placeholder="Ej: 'No puedo iniciar sesión - error 401'" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:bg-white">
-                  </div>
-
-                  <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1">
-                      <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Categoría</label>
-                      <CustomSelect :model-value="newWiki.categoria ?? ''" @update:model-value="newWiki.categoria = $event" size="dense" :options="[{ value: 'proceso', label: 'Proceso Estándar' }, { value: 'codigo', label: 'Snippet de Código' }, { value: 'manual', label: 'Manual de Usuario' }]" />
-                    </div>
-                    <div class="space-y-1">
-                      <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Tags (palabras clave para búsqueda)</label>
-                      <input v-model="wikiTagsRaw" placeholder="login, 401, credenciales, autenticacion" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none">
-                    </div>
-                  </div>
-
-                  <!-- Warning de duplicados -->
-                  <div v-if="wikiDuplicates.length > 0" class="rounded-xl border-2 border-amber-200 bg-amber-50 p-3 animate-fade-in">
-                    <div class="flex items-start gap-2 mb-2">
-                      <i class="fas fa-triangle-exclamation text-amber-600 mt-0.5"></i>
-                      <div class="flex-1">
-                        <p class="text-[11px] font-black text-amber-900">Posibles artículos similares</p>
-                        <p class="text-[10px] text-amber-700 font-medium">Antes de crear, revisa si ya existe documentación sobre esto:</p>
-                      </div>
-                    </div>
-                    <div class="space-y-1.5 pl-6">
-                      <button
-                        v-for="dup in wikiDuplicates"
-                        :key="dup._id"
-                        type="button"
-                        @click="openDuplicate(dup)"
-                        class="w-full text-left bg-white hover:bg-amber-100/50 border border-amber-200 rounded-lg px-3 py-2 transition-all"
-                      >
-                        <p class="text-[11px] font-black text-slate-800 truncate">{{ dup.titulo }}</p>
-                        <p v-if="dup.tags?.length" class="text-[9px] text-slate-500 font-bold mt-0.5">
-                          <span v-for="t in dup.tags.slice(0, 4)" :key="t" class="inline-block mr-1.5">#{{ t }}</span>
-                        </p>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="space-y-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Resumen Ejecutivo</label>
-                    <input v-model="newWiki.descripcion" placeholder="¿De qué trata este artículo? (1 línea)" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium outline-none">
-                  </div>
-
-                  <div class="space-y-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Adjuntos (Opcional)</label>
-                    <FileDropzone
-                      :label="newWiki.archivos?.length ? `${newWiki.archivos.length} seleccionados` : 'Subir documentos'"
-                      @files-selected="(files) => newWiki.archivos = [...(newWiki.archivos || []), ...files]"
-                    />
-                  </div>
-
-                  <div class="space-y-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Contenido</label>
-                    <WikiEditor
-                      v-model="newWiki.contenido"
-                      placeholder="Comienza a escribir tu documentación..."
-                    />
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Tipo</label>
+                  <div class="seg w-full">
+                    <button v-for="t in ['seguimiento', 'incidencia', 'documento']" :key="t" type="button" @click="newCase.tipo = t" :aria-pressed="newCase.tipo === t" class="flex-1 capitalize !px-1">{{ t }}</button>
                   </div>
                 </div>
-             </template>
-          </div>
+              </div>
 
-          <div class="p-6 bg-[#FBFBFA] border-t border-slate-100 flex gap-4">
-             <button @click="showCreateModal = false" class="flex-1 py-3 text-xs font-bold text-slate-500 hover:bg-slate-200/50 rounded-xl transition-all">Cerrar</button>
-             <button 
-               @click="modalMode === 'create' ? (viewMode === 'cases' ? handleCreateCase() : handleCreateWiki()) : (viewMode === 'cases' ? handleUpdateCase() : handleUpdateWiki())" 
-               class="flex-1 py-3 bg-slate-900 text-white text-xs font-bold rounded-xl shadow-xl hover:bg-slate-800 transition-all active:scale-[0.98]"
-             >
-               {{ modalMode === 'create' ? 'Publicar Página' : 'Guardar Cambios' }}
-             </button>
-          </div>
-       </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Descripción breve</label>
+                <textarea v-model="newCase.descripcion" rows="3" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors text-sm resize-none"></textarea>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Adjuntos <span class="normal-case font-medium text-slate-400 tracking-normal">(opcional)</span></label>
+                <FileDropzone
+                  :label="newCase.archivos?.length ? `${newCase.archivos.length} seleccionados` : 'Subir archivos'"
+                  @files-selected="(files) => newCase.archivos = [...(newCase.archivos || []), ...files]"
+                />
+              </div>
+            </div>
+          </template>
+
+          <template v-else>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Título *</label>
+                <input v-model="newWiki.titulo" placeholder="Síntoma exacto o pregunta del usuario. Ej: No puedo iniciar sesión - error 401" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors text-sm">
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Categoría</label>
+                  <CustomSelect :model-value="newWiki.categoria ?? ''" @update:model-value="newWiki.categoria = $event" size="md" :options="[{ value: 'proceso', label: 'Proceso estándar' }, { value: 'codigo', label: 'Fragmento de código' }, { value: 'manual', label: 'Manual de usuario' }]" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Etiquetas</label>
+                  <input v-model="wikiTagsRaw" placeholder="login, 401, credenciales" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors text-sm">
+                </div>
+              </div>
+
+              <!-- Posibles duplicados -->
+              <div v-if="wikiDuplicates.length > 0" class="rounded-xl border border-amber-200 bg-amber-50 p-3">
+                <div class="flex items-start gap-2 mb-2">
+                  <i class="fas fa-triangle-exclamation text-amber-600 mt-0.5 text-xs"></i>
+                  <div class="flex-1">
+                    <p class="text-xs font-bold text-amber-900">Posibles artículos similares</p>
+                    <p class="text-[11px] text-amber-700">Antes de crear, revisa si ya existe documentación sobre esto.</p>
+                  </div>
+                </div>
+                <div class="space-y-1.5 pl-5">
+                  <button
+                    v-for="dup in wikiDuplicates"
+                    :key="dup._id"
+                    type="button"
+                    @click="openDuplicate(dup)"
+                    class="w-full text-left bg-white hover:bg-amber-100/50 border border-amber-200 rounded-lg px-3 py-2 transition-colors"
+                  >
+                    <p class="text-xs font-bold text-slate-800 truncate">{{ dup.titulo }}</p>
+                    <p v-if="dup.tags?.length" class="text-[11px] text-slate-500 mt-0.5">
+                      <span v-for="t in dup.tags.slice(0, 4)" :key="t" class="inline-block mr-1.5">#{{ t }}</span>
+                    </p>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Resumen</label>
+                <input v-model="newWiki.descripcion" placeholder="¿De qué trata este artículo? (una línea)" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors text-sm">
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Adjuntos <span class="normal-case font-medium text-slate-400 tracking-normal">(opcional)</span></label>
+                <FileDropzone
+                  :label="newWiki.archivos?.length ? `${newWiki.archivos.length} seleccionados` : 'Subir documentos'"
+                  @files-selected="(files) => newWiki.archivos = [...(newWiki.archivos || []), ...files]"
+                />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Contenido</label>
+                <WikiEditor
+                  v-model="newWiki.contenido"
+                  placeholder="Comienza a escribir tu documentación..."
+                />
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 px-5 py-3 border-t border-slate-100 bg-slate-50/30 shrink-0">
+          <button type="button" @click="showCreateModal = false" class="px-5 py-2 text-slate-600 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors font-bold text-sm">Cancelar</button>
+          <button
+            type="button"
+            @click="modalMode === 'create' ? (viewMode === 'cases' ? handleCreateCase() : handleCreateWiki()) : (viewMode === 'cases' ? handleUpdateCase() : handleUpdateWiki())"
+            class="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm font-bold text-sm flex items-center gap-2"
+          >
+            <i class="fas fa-check"></i>
+            {{ modalMode === 'create' ? (viewMode === 'cases' ? 'Crear caso' : 'Publicar artículo') : 'Guardar cambios' }}
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- Modal Log Diario (Notion Style) -->
-    <div v-if="showAddDailyLog" class="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-fade-in">
-       <div class="absolute inset-0 bg-slate-900/30 backdrop-blur-[2px]" @click="showAddDailyLog = false"></div>
-       <div class="relative bg-white w-full max-w-md rounded-2xl shadow-2xl p-8 space-y-6 animate-scale-up border border-slate-100">
-          <div class="text-center">
-            <h3 class="text-lg font-bold text-slate-900 mb-1">Nueva Bitácora</h3>
-            <p class="text-xs text-slate-400">¿Qué has logrado hoy?</p>
+    <!-- Modal bitácora -->
+    <div
+      v-if="showAddDailyLog"
+      class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in duration-300"
+      @click="showAddDailyLog = false"
+    >
+      <div class="bg-white rounded-3xl shadow-2xl border border-slate-200/60 w-full max-w-md overflow-hidden flex flex-col animate-in zoom-in-95 duration-300" @click.stop>
+        <div class="flex items-center justify-between gap-4 px-5 py-3 border-b border-slate-100 bg-slate-50/30">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 bg-primary-50 rounded-xl flex items-center justify-center border border-primary-100 shrink-0">
+              <i class="fas fa-history text-primary-500 text-sm"></i>
+            </div>
+            <div>
+              <h2 class="text-lg font-black text-slate-800 tracking-tight leading-tight">Nueva entrada</h2>
+              <p class="text-[11px] text-slate-400">¿Qué se hizo hoy en este caso?</p>
+            </div>
           </div>
-          <div class="space-y-4">
-             <div class="space-y-1">
-               <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Actividad</label>
-               <textarea v-model="newLog.que_se_hizo" rows="3" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium outline-none focus:bg-white transition-all" placeholder="Describe brevemente..."></textarea>
-             </div>
-             <div class="flex justify-between items-center gap-2 p-2 bg-slate-50 rounded-xl">
-               <button v-for="s in ['😊', '😐', '😟', '🔥']" :key="s" @click="newLog.sentimiento = s" :class="newLog.sentimiento === s ? 'bg-white shadow-sm scale-110' : 'opacity-40 grayscale hover:opacity-100 hover:grayscale-0'" class="flex-1 py-2 text-2xl transition-all rounded-lg">{{ s }}</button>
-             </div>
+          <button type="button" title="Cerrar" @click="showAddDailyLog = false" class="w-9 h-9 shrink-0 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all border border-transparent hover:border-rose-100">
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
+        <div class="px-5 py-4 space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Actividad</label>
+            <textarea v-model="newLog.que_se_hizo" rows="3" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors text-sm resize-none" placeholder="Describe brevemente..."></textarea>
           </div>
-          <div class="flex gap-3 pt-2">
-            <button @click="showAddDailyLog = false" class="flex-1 py-3 text-xs font-bold text-slate-400 hover:bg-slate-50 rounded-xl">Cancelar</button>
-            <button @click="handleAddDailyLog" class="flex-1 py-3 bg-primary-600 text-white text-xs font-bold rounded-xl shadow-lg shadow-primary-200 hover:bg-primary-700">Registrar Actividad</button>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Ánimo</label>
+            <div class="seg w-full">
+              <button v-for="s in ['😊', '😐', '😟', '🔥']" :key="s" type="button" @click="newLog.sentimiento = s" :aria-pressed="newLog.sentimiento === s" class="flex-1 text-lg leading-none !py-1.5">{{ s }}</button>
+            </div>
           </div>
-       </div>
+        </div>
+        <div class="flex items-center justify-end gap-3 px-5 py-3 border-t border-slate-100 bg-slate-50/30">
+          <button type="button" @click="showAddDailyLog = false" class="px-5 py-2 text-slate-600 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors font-bold text-sm">Cancelar</button>
+          <button type="button" @click="handleAddDailyLog" class="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm font-bold text-sm flex items-center gap-2">
+            <i class="fas fa-check"></i> Registrar
+          </button>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -767,6 +849,7 @@ import LinkedItemsSelector from './forms/LinkedItemsSelector.vue'
 import EmbeddedSpreadsheet from './EmbeddedSpreadsheet.vue'
 import DataGridTable, { type DataGridColumn } from './ui/DataGridTable.vue'
 import CustomSelect from './ui/CustomSelect.vue'
+import Skeleton from './ui/Skeleton.vue'
 import { useSortableFilterableList } from '../composables/useSortableFilterableList'
 
 const { showSuccess, showError, showLoading, closeLoading, confirmDelete } = useNotifications()
@@ -778,6 +861,7 @@ const searchTerm = ref('')
 const expandedGroups = ref<string[]>([])
 /** 'tree' = árbol lateral de siempre. 'grid' = tabla ordenable/filtrable de todo el catálogo. */
 const listDisplayMode = ref<'tree' | 'grid'>('tree')
+const listLoading = ref(true) // skeleton del árbol mientras llega la primera carga
 const gridFilterEstado = ref<string | null>(null)
 const gridFilterPrioridad = ref<string | null>(null)
 const gridFilterCategoria = ref<string | null>(null)
@@ -1042,6 +1126,7 @@ const sortedDailyLogs = computed(() => {
 // Methods
 const loadData = async () => {
   try {
+    listLoading.value = true
     const [casesData, clientsData, wikiData] = await Promise.all([
       casesService.getAll(),
       clientService.getAll(),
@@ -1058,6 +1143,7 @@ const loadData = async () => {
     if (cases.value.length && !selectedCase.value) selectedCase.value = cases.value[0]
     if (wikiArticles.value.length && !selectedWiki.value) selectedWiki.value = wikiArticles.value[0]
   } catch (err) { showError('Error', 'Fallo al sincronizar datos.') }
+  finally { listLoading.value = false }
 }
 
 const toggleGroup = (name: string) => {
@@ -1258,12 +1344,12 @@ const handleAddDailyLog = async () => {
 const getClientName = (id?: string) => clients.value.find(c => c._id === id)?.name || 'Interno'
 const getClientInitials = (id?: string) => getClientName(id).split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 const getStatusDot = (s?: string) => ({ abierto: 'bg-emerald-500', en_progreso: 'bg-amber-500', resueltos: 'bg-blue-500', cerrado: 'bg-slate-900' }[s || ''] || 'bg-slate-300')
-const getPriorityClass = (p?: string) => ({ baja: 'bg-emerald-50 text-emerald-600', media: 'bg-amber-50 text-amber-600', alta: 'bg-orange-50 text-orange-600', critica: 'bg-rose-50 text-rose-600' }[p || ''] || 'bg-slate-50 text-slate-500')
+const getPriorityClass = (p?: string) => ({ baja: 'badge-success', media: 'badge-warning', alta: 'badge-warning', critica: 'badge-danger' }[p || ''] || 'badge-slate')
 const getCoverGradient = (p?: string) => ({ baja: 'bg-gradient-to-br from-emerald-400 to-teal-600', media: 'bg-gradient-to-br from-amber-400 to-orange-500', alta: 'bg-gradient-to-br from-orange-400 to-rose-600', critica: 'bg-gradient-to-br from-rose-500 to-slate-900' }[p || ''] || 'bg-gradient-to-br from-slate-400 to-slate-600')
 const getWikiCoverGradient = (cat?: string) => ({ proceso: 'bg-gradient-to-br from-blue-400 to-indigo-600', codigo: 'bg-gradient-to-br from-emerald-400 to-cyan-600', manual: 'bg-gradient-to-br from-purple-400 to-fuchsia-600' }[cat || ''] || 'bg-gradient-to-br from-slate-400 to-slate-600')
 const getCaseIcon = (t?: string) => ({ documento: 'fas fa-file-contract', incidencia: 'fas fa-bug', seguimiento: 'fas fa-project-diagram' }[t || ''] || 'fas fa-folder')
 const getWikiIcon = (cat?: string) => ({ proceso: 'fas fa-cogs', codigo: 'fas fa-code', manual: 'fas fa-book' }[cat || ''] || 'fas fa-file-alt')
-const getWikiCatClass = (cat?: string) => ({ proceso: 'bg-blue-50 text-blue-600', codigo: 'bg-emerald-50 text-emerald-600', manual: 'bg-purple-50 text-purple-600' }[cat || ''] || 'bg-slate-50 text-slate-500')
+const getWikiCatClass = (cat?: string) => ({ proceso: 'badge-primary', codigo: 'badge-success', manual: 'badge-violet' }[cat || ''] || 'badge-slate')
 const formatDateRelative = (date: any) => date ? formatDistanceToNow(new Date(date), { addSuffix: true, locale: es }) : ''
 const getFileIcon = (name: string) => casesService.getFileIcon(name)
 const isHtmlContent = (content?: string) => !!content && /<[a-z][\s\S]*>/i.test(content)

@@ -370,6 +370,7 @@ export const useAuthStore = defineStore('auth', () => {
     canViewAccounting,
     canViewCases,
     canViewTeam,
+    canViewTickets,
     canCreateClients,
     canEditClients,
     canDeleteClients,

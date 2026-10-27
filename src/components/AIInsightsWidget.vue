@@ -1,188 +1,181 @@
 <template>
-  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-
-    <!-- Header -->
-    <div class="flex items-center justify-between gap-2 px-3 sm:px-4 py-3 border-b border-slate-100">
-      <div class="flex items-center gap-2 sm:gap-3 min-w-0">
-        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-          <i class="fas fa-brain text-blue-500 text-[13px] sm:text-[14px]"></i>
-        </div>
-        <div class="min-w-0">
-          <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest leading-none mb-1">IA Personalizada</p>
-          <h3 class="text-[12px] sm:text-[13px] font-bold text-slate-900 leading-none truncate">Insights para {{ userName }}</h3>
-        </div>
-      </div>
-      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-        <button
-          @click="expanded = !expanded"
-          class="px-2.5 sm:px-3 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg text-[11px] font-semibold text-slate-600 transition-colors whitespace-nowrap"
-        >
-          {{ expanded ? 'Ver menos' : 'Ver más' }}
-        </button>
-        <button
-          @click="generateInsights(false)"
-          :disabled="loading"
-          class="w-7 h-7 flex items-center justify-center bg-white hover:bg-slate-50 border border-slate-200 rounded-lg text-slate-400 hover:text-blue-500 transition-colors disabled:opacity-40"
-          title="Actualizar"
-        >
-          <i :class="loading ? 'fas fa-spinner fa-spin' : 'fas fa-sync-alt'" class="text-[10px]"></i>
-        </button>
-      </div>
-    </div>
-
-    <!-- Loading -->
-    <div v-if="loading" class="flex items-center justify-center gap-3 py-10">
-      <i class="fas fa-brain text-blue-400 text-lg animate-pulse"></i>
-      <p class="text-slate-400 text-xs font-medium">Analizando tu situación...</p>
-    </div>
-
-    <!-- Content: 3 columnas con dividers (verticales en md+, horizontales en mobile) -->
-    <div v-else-if="insights" class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-100">
-
-      <!-- LECTURA (amarillo) -->
-      <div class="px-4 py-3.5">
-        <div class="flex items-center gap-1.5 mb-2.5">
-          <i class="fas fa-lightbulb text-amber-500 text-[11px]"></i>
-          <h4 class="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Lectura</h4>
-        </div>
-        <p class="text-[12px] text-slate-600 leading-relaxed" :class="!expanded && 'line-clamp-5'">
-          {{ insights.lectura }}
-        </p>
-      </div>
-
-      <!-- ACCIONES (verde) -->
-      <div class="px-4 py-3.5">
-        <div class="flex items-center gap-1.5 mb-2.5">
-          <i class="fas fa-bullseye text-emerald-500 text-[11px]"></i>
-          <h4 class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Acciones</h4>
-        </div>
-        <ul class="space-y-2">
-          <li
-            v-for="(accion, i) in (expanded ? insights.acciones : insights.acciones.slice(0, 3))"
-            :key="i"
-            class="flex items-start gap-2 text-[12px] text-slate-600 leading-snug"
-          >
-            <span class="w-1 h-1 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
-            <span :class="!expanded && 'line-clamp-2'">{{ accion }}</span>
-          </li>
-        </ul>
-      </div>
-
-      <!-- RIESGOS (azul) -->
-      <div class="px-4 py-3.5">
-        <div class="flex items-center gap-1.5 mb-2.5">
-          <i class="fas fa-chart-line text-blue-500 text-[11px]"></i>
-          <h4 class="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Riesgos</h4>
-        </div>
-        <ul class="space-y-2">
-          <li
-            v-for="(riesgo, i) in (expanded ? insights.riesgos : insights.riesgos.slice(0, 3))"
-            :key="i"
-            class="flex items-start gap-2 text-[12px] text-slate-600 leading-snug"
-          >
-            <span class="w-1 h-1 rounded-full bg-blue-500 mt-1.5 shrink-0"></span>
-            <span :class="!expanded && 'line-clamp-2'">{{ riesgo }}</span>
-          </li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Error -->
-    <div v-else-if="error" class="flex flex-col items-center justify-center gap-3 py-8 px-6">
-      <i class="fas fa-exclamation-triangle text-red-400 text-2xl"></i>
-      <p class="text-red-500 text-xs font-medium text-center">{{ error }}</p>
-      <button @click="generateInsights(false)"
-        class="px-4 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 transition-colors">
-        <i class="fas fa-sync-alt mr-1.5 text-slate-400"></i>Reintentar
+  <!-- Insights de IA, versión compacta: 1 o 2 sugerencias accionables para esta
+       persona, calculadas a partir del resumen del dashboard (sin cargar nada más). -->
+  <DashCard eyebrow="IA" :title="`Sugerencias para ${firstName}`" icon="fa-wand-magic-sparkles" icon-class="bg-primary-50 text-primary-600">
+    <template #action>
+      <button
+        type="button"
+        title="Volver a generar"
+        @click="generate(true)"
+        :disabled="loading"
+        class="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary-600 hover:border-primary-200 transition-colors disabled:opacity-40"
+      >
+        <i class="fas fa-rotate text-[10px]" :class="{ 'animate-spin': loading }"></i>
       </button>
-    </div>
+    </template>
 
-    <!-- Empty -->
-    <div v-else class="flex flex-col items-center justify-center gap-2 py-8 px-6">
-      <i class="fas fa-brain text-2xl text-slate-200"></i>
-      <p class="text-slate-400 text-xs font-medium">Sin análisis disponible</p>
-      <button @click="generateInsights(false)"
-        class="px-4 py-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg text-xs font-bold text-blue-600 transition-colors">
-        Generar análisis
-      </button>
-    </div>
+    <Transition name="swap" mode="out-in">
+      <!-- Cargando -->
+      <div v-if="loading" key="loading" class="space-y-2.5" aria-busy="true">
+        <div v-for="n in 2" :key="n" class="flex items-start gap-3">
+          <Skeleton shape="circle" size="22" />
+          <div class="flex-1 space-y-1.5 pt-1">
+            <Skeleton height="10" :width="n === 1 ? '70%' : '55%'" />
+            <Skeleton height="10" width="90%" />
+          </div>
+        </div>
+      </div>
 
-  </div>
+      <!-- Insights -->
+      <ul v-else-if="insights.length" key="list" class="space-y-2.5">
+        <li v-for="(it, i) in insights" :key="i" class="flex items-start gap-3">
+          <span class="w-[22px] h-[22px] rounded-md flex items-center justify-center shrink-0 text-[10px] mt-px" :class="it.tone.bg">
+            <i :class="['fas', it.icon, it.tone.text]"></i>
+          </span>
+          <p class="text-[12.5px] text-slate-700 leading-snug">{{ it.text }}</p>
+        </li>
+      </ul>
+
+      <!-- Error discreto -->
+      <p v-else-if="error" key="error" class="text-[12px] text-slate-400 flex items-center gap-2">
+        <i class="fas fa-circle-info text-[11px]"></i>
+        {{ error }}
+        <button type="button" @click="generate(true)" class="font-semibold text-primary-600 hover:text-primary-700">Reintentar</button>
+      </p>
+
+      <!-- Vacío -->
+      <p v-else key="empty" class="text-[12px] text-slate-400 flex items-center gap-2">
+        <i class="fas fa-check text-[11px] text-emerald-500"></i>
+        Nada que sugerir por ahora: vas al día.
+      </p>
+    </Transition>
+  </DashCard>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useAuthStore } from '../stores/auth'
-import { useClientsStore, useActivitiesStore, useIssuesStore, useTeamStore } from '../stores'
 import { API_CONFIG } from '@/config/api'
+import DashCard from './dashboard/DashCard.vue'
+import Skeleton from './ui/Skeleton.vue'
+import type { DashboardSummary } from '@/services/dashboardService'
+import { relativeDue, roleLabel } from './dashboard/dashboardFormat'
 
-interface InsightsData { lectura: string; acciones: string[]; riesgos: string[] }
+const props = defineProps<{ summary: DashboardSummary }>()
+
+interface Insight { text: string; icon: string; tone: { bg: string; text: string } }
+
+const TONES = {
+  danger: { bg: 'bg-red-50', text: 'text-red-500' },
+  warning: { bg: 'bg-amber-50', text: 'text-amber-500' },
+  primary: { bg: 'bg-primary-50', text: 'text-primary-600' },
+  success: { bg: 'bg-emerald-50', text: 'text-emerald-500' }
+}
 
 const authStore = useAuthStore()
-const clientsStore = useClientsStore()
-const activitiesStore = useActivitiesStore()
-const issuesStore = useIssuesStore()
-const teamStore = useTeamStore()
+const firstName = computed(() => authStore.user?.name?.split(' ')[0] || 'ti')
 
 const loading = ref(false)
-const insights = ref<InsightsData | null>(null)
 const error = ref('')
-const expanded = ref(false)
+const insights = ref<Insight[]>([])
 
-const userName = computed(() => authStore.user?.name?.split(' ')[0] || 'ti')
-const CACHE_KEY = computed(() => `crm_ai_insights_v4_${authStore.user?.name}_${authStore.user?.role}`)
-const CACHE_DURATION = 30 * 60 * 1000
+// La caché cambia cuando cambian los números que importan (y cada día)
+const cacheKey = computed(() => {
+  const s = props.summary
+  return `crm_ai_insights_v5_${s.viewer.id}_${s.today}_${s.mine.overdue}_${s.mine.today}_${s.approvals.toReview}_${s.team?.totals.overdue ?? 0}`
+})
+const CACHE_MS = 30 * 60 * 1000
 
-const getCached = (): InsightsData | null => {
+const readCache = (): string[] | null => {
   try {
-    const c = localStorage.getItem(CACHE_KEY.value)
-    if (c) { const p = JSON.parse(c); if (Date.now() - p.timestamp < CACHE_DURATION) return p.data; localStorage.removeItem(CACHE_KEY.value) }
-  } catch {}; return null
+    const raw = localStorage.getItem(cacheKey.value)
+    if (!raw) return null
+    const p = JSON.parse(raw)
+    if (Date.now() - p.timestamp > CACHE_MS) { localStorage.removeItem(cacheKey.value); return null }
+    return p.lines
+  } catch { return null }
 }
-const setCache = (d: InsightsData) => { try { localStorage.setItem(CACHE_KEY.value, JSON.stringify({ data: d, timestamp: Date.now() })) } catch {} }
+const writeCache = (lines: string[]) => { try { localStorage.setItem(cacheKey.value, JSON.stringify({ lines, timestamp: Date.now() })) } catch {} }
 
-const generateInsights = async (background = false) => {
-  if (!background) loading.value = true
+// Icono y tono según de qué habla la frase
+const decorate = (text: string): Insight => {
+  const t = text.toLowerCase()
+  if (/vencid|atras|retras/.test(t)) return { text, icon: 'fa-triangle-exclamation', tone: TONES.danger }
+  if (/autoriz|aprob|plazo/.test(t)) return { text, icon: 'fa-user-shield', tone: TONES.warning }
+  if (/hoy|urgente|en curso/.test(t)) return { text, icon: 'fa-sun', tone: TONES.warning }
+  if (/equipo|carga|persona|área|area/.test(t)) return { text, icon: 'fa-users', tone: TONES.primary }
+  if (/cliente|proyecto/.test(t)) return { text, icon: 'fa-briefcase', tone: TONES.primary }
+  return { text, icon: 'fa-lightbulb', tone: TONES.success }
+}
+
+// Sin IA (o mientras no responde): sugerencias calculadas con los mismos datos
+const fallback = (): string[] => {
+  const s = props.summary
+  const out: string[] = []
+  if (s.mine.overdue > 0) {
+    const first = s.lists.overdue[0]
+    out.push(`Tienes ${s.mine.overdue} vencida${s.mine.overdue === 1 ? '' : 's'}; empieza por "${first?.title}" (${relativeDue(first?.dueDate)}).`)
+  }
+  if (s.approvals.toReview > 0) out.push(`${s.approvals.toReview} autorización${s.approvals.toReview === 1 ? '' : 'es'} de tu equipo espera${s.approvals.toReview === 1 ? '' : 'n'} tu revisión: resuélvelas para no frenar entregas.`)
+  if (s.mine.today > 0 && out.length < 2) out.push(`Hoy vencen ${s.mine.today}; cierra primero la de mayor prioridad antes de abrir frentes nuevos.`)
+  if (s.team && out.length < 2) {
+    const loaded = [...s.team.members].sort((a, b) => b.stats.overdue - a.stats.overdue)[0]
+    if (loaded && loaded.stats.overdue > 0 && loaded._id !== s.viewer.id) out.push(`${loaded.name.split(' ')[0]} acumula ${loaded.stats.overdue} vencida${loaded.stats.overdue === 1 ? '' : 's'}: vale una conversación corta hoy.`)
+  }
+  return out.slice(0, 2)
+}
+
+const buildPrompt = (): string => {
+  const s = props.summary
+  const fmt = (a: DashboardSummary['lists']['overdue'][number]) => `"${a.title}"${a.client ? ` (${a.client.name})` : ''} [${relativeDue(a.dueDate)}]`
+  const lines = [
+    `Eres un asistente de productividad de un CRM. Responde SOLO con 2 líneas, cada una empieza con "Insight1:" o "Insight2:". Cada línea máximo 140 caracteres, concreta, en español, con una acción clara para HOY. Nada de saludos ni explicaciones.`,
+    `PERSONA: ${firstName.value} | Rol: ${roleLabel(s.viewer.role)} | Alcance: ${s.viewer.scope}${s.viewer.department ? ` | Área: ${s.viewer.department}` : ''}`,
+    `VENCIDAS (${s.mine.overdue}): ${s.lists.overdue.slice(0, 4).map(fmt).join(' | ') || 'ninguna'}`,
+    `HOY (${s.mine.today}): ${s.lists.today.slice(0, 4).map(fmt).join(' | ') || 'ninguna'}`,
+    `EN CURSO: ${s.mine.inProgress} | ALTA PRIORIDAD: ${s.mine.highPriority} | CERRADAS 7 DÍAS: ${s.mine.completedWeek}`,
+    `AUTORIZACIONES: por revisar ${s.approvals.toReview}, mías en espera ${s.approvals.mine}`
+  ]
+  if (s.team) {
+    const top = [...s.team.members].sort((a, b) => b.stats.overdue - a.stats.overdue).slice(0, 3)
+    lines.push(`EQUIPO (${s.team.members.length} personas, vencidas ${s.team.totals.overdue}): ${top.map(m => `${m.name}: ${m.stats.active} activas / ${m.stats.overdue} vencidas`).join(' | ')}`)
+  }
+  if (s.org) lines.push(`ORGANIZACIÓN: clientes activos ${s.org.clients.active}, tickets abiertos ${s.org.tickets.open}, autorizaciones pendientes ${s.org.approvals.pending}`)
+  lines.push('Prioriza: vencidas > autorizaciones pendientes > carga de hoy > equipo. Si todo está al día, una sola línea de planificación.')
+  return lines.join('\n')
+}
+
+const generate = async (force = false) => {
   error.value = ''
-  if (background) { const c = getCached(); if (c) { insights.value = c; return } }
-  if (!background) insights.value = null
+  if (!force) {
+    const cached = readCache()
+    if (cached) { insights.value = cached.map(decorate); return }
+  }
+  loading.value = true
   try {
-    const firstName = authStore.user?.name?.split(' ')[0] || 'Usuario'
-    const userRole = (authStore.user?.role || 'employee') as string
-    const todayDate = new Date(); const tm = new Date(todayDate); tm.setHours(0,0,0,0)
-    const clientMap = new Map(clientsStore.clients.map((c: any) => [c._id, c.name]))
-    const overdueActs = activitiesStore.activities.filter((a: any) => { if (a.status==='completed'||a.status==='cancelled') return false; const d=new Date(a.dueDate||a.date);d.setHours(0,0,0,0);return d<tm }).slice(0,6)
-    const todayActs = activitiesStore.activities.filter((a: any) => { if (a.status==='completed'||a.status==='cancelled') return false; const d=new Date(a.dueDate||a.date);d.setHours(0,0,0,0);return d.getTime()===tm.getTime() }).slice(0,5)
-    const inProgressActs = activitiesStore.activities.filter((a: any) => a.status==='in-progress').slice(0,4)
-    const highPriorityActs = activitiesStore.activities.filter((a: any) => (a.priority==='high'||a.priority==='urgent')&&a.status!=='completed'&&a.status!=='cancelled').slice(0,3)
-    const fmt = (a: any) => { const cn=clientMap.get(a.clientId); const d=new Date(a.dueDate||a.date);d.setHours(0,0,0,0); const diff=Math.floor((tm.getTime()-d.getTime())/86400000); return `"${a.title}"${cn?` (${cn})`:''}${diff>0?` [${diff}d vencida]`:''}` }
-    const roleCtx: Record<string,string> = { admin:'gestión estratégica y supervisión de KPIs', manager:'supervisión del equipo y cumplimiento de objetivos', employee:'ejecución de actividades y seguimiento de clientes', support:'resolución de tickets y satisfacción del cliente', development:'entregas técnicas y resolución de bugs', fullstack:'cobertura técnica y operativa', viewer:'monitoreo y reportes', client:'seguimiento de proyectos activos' }
-    const todayStr = todayDate.toLocaleDateString('es', {weekday:'long',day:'numeric',month:'long',year:'numeric'})
-    const prompt = `Eres un asistente estratégico de CRM. Responde ÚNICAMENTE en el formato indicado. No menciones el nombre del sistema.
-PERFIL: ${firstName} | Rol: ${userRole} | Responsabilidad: ${roleCtx[userRole]||'gestión operativa'} | Fecha: ${todayStr}
-VENCIDAS (${overdueActs.length}): ${overdueActs.length>0?overdueActs.map(fmt).map(s=>`· ${s}`).join(' | '):'Ninguna'}
-HOY (${todayActs.length}): ${todayActs.length>0?todayActs.map(fmt).map(s=>`· ${s}`).join(' | '):'Ninguna'}
-EN PROGRESO (${inProgressActs.length}): ${inProgressActs.length>0?inProgressActs.map(fmt).map(s=>`· ${s}`).join(' | '):'Ninguna'}
-ALTA PRIORIDAD (${highPriorityActs.length}): ${highPriorityActs.length>0?highPriorityActs.map(fmt).map(s=>`· ${s}`).join(' | '):'Ninguna'}
-MÉTRICAS: Clientes:${clientsStore.clients.length} | Activ:${activitiesStore.activities.length}(comp:${activitiesStore.activities.filter((a:any)=>a.status==='completed').length}) | Casos abiertos:${issuesStore.issues.filter((i:any)=>i.status==='open').length} | Equipo:${teamStore.members.length}
-RESPONDE EXACTAMENTE (6 líneas, sin texto extra):
-Lectura: [evaluación concreta de ${firstName} con datos específicos]
-Accion1: [acción inmediata para HOY]
-Accion2: [segunda acción prioritaria]
-Accion3: [tercera acción táctica]
-Riesgo1: [riesgo específico con consecuencia]
-Riesgo2: [segundo riesgo diferente]`
-    const response = await fetch(`${API_CONFIG.BASE_URL}/ai/gemini-generate`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({prompt}) })
-    if (!response.ok) { const e=await response.json().catch(()=>({})); throw new Error(e.error||`Error ${response.status}`) }
-    const result = await response.json(); const aiText: string = result.text||''; if (!aiText) throw new Error('Sin contenido')
-    const lines = aiText.split('\n').map((l:string)=>l.trim()).filter(Boolean)
-    const lectura = lines.find((l:string)=>l.startsWith('Lectura:'))?.replace('Lectura:','').trim()||''
-    const acciones = lines.filter((l:string)=>/^Accion\d+:/i.test(l)).map((l:string)=>l.substring(l.indexOf(':')+1).trim()).filter((l:string)=>l.length>5)
-    const riesgos = lines.filter((l:string)=>/^Riesgo\d+:/i.test(l)).map((l:string)=>l.substring(l.indexOf(':')+1).trim()).filter((l:string)=>l.length>5)
-    const final: InsightsData = { lectura:lectura||'Análisis completado.', acciones:acciones.length>0?acciones:['Revisa las actividades vencidas'], riesgos:riesgos.length>0?riesgos:['Actividades sin atender afectan la percepción del cliente'] }
-    insights.value = final; setCache(final)
-  } catch(err:any) { error.value='No se pudo conectar con la IA'; console.error('AI Error:',err) } finally { if (!background) loading.value=false }
+    const res = await fetch(`${API_CONFIG.BASE_URL}/ai/gemini-generate`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: buildPrompt() })
+    })
+    if (!res.ok) throw new Error(`Error ${res.status}`)
+    const data = await res.json()
+    const lines = String(data.text || '').split('\n').map(l => l.trim())
+      .filter(l => /^insight\s*\d\s*:/i.test(l))
+      .map(l => l.substring(l.indexOf(':') + 1).trim().replace(/^["“]|["”]$/g, ''))
+      .filter(l => l.length > 8)
+      .slice(0, 2)
+    const final = lines.length ? lines : fallback()
+    insights.value = final.map(decorate)
+    writeCache(final)
+  } catch (e) {
+    // Sin IA: mostramos lo calculado localmente; si no hay nada, aviso discreto
+    const local = fallback()
+    insights.value = local.map(decorate)
+    if (!local.length) error.value = 'La IA no está disponible ahora.'
+    console.warn('AI insights:', e)
+  } finally {
+    loading.value = false
+  }
 }
 
-onMounted(() => { const c=getCached(); if(c) insights.value=c; generateInsights(true) })
+watch(cacheKey, () => generate(false), { immediate: true })
 </script>

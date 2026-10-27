@@ -1,331 +1,265 @@
 <template>
-  <div class="flex flex-col h-full min-h-0">
+  <div class="flex flex-col h-full min-h-0 motion-page">
     <div class="flex-1 min-h-0 bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col overflow-hidden">
-      <!-- Encabezado -->
-      <div class="px-6 pt-6 pb-5 border-b border-slate-100 space-y-5">
-        <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
-          <div class="flex items-start gap-4">
-            <div class="w-12 h-12 rounded-2xl bg-primary-50 text-primary-600 flex items-center justify-center shrink-0">
-              <i class="fas fa-user-shield text-lg"></i>
+      <!-- Encabezado compacto -->
+      <div class="px-5 pt-4 pb-3 border-b border-slate-100 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center shrink-0">
+              <i class="fas fa-user-shield text-sm"></i>
             </div>
-            <div>
-              <h1 class="text-xl font-black text-slate-800">Autorizaciones</h1>
-              <p class="text-sm text-slate-500 mt-0.5 max-w-xl">
-                La fecha de entrega pactada y la eliminación de tareas son del líder del área o un administrador.
-                <template v-if="summary.canReview">Aquí resuelves las solicitudes que quedaron de tu equipo y recuperas tareas eliminadas.</template>
-                <template v-else>Aquí sigues el estado de las solicitudes que enviaste.</template>
+            <div class="min-w-0">
+              <h1 class="text-base font-black text-slate-800 leading-tight">Autorizaciones</h1>
+              <p class="text-xs text-slate-500 truncate">
+                <template v-if="summary.canReview">Solicitudes de tu equipo y tareas eliminadas que aún se pueden recuperar.</template>
+                <template v-else>Estado de las solicitudes que enviaste a tu líder.</template>
               </p>
             </div>
           </div>
           <button
             @click="load"
             :disabled="loading"
-            class="self-start inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-slate-500 bg-white border border-slate-200 rounded-xl hover:text-primary-600 hover:border-primary-200 transition-colors"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-slate-500 bg-white border border-slate-200 rounded-lg hover:text-primary-600 hover:border-primary-200 transition-colors"
           >
-            <i class="fas fa-rotate" :class="{ 'animate-spin': loading }"></i>
+            <i class="fas fa-rotate text-[10px]" :class="{ 'animate-spin': loading }"></i>
             Actualizar
           </button>
         </div>
 
-        <!-- Resumen: qué me toca a mí y qué estoy esperando -->
-        <div class="grid gap-3" :class="summary.canReview ? 'sm:grid-cols-3' : 'sm:grid-cols-1 max-w-md'">
-          <button
-            v-if="summary.canReview"
-            @click="goTo('inbox')"
-            class="text-left p-4 rounded-2xl border transition-all flex items-center gap-4"
-            :class="box === 'inbox' ? 'border-amber-300 bg-amber-50/70 ring-4 ring-amber-100' : 'border-slate-200 hover:border-amber-200 hover:bg-amber-50/40'"
-          >
-            <div class="w-11 h-11 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 relative">
-              <i class="fas fa-inbox"></i>
-              <span v-if="summary.toReview > 0" class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-amber-500 ring-2 ring-white animate-pulse"></span>
-            </div>
-            <div class="min-w-0">
-              <p class="text-2xl font-black text-slate-800 leading-none">{{ summary.toReview }}</p>
-              <p class="text-xs font-bold text-amber-700 mt-1">Requieren tu aprobación</p>
-            </div>
-          </button>
-          <button
-            @click="goTo('mine')"
-            class="text-left p-4 rounded-2xl border transition-all flex items-center gap-4"
-            :class="box === 'mine' ? 'border-sky-300 bg-sky-50/70 ring-4 ring-sky-100' : 'border-slate-200 hover:border-sky-200 hover:bg-sky-50/40'"
-          >
-            <div class="w-11 h-11 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
-              <i class="fas fa-paper-plane"></i>
-            </div>
-            <div class="min-w-0">
-              <p class="text-2xl font-black text-slate-800 leading-none">{{ summary.waiting }}</p>
-              <p class="text-xs font-bold text-sky-700 mt-1">
-                {{ summary.waiting === 1 ? 'Solicitud tuya en espera' : 'Solicitudes tuyas en espera' }}
-              </p>
-            </div>
-          </button>
-          <button
-            v-if="summary.canReview"
-            @click="goTo('trash')"
-            title="Tareas y actividades eliminadas que todavía se pueden recuperar"
-            class="text-left p-4 rounded-2xl border transition-all flex items-center gap-4"
-            :class="box === 'trash' ? 'border-rose-300 bg-rose-50/70 ring-4 ring-rose-100' : 'border-slate-200 hover:border-rose-200 hover:bg-rose-50/40'"
-          >
-            <div class="w-11 h-11 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
-              <i class="fas fa-trash-arrow-up"></i>
-            </div>
-            <div class="min-w-0">
-              <p class="text-2xl font-black text-slate-800 leading-none">{{ box === 'trash' ? trashItems.length : '—' }}</p>
-              <p class="text-xs font-bold text-rose-700 mt-1">Papelera · se recupera hasta {{ retentionDays }} días</p>
-            </div>
-          </button>
-        </div>
+        <!-- Bandejas + filtros en una sola fila -->
+        <div class="flex flex-col lg:flex-row lg:items-center gap-2.5">
+          <div class="seg">
+            <button
+              v-if="summary.canReview"
+              @click="goTo('inbox')"
+              :aria-pressed="box === 'inbox'"
+              class="flex items-center gap-1.5 whitespace-nowrap"
+            >
+              <i class="fas fa-inbox text-[10px]"></i>
+              Por aprobar
+              <span class="badge" :class="summary.toReview > 0 ? 'badge-warning' : 'badge-slate'">{{ summary.toReview }}</span>
+            </button>
+            <button @click="goTo('mine')" :aria-pressed="box === 'mine'" class="flex items-center gap-1.5 whitespace-nowrap">
+              <i class="fas fa-paper-plane text-[10px]"></i>
+              Mis solicitudes
+              <span class="badge" :class="summary.waiting > 0 ? 'badge-primary' : 'badge-slate'">{{ summary.waiting }}</span>
+            </button>
+            <button
+              v-if="summary.canReview"
+              @click="goTo('trash')"
+              :aria-pressed="box === 'trash'"
+              title="Tareas y actividades eliminadas que todavía se pueden recuperar"
+              class="flex items-center gap-1.5 whitespace-nowrap"
+            >
+              <i class="fas fa-trash-arrow-up text-[10px]"></i>
+              Papelera
+              <span v-if="box === 'trash'" class="badge badge-danger">{{ trashItems.length }}</span>
+            </button>
+          </div>
 
-        <!-- Filtros -->
-        <div v-if="box !== 'trash'" class="flex flex-col xl:flex-row xl:items-center gap-3">
-          <div class="inline-flex flex-wrap p-1 bg-slate-100 rounded-xl max-w-full self-start">
-            <button
-              v-for="opt in statusOptions"
-              :key="opt.value"
-              @click="statusFilter = opt.value"
-              class="px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all"
-              :class="statusFilter === opt.value ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
-            >
-              {{ opt.label }}
-            </button>
+          <div v-if="box !== 'trash'" class="flex flex-wrap items-center gap-2 lg:ml-auto">
+            <div class="w-40">
+              <CustomSelect v-model="statusFilter" size="sm" :options="statusOptions" />
+            </div>
+            <div class="w-44">
+              <CustomSelect v-model="kindFilter" size="sm" :options="kindOptions" />
+            </div>
           </div>
-          <div class="flex flex-wrap items-center gap-2">
-            <button
-              v-for="opt in kindOptions"
-              :key="opt.value"
-              @click="kindFilter = opt.value"
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold whitespace-nowrap transition-all"
-              :class="kindFilter === opt.value ? opt.activeClass : 'border-slate-200 text-slate-500 bg-white hover:border-slate-300'"
-            >
-              <i :class="opt.icon" class="text-[10px]"></i>
-              {{ opt.label }}
-            </button>
-          </div>
+          <p v-else class="text-[11px] text-slate-400 lg:ml-auto">
+            Se conservan {{ retentionDays }} días desde que se eliminan.
+          </p>
         </div>
       </div>
 
       <!-- Papelera: solo aprobadores -->
-      <div v-if="box === 'trash'" class="flex-1 overflow-y-auto custom-scrollbar p-6 bg-slate-50/40">
-        <p class="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">
-          Eliminadas en los últimos {{ retentionDays }} días
-        </p>
-        <div v-if="loading && trashItems.length === 0" class="space-y-3">
-          <div v-for="n in 3" :key="n" class="h-20 rounded-2xl bg-white border border-slate-100 animate-pulse"></div>
-        </div>
-        <div v-else-if="error" class="p-4 bg-rose-50 border border-rose-100 text-rose-700 rounded-xl text-sm font-medium">
+      <div v-if="box === 'trash'" class="flex-1 overflow-y-auto custom-scrollbar p-4 bg-slate-50/40">
+        <Skeleton v-if="loading && trashItems.length === 0" preset="list" :rows="5" />
+        <div v-else-if="error" class="p-3 bg-rose-50 border border-rose-100 text-rose-700 rounded-xl text-xs font-medium">
           {{ error }}
         </div>
-        <div v-else-if="trashItems.length === 0" class="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-200">
-          <div class="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center mb-3 bg-rose-50 text-rose-200">
-            <i class="fas fa-trash-can text-2xl"></i>
-          </div>
-          <p class="text-sm font-black text-slate-600">La papelera está vacía</p>
-          <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Lo que se elimine quedará aquí {{ retentionDays }} días por si hay que recuperarlo.</p>
+        <div v-else-if="trashItems.length === 0" class="empty-state bg-white border border-dashed border-slate-200">
+          <div class="empty-state__icon bg-rose-50 text-rose-400"><i class="fas fa-trash-can"></i></div>
+          <p class="empty-state__title">La papelera está vacía</p>
+          <p class="empty-state__text">Lo que se elimine quedará aquí {{ retentionDays }} días por si hay que recuperarlo.</p>
         </div>
-        <div v-else class="space-y-3">
+        <div v-else class="space-y-1.5 motion-stagger">
           <article
             v-for="item in trashItems"
             :key="item._id"
-            class="relative bg-white border border-slate-200 rounded-2xl overflow-hidden flex flex-col sm:flex-row sm:items-center gap-4 p-5 pl-6"
+            class="bg-white border border-slate-200 rounded-xl px-4 py-2.5 flex items-center gap-3 hover:border-slate-300 transition-colors"
           >
-            <span class="absolute left-0 top-0 bottom-0 w-1 bg-rose-300"></span>
+            <span class="w-2 h-2 rounded-full shrink-0" :class="daysLeft(item) <= 7 ? 'bg-rose-500' : 'bg-rose-300'"></span>
             <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-500">
-                  {{ item.entityType === 'task' ? 'Tarea de tablero' : item.itemType === 'feature' ? 'Feature' : 'Actividad' }}
-                </span>
-                <span class="text-[11px] font-bold" :class="daysLeft(item) <= 7 ? 'text-rose-600' : 'text-slate-400'">
-                  {{ daysLeft(item) <= 0 ? 'Se borra hoy' : `Se borra definitivamente en ${daysLeft(item)} día${daysLeft(item) === 1 ? '' : 's'}` }}
+              <div class="flex items-center gap-2 min-w-0">
+                <p class="text-[13px] font-bold text-slate-800 truncate">{{ item.title || 'Sin título' }}</p>
+                <span class="badge badge-slate shrink-0">
+                  {{ item.entityType === 'task' ? 'Tarea' : item.itemType === 'feature' ? 'Feature' : 'Actividad' }}
                 </span>
               </div>
-              <p class="mt-2 text-base font-black text-slate-800 truncate">{{ item.title || 'Sin título' }}</p>
-              <p class="mt-1 text-xs text-slate-500 flex items-center gap-1.5">
+              <p class="mt-0.5 text-[11px] text-slate-500 flex items-center gap-1.5 min-w-0">
                 <PersonAvatar v-if="item.deletedBy" :name="item.deletedBy.name" :photo="item.deletedBy.photo" :letters="1"
-                  class="w-5 h-5 rounded-full bg-primary-100 text-primary-600 text-[9px] font-black" />
-                Eliminada por <strong>{{ item.deletedBy?.name || 'alguien' }}</strong> · {{ relative(item.deletedAt) }}
+                  class="w-4 h-4 rounded-full bg-primary-100 text-primary-600 text-[8px] font-black shrink-0" />
+                <span class="truncate">
+                  Eliminada por <strong class="text-slate-600">{{ item.deletedBy?.name || 'alguien' }}</strong> · {{ relative(item.deletedAt) }}
+                </span>
+                <span class="text-slate-300">·</span>
+                <span class="shrink-0 font-semibold" :class="daysLeft(item) <= 7 ? 'text-rose-600' : 'text-slate-400'">
+                  {{ daysLeft(item) <= 0 ? 'Se borra hoy' : `Se borra en ${daysLeft(item)} día${daysLeft(item) === 1 ? '' : 's'}` }}
+                </span>
               </p>
             </div>
             <button
               @click="restoreItem(item)"
               :disabled="busyId === item._id"
               title="Devolver la tarea a donde estaba, con sus comentarios, historial y adjuntos"
-              class="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl text-sm font-black transition-colors shadow-sm shadow-emerald-200"
+              class="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 disabled:opacity-50 rounded-lg text-[11px] font-bold transition-colors"
             >
-              <i :class="busyId === item._id ? 'fas fa-spinner animate-spin' : 'fas fa-rotate-left'"></i>
-              Recuperar
+              <i class="text-[10px]" :class="busyId === item._id ? 'fas fa-spinner animate-spin' : 'fas fa-rotate-left'"></i>
+              Restaurar
             </button>
           </article>
         </div>
       </div>
 
-      <!-- Lista -->
-      <div v-else class="flex-1 overflow-y-auto custom-scrollbar p-6 bg-slate-50/40">
-        <p class="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">
-          {{ box === 'inbox' ? 'Solicitudes de tu equipo' : 'Solicitudes que enviaste' }}
-        </p>
+      <!-- Lista de solicitudes -->
+      <div v-else class="flex-1 overflow-y-auto custom-scrollbar p-4 bg-slate-50/40">
+        <Skeleton v-if="loading && requests.length === 0" preset="list" :rows="6" />
 
-        <div v-if="loading && requests.length === 0" class="space-y-3">
-          <div v-for="n in 3" :key="n" class="h-32 rounded-2xl bg-white border border-slate-100 animate-pulse"></div>
-        </div>
-
-        <div v-else-if="error" class="p-4 bg-rose-50 border border-rose-100 text-rose-700 rounded-xl text-sm font-medium">
+        <div v-else-if="error" class="p-3 bg-rose-50 border border-rose-100 text-rose-700 rounded-xl text-xs font-medium">
           {{ error }}
         </div>
 
-        <div v-else-if="requests.length === 0" class="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-200">
-          <div class="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center mb-3"
-            :class="box === 'inbox' ? 'bg-amber-50 text-amber-300' : 'bg-sky-50 text-sky-300'">
-            <i :class="box === 'inbox' ? 'fas fa-check-double' : 'fas fa-paper-plane'" class="text-2xl"></i>
+        <div v-else-if="requests.length === 0" class="empty-state bg-white border border-dashed border-slate-200">
+          <div class="empty-state__icon" :class="box === 'inbox' ? 'bg-amber-50 text-amber-500' : 'bg-sky-50 text-sky-500'">
+            <i :class="box === 'inbox' ? 'fas fa-check-double' : 'fas fa-paper-plane'"></i>
           </div>
-          <p class="text-sm font-black text-slate-600">{{ emptyState.title }}</p>
-          <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">{{ emptyState.detail }}</p>
+          <p class="empty-state__title">{{ emptyState.title }}</p>
+          <p class="empty-state__text">{{ emptyState.detail }}</p>
         </div>
 
-        <div v-else class="space-y-3">
+        <div v-else class="space-y-1.5 motion-stagger">
           <article
             v-for="req in requests"
             :key="req._id"
-            class="relative bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-md hover:shadow-slate-200/60 transition-shadow"
+            class="bg-white border border-slate-200 rounded-xl px-4 py-2.5 hover:border-slate-300 transition-colors"
           >
-            <!-- Franja de estado -->
-            <span class="absolute left-0 top-0 bottom-0 w-1" :class="stateOf(req).bar"></span>
+            <div class="flex items-start lg:items-center gap-3">
+              <span class="w-2 h-2 rounded-full shrink-0 mt-1.5 lg:mt-0" :class="stateOf(req).bar"></span>
 
-            <div class="p-5 pl-6 flex flex-col lg:flex-row lg:items-start gap-5">
+              <!-- Título, tipo y quién pide -->
               <div class="flex-1 min-w-0">
-                <!-- Estado contextual -->
-                <div class="flex items-center gap-2 flex-wrap">
-                  <span class="inline-flex items-center gap-1.5 text-[11px] font-black px-2.5 py-1 rounded-full" :class="stateOf(req).pill">
-                    <span v-if="stateOf(req).pulse" class="w-1.5 h-1.5 rounded-full bg-current animate-pulse"></span>
-                    <i v-else :class="stateOf(req).icon" class="text-[10px]"></i>
-                    {{ stateOf(req).label }}
-                  </span>
-                  <span
-                    class="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full"
-                    :class="req.kind === 'deletion' ? 'bg-rose-50 text-rose-600' : 'bg-orange-50 text-orange-600'"
+                <div class="flex items-center gap-2 min-w-0">
+                  <button
+                    v-if="!(req.kind === 'deletion' && req.status === 'approved')"
+                    @click="openEntity(req)"
+                    class="text-left text-[13px] font-bold text-slate-800 hover:text-primary-600 transition-colors truncate"
+                    :title="req.entityTitle || 'Sin título'"
                   >
-                    <i :class="req.kind === 'deletion' ? 'fas fa-trash-alt' : 'fas fa-calendar-plus'" class="text-[10px]"></i>
+                    {{ req.entityTitle || 'Sin título' }}
+                  </button>
+                  <p v-else class="text-[13px] font-bold text-slate-400 line-through truncate">{{ req.entityTitle || 'Sin título' }}</p>
+                  <span class="badge shrink-0" :class="req.kind === 'deletion' ? 'badge-danger' : 'badge-warning'">
                     {{ APPROVAL_KIND_LABELS[req.kind] }}
                   </span>
-                  <span class="text-[11px] font-bold text-slate-400">
-                    {{ req.entityType === 'task' ? 'Tarea de tablero' : 'Actividad' }}<template v-if="req.department"> · {{ req.department }}</template>
+                  <span class="hidden md:inline text-[11px] text-slate-400 shrink-0">
+                    {{ req.entityType === 'task' ? 'Tarea' : 'Actividad' }}<template v-if="req.department"> · {{ req.department }}</template>
                   </span>
                 </div>
 
-                <!-- Título -->
-                <button
-                  v-if="!(req.kind === 'deletion' && req.status === 'approved')"
-                  @click="openEntity(req)"
-                  class="block mt-2 text-left text-base font-black text-slate-800 hover:text-primary-600 transition-colors"
-                >
-                  {{ req.entityTitle || 'Sin título' }}
-                  <i class="fas fa-arrow-up-right-from-square text-[10px] text-slate-300 ml-1"></i>
-                </button>
-                <p v-else class="mt-2 text-base font-black text-slate-400 line-through">{{ req.entityTitle || 'Sin título' }}</p>
-
-                <!-- Quién lo pidió (solo en la bandeja del líder) -->
-                <div v-if="box === 'inbox'" class="mt-2 flex items-center gap-2 text-sm text-slate-600">
-                  <PersonAvatar :name="req.requestedBy?.name" :photo="req.requestedBy?.photo" :letters="1"
-                    class="w-6 h-6 rounded-full bg-primary-100 text-primary-600 text-[10px] font-black" />
-                  <span>
-                    <strong class="mr-1">{{ req.requestedBy?.name || 'Alguien' }}</strong>
+                <div class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-500 min-w-0">
+                  <!-- Quién pidió (bandeja del líder) -->
+                  <span v-if="box === 'inbox'" class="inline-flex items-center gap-1.5 min-w-0">
+                    <PersonAvatar :name="req.requestedBy?.name" :photo="req.requestedBy?.photo" :letters="1"
+                      class="w-4 h-4 rounded-full bg-primary-100 text-primary-600 text-[8px] font-black shrink-0" />
+                    <strong class="text-slate-700">{{ req.requestedBy?.name || 'Alguien' }}</strong>
                     <template v-if="req.autoApproved">
-                      {{ req.kind === 'deletion' ? 'la eliminó' : 'amplió el plazo' }} con
-                      <span class="font-bold text-violet-700"><i class="fas fa-bolt text-[10px]"></i> autoaprobación</span>
+                      {{ req.kind === 'deletion' ? 'la eliminó con' : 'amplió el plazo con' }}
+                      <span class="font-bold text-violet-700">autoaprobación</span>
                     </template>
                     <template v-else>{{ req.kind === 'deletion' ? 'quiere eliminarla' : 'pide más tiempo' }}</template>
-                    <span class="text-slate-400">· {{ relative(req.createdAt) }}</span>
+                  </span>
+                  <!-- Estado para quien pidió -->
+                  <span v-else class="inline-flex items-center gap-1.5 min-w-0">
+                    <span class="font-bold" :class="stateOf(req).text">{{ stateOf(req).label }}</span>
+                    <span v-if="outcomeOf(req)" class="truncate">· {{ outcomeOf(req) }}</span>
+                  </span>
+                  <span class="text-slate-400">· {{ relative(req.createdAt) }}</span>
+
+                  <!-- Cambio de fecha -->
+                  <span v-if="req.kind === 'due-date-extension'" class="inline-flex items-center gap-1.5 shrink-0">
+                    <span class="text-slate-400 line-through">{{ formatDate(req.currentDueDate) }}</span>
+                    <i class="fas fa-arrow-right text-slate-300 text-[9px]"></i>
+                    <span class="font-bold text-amber-700">{{ formatDate(req.requestedDueDate) }}</span>
+                    <span v-if="extraDays(req)" class="badge badge-slate">{{ extraDays(req) }}</span>
+                  </span>
+
+                  <!-- Resultado para el líder -->
+                  <span v-if="box === 'inbox' && req.autoApproved" class="text-slate-400">· aplicada de inmediato, no requirió tu aprobación</span>
+                  <span v-else-if="box === 'inbox' && req.status !== 'pending'" class="text-slate-400 min-w-0 truncate">
+                    <template v-if="req.reviewedBy">
+                      · {{ req.status === 'approved' ? 'Aprobada' : 'Rechazada' }} por <strong class="text-slate-600">{{ req.reviewedBy.name }}</strong>
+                      {{ req.reviewedAt ? relative(req.reviewedAt) : '' }}<template v-if="req.reviewComment">: “{{ req.reviewComment }}”</template>
+                    </template>
+                    <template v-else-if="req.status === 'cancelled'">· {{ req.reviewComment || 'Cancelada por quien la pidió' }}</template>
                   </span>
                 </div>
 
-                <!-- Cambio de fecha -->
-                <div v-if="req.kind === 'due-date-extension'" class="mt-3 flex items-center gap-2.5 text-sm flex-wrap">
-                  <span class="px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-lg font-bold text-slate-400 line-through decoration-slate-300">
-                    {{ formatDate(req.currentDueDate) }}
-                  </span>
-                  <i class="fas fa-arrow-right text-slate-300 text-xs"></i>
-                  <span class="px-2.5 py-1 bg-amber-50 border border-amber-200 rounded-lg font-black text-amber-700">
-                    {{ formatDate(req.requestedDueDate) }}
-                  </span>
-                  <span v-if="extraDays(req)" class="px-2 py-0.5 rounded-md bg-slate-100 text-[11px] font-black text-slate-500">{{ extraDays(req) }}</span>
-                </div>
-
-                <p v-if="req.reason" class="mt-3 text-sm text-slate-600 bg-slate-50 rounded-xl px-3.5 py-2.5 border border-slate-100">
-                  <i class="fas fa-quote-left text-slate-300 text-[10px] mr-1"></i> {{ req.reason }}
-                </p>
-
-                <!-- Seguimiento para quien pidió -->
-                <ol v-if="box === 'mine'" class="mt-4 flex items-start gap-0 text-[11px]">
-                  <li v-for="(stepItem, i) in stepsOf(req)" :key="i" class="flex-1 min-w-0">
-                    <div class="flex items-center">
-                      <span class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[10px]" :class="stepItem.dot">
-                        <i :class="stepItem.icon"></i>
-                      </span>
-                      <span v-if="i < stepsOf(req).length - 1" class="flex-1 h-0.5 mx-1.5 rounded-full" :class="stepItem.line"></span>
-                    </div>
-                    <p class="mt-1.5 pr-2 font-black" :class="stepItem.titleClass">{{ stepItem.title }}</p>
-                    <p class="pr-2 text-slate-400 font-medium leading-snug">{{ stepItem.detail }}</p>
-                  </li>
-                </ol>
-
-                <!-- Resultado para el líder -->
-                <p v-if="box === 'inbox' && req.autoApproved" class="mt-3 text-xs text-slate-500">
-                  Aplicada de inmediato con permiso especial; no requirió tu aprobación.
-                </p>
-                <p v-else-if="box === 'inbox' && req.status !== 'pending'" class="mt-3 text-xs text-slate-500">
-                  <template v-if="req.reviewedBy">
-                    {{ req.status === 'approved' ? 'Aprobada' : 'Rechazada' }} por <strong>{{ req.reviewedBy.name }}</strong>
-                    {{ req.reviewedAt ? relative(req.reviewedAt) : '' }}
-                  </template>
-                  <template v-else-if="req.status === 'cancelled'">{{ req.reviewComment || 'Cancelada por quien la pidió' }}</template>
-                  <span v-if="req.reviewedBy && req.reviewComment">: “{{ req.reviewComment }}”</span>
+                <p v-if="req.reason" class="mt-1 text-[11px] text-slate-500 italic truncate" :title="req.reason">
+                  <i class="fas fa-quote-left text-slate-300 text-[9px] mr-1"></i>{{ req.reason }}
                 </p>
               </div>
 
               <!-- Acciones del líder -->
-              <div v-if="req.status === 'pending' && box === 'inbox'" class="lg:w-72 shrink-0 space-y-2.5">
-                <div v-if="!showComment[req._id]">
-                  <button @click="showComment[req._id] = true" class="text-xs font-bold text-slate-400 hover:text-primary-600 transition-colors">
-                    <i class="fas fa-comment-dots mr-1"></i> Agregar comentario
-                  </button>
-                </div>
-                <textarea
-                  v-else
-                  v-model="comments[req._id]"
-                  rows="2"
-                  placeholder="Comentario para quien lo pidió"
-                  class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-400 resize-none transition-all"
-                ></textarea>
-                <div class="grid grid-cols-2 gap-2">
-                  <button
-                    @click="review(req, 'reject')"
-                    :disabled="busyId === req._id"
-                    class="px-3 py-2.5 bg-white border border-slate-200 text-slate-600 hover:border-rose-200 hover:text-rose-600 hover:bg-rose-50 disabled:opacity-50 rounded-xl text-sm font-black transition-colors"
-                  >
-                    Rechazar
-                  </button>
-                  <button
-                    @click="review(req, 'approve')"
-                    :disabled="busyId === req._id"
-                    class="px-3 py-2.5 disabled:opacity-50 text-white rounded-xl text-sm font-black transition-colors shadow-sm"
-                    :class="req.kind === 'deletion' ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-200' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200'"
-                  >
-                    <i v-if="busyId === req._id" class="fas fa-spinner animate-spin"></i>
-                    <template v-else>{{ req.kind === 'deletion' ? 'Eliminar' : 'Aprobar' }}</template>
-                  </button>
-                </div>
+              <div v-if="req.status === 'pending' && box === 'inbox'" class="shrink-0 flex items-center gap-1.5">
+                <button
+                  @click="showComment[req._id] = !showComment[req._id]"
+                  :title="showComment[req._id] ? 'Ocultar comentario' : 'Agregar comentario'"
+                  class="w-7 h-7 rounded-lg flex items-center justify-center text-[11px] transition-colors"
+                  :class="showComment[req._id] || comments[req._id] ? 'bg-primary-50 text-primary-600' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'"
+                >
+                  <i class="fas fa-comment-dots"></i>
+                </button>
+                <button
+                  @click="review(req, 'reject')"
+                  :disabled="busyId === req._id"
+                  class="px-2.5 py-1.5 bg-white border border-slate-200 text-slate-600 hover:border-rose-200 hover:text-rose-600 hover:bg-rose-50 disabled:opacity-50 rounded-lg text-[11px] font-bold transition-colors"
+                >
+                  Rechazar
+                </button>
+                <button
+                  @click="review(req, 'approve')"
+                  :disabled="busyId === req._id"
+                  class="px-2.5 py-1.5 disabled:opacity-50 text-white rounded-lg text-[11px] font-bold transition-colors min-w-[72px]"
+                  :class="req.kind === 'deletion' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700'"
+                >
+                  <i v-if="busyId === req._id" class="fas fa-spinner animate-spin"></i>
+                  <template v-else>{{ req.kind === 'deletion' ? 'Eliminar' : 'Aprobar' }}</template>
+                </button>
               </div>
 
               <!-- Acción de quien pidió -->
-              <div v-else-if="req.status === 'pending' && box === 'mine'" class="lg:w-48 shrink-0 lg:text-right">
+              <div v-else-if="req.status === 'pending' && box === 'mine'" class="shrink-0">
                 <button
                   @click="cancel(req)"
                   :disabled="busyId === req._id"
-                  class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-500 bg-white border border-slate-200 rounded-xl hover:text-rose-600 hover:border-rose-200 disabled:opacity-50 transition-colors"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-bold text-slate-500 bg-white border border-slate-200 rounded-lg hover:text-rose-600 hover:border-rose-200 disabled:opacity-50 transition-colors"
                 >
-                  <i class="fas fa-xmark"></i> Retirar solicitud
+                  <i class="fas fa-xmark text-[10px]"></i> Retirar
                 </button>
               </div>
             </div>
+
+            <!-- Comentario del líder (desplegable) -->
+            <transition name="expand">
+              <div v-if="req.status === 'pending' && box === 'inbox' && showComment[req._id]" class="mt-2 pl-5">
+                <textarea
+                  v-model="comments[req._id]"
+                  rows="2"
+                  placeholder="Comentario para quien lo pidió"
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-primary-400 resize-none transition-all"
+                ></textarea>
+              </div>
+            </transition>
           </article>
         </div>
       </div>
@@ -338,6 +272,8 @@ import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { format, formatDistanceToNow, differenceInCalendarDays } from 'date-fns'
 import { es } from 'date-fns/locale'
 import PersonAvatar from '../components/ui/PersonAvatar.vue'
+import CustomSelect from '../components/ui/CustomSelect.vue'
+import Skeleton from '../components/ui/Skeleton.vue'
 import { useActivityModalStore } from '../stores/activityModal'
 import { useNotifications } from '../composables/useNotifications'
 import {
@@ -383,9 +319,9 @@ const statusOptions = computed(() => [
 ])
 
 const kindOptions = [
-  { value: '' as const, label: 'Todo', icon: 'fas fa-layer-group', activeClass: 'border-slate-800 bg-slate-800 text-white' },
-  { value: 'due-date-extension' as const, label: 'Ampliaciones de plazo', icon: 'fas fa-calendar-plus', activeClass: 'border-orange-500 bg-orange-500 text-white' },
-  { value: 'deletion' as const, label: 'Eliminaciones', icon: 'fas fa-trash-alt', activeClass: 'border-rose-500 bg-rose-500 text-white' }
+  { value: '' as const, label: 'Todos los tipos' },
+  { value: 'due-date-extension' as const, label: 'Ampliaciones de plazo' },
+  { value: 'deletion' as const, label: 'Eliminaciones' }
 ]
 
 const emptyState = computed(() => {
@@ -409,19 +345,28 @@ function approverNames(req: TaskApprovalRequest) {
 function stateOf(req: TaskApprovalRequest) {
   if (req.status === 'pending') {
     return box.value === 'inbox'
-      ? { label: 'Requiere tu aprobación', pill: 'bg-amber-100 text-amber-800', bar: 'bg-amber-400', icon: '', pulse: true }
-      : { label: `En espera de ${approverNames(req)}`, pill: 'bg-sky-100 text-sky-800', bar: 'bg-sky-400', icon: 'fas fa-hourglass-half', pulse: false }
+      ? { label: 'Requiere tu aprobación', text: 'text-amber-700', bar: 'bg-amber-400' }
+      : { label: `En espera de ${approverNames(req)}`, text: 'text-sky-700', bar: 'bg-sky-400' }
   }
   if (req.status === 'approved' && req.autoApproved) {
-    return { label: 'Autoaprobada', pill: 'bg-violet-100 text-violet-800', bar: 'bg-violet-500', icon: 'fas fa-bolt', pulse: false }
+    return { label: 'Autoaprobada', text: 'text-violet-700', bar: 'bg-violet-500' }
   }
   if (req.status === 'approved') {
-    return { label: 'Aprobada', pill: 'bg-emerald-100 text-emerald-800', bar: 'bg-emerald-400', icon: 'fas fa-check', pulse: false }
+    return { label: 'Aprobada', text: 'text-emerald-700', bar: 'bg-emerald-500' }
   }
   if (req.status === 'rejected') {
-    return { label: 'Rechazada', pill: 'bg-rose-100 text-rose-700', bar: 'bg-rose-400', icon: 'fas fa-xmark', pulse: false }
+    return { label: 'Rechazada', text: 'text-rose-700', bar: 'bg-rose-500' }
   }
-  return { label: box.value === 'mine' ? 'Retirada' : 'Cancelada', pill: 'bg-slate-100 text-slate-500', bar: 'bg-slate-300', icon: 'fas fa-ban', pulse: false }
+  return { label: box.value === 'mine' ? 'Retirada' : 'Cancelada', text: 'text-slate-500', bar: 'bg-slate-300' }
+}
+
+// Resumen en una línea de cómo quedó la solicitud (para quien pidió)
+function outcomeOf(req: TaskApprovalRequest) {
+  const steps = stepsOf(req)
+  const last = steps[steps.length - 1]
+  if (!last) return ''
+  if (req.status === 'pending' && !req.autoApproved) return `Lo revisa ${approverNames(req)}`
+  return last.detail
 }
 
 // Línea de tiempo para quien pidió: Enviada → En revisión → Resultado
