@@ -21,6 +21,10 @@ jobs:
         run: |
           npm install
           npm run build
+      - name: Add compression server and precompress assets
+        run: |
+          node azure/compress.js dist
+          cp azure/server.js azure/package.json dist/
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:

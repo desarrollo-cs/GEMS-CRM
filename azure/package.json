@@ -1,0 +1,9 @@
+{
+  "name": "gems-crm-frontend-server",
+  "private": true,
+  "description": "Servidor estático con compresión para el frontend en Azure App Service",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server.js"
+  }
+}
