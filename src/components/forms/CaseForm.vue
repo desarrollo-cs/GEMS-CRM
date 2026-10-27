@@ -20,46 +20,37 @@
           <label class="block text-sm font-medium text-gray-300 mb-2">
             <i class="fas fa-tag mr-2 text-purple-400"></i>Tipo *
           </label>
-          <select
-            v-model="form.tipo"
-            required
-            class="w-full px-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
-          >
-            <option value="" disabled>Selecciona un tipo</option>
-            <option value="documento">Documento</option>
-            <option value="incidencia">Incidencia</option>
-            <option value="seguimiento">Seguimiento</option>
-          </select>
+          <CustomSelect
+            :model-value="form.tipo ?? ''"
+            @update:model-value="form.tipo = $event"
+            size="md"
+            placeholder="Selecciona un tipo"
+            :options="[{ value: 'documento', label: 'Documento' }, { value: 'incidencia', label: 'Incidencia' }, { value: 'seguimiento', label: 'Seguimiento' }]"
+          />
         </div>
         
         <div>
           <label class="block text-sm font-medium text-gray-300 mb-2">
             <i class="fas fa-flag mr-2 text-purple-400"></i>Estado
           </label>
-          <select
-            v-model="form.estado"
-            class="w-full px-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
-          >
-            <option value="abierto">Abierto</option>
-            <option value="en_progreso">En Progreso</option>
-            <option value="resuelto">Resuelto</option>
-            <option value="cerrado">Cerrado</option>
-          </select>
+          <CustomSelect
+            :model-value="form.estado ?? ''"
+            @update:model-value="form.estado = $event"
+            size="md"
+            :options="[{ value: 'abierto', label: 'Abierto' }, { value: 'en_progreso', label: 'En Progreso' }, { value: 'resuelto', label: 'Resuelto' }, { value: 'cerrado', label: 'Cerrado' }]"
+          />
         </div>
         
         <div>
           <label class="block text-sm font-medium text-gray-300 mb-2">
             <i class="fas fa-star mr-2 text-purple-400"></i>Prioridad
           </label>
-          <select
-            v-model="form.prioridad"
-            class="w-full px-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
-          >
-            <option value="baja">Baja</option>
-            <option value="media">Media</option>
-            <option value="alta">Alta</option>
-            <option value="critica">Crítica</option>
-          </select>
+          <CustomSelect
+            :model-value="form.prioridad ?? ''"
+            @update:model-value="form.prioridad = $event"
+            size="md"
+            :options="[{ value: 'baja', label: 'Baja' }, { value: 'media', label: 'Media' }, { value: 'alta', label: 'Alta' }, { value: 'critica', label: 'Crítica' }]"
+          />
         </div>
       </div>
     </div>
@@ -232,6 +223,7 @@ import { ref, reactive, onMounted, watch } from 'vue'
 import { casesService, type Case, type CaseFile } from '../../services/casesService'
 import { useNotifications } from '../../composables/useNotifications'
 import { API_CONFIG } from '../../config/api'
+import CustomSelect from '../ui/CustomSelect.vue'
 
 // Composables
 const { showError, toast } = useNotifications()

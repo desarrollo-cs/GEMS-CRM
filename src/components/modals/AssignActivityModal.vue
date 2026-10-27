@@ -69,18 +69,13 @@
             Seleccionar Responsable
           </label>
           <div class="relative group">
-            <select
+            <CustomSelect
               v-model="selectedAssignee"
-              class="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all text-sm font-bold appearance-none cursor-pointer shadow-sm"
-            >
-              <option value="">Sin asignar (Eliminar responsable)</option>
-              <option v-for="member in teamMembers" :key="member._id" :value="member._id">
-                {{ member.name }} — {{ member.role }}
-              </option>
-            </select>
-            <div class="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-primary-500 transition-colors">
-              <i class="fas fa-chevron-down text-xs"></i>
-            </div>
+              :options="assigneeOptions"
+              placeholder="Sin asignar (Eliminar responsable)"
+              size="dense"
+              searchable
+            />
           </div>
         </div>
 
@@ -121,6 +116,7 @@
 
 <script setup lang="ts">
 import PersonAvatar from "../ui/PersonAvatar.vue"
+import CustomSelect from '../ui/CustomSelect.vue'
 import { ref, computed, onMounted } from 'vue'
 import type { ActivityData } from '../../services/activityService'
 import type { TeamMember } from '../../types'
@@ -139,6 +135,11 @@ const emit = defineEmits<{
 
 const loading = ref(false)
 const selectedAssignee = ref('')
+
+const assigneeOptions = computed(() => [
+  { value: '', label: 'Sin asignar (Eliminar responsable)' },
+  ...props.teamMembers.map(member => ({ value: member._id as string, label: `${member.name} — ${member.role}` }))
+])
 
 const selectedMember = computed(() => {
   if (!selectedAssignee.value) return null

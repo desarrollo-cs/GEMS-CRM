@@ -35,14 +35,13 @@
           
           <div class="flex items-center gap-2 w-full sm:w-auto">
             <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Ordenar por</span>
-            <select 
-              v-model="sortBy" 
-              class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 text-[11px] font-bold text-slate-700 outline-none cursor-pointer focus:bg-white focus:border-primary-500 transition-all"
-            >
-              <option value="company">Empresa / Organización</option>
-              <option value="name">Nombre de contacto</option>
-              <option value="createdAt">Recientes</option>
-            </select>
+            <div class="w-full sm:w-auto min-w-[200px]">
+              <CustomSelect
+                v-model="sortBy"
+                :options="[{ value: 'company', label: 'Empresa / Organización' }, { value: 'name', label: 'Nombre de contacto' }, { value: 'createdAt', label: 'Recientes' }]"
+                size="sm"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -336,6 +335,7 @@
 
 <script setup lang="ts">
 import Skeleton from '@/components/ui/Skeleton.vue'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useClientStore } from '../stores/clientStore'
 import type { Client, ClientForm } from '../types'

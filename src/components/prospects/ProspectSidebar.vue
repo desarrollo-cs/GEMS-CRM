@@ -48,16 +48,13 @@
       <!-- Fuente -->
       <div>
         <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Fuente</label>
-        <select
-          :value="prospect.source || ''"
-          @change="updateSource(($event.target as HTMLSelectElement).value as ProspectSource)"
-          class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 focus:bg-white focus:border-violet-500 outline-none cursor-pointer"
-        >
-          <option value="">— Sin definir —</option>
-          <option v-for="src in PROSPECT_SOURCES" :key="src.value" :value="src.value">
-            {{ src.label }}
-          </option>
-        </select>
+        <CustomSelect
+          :model-value="prospect.source || ''"
+          :options="sourceOptions"
+          placeholder="— Sin definir —"
+          size="sm"
+          @change="(v: string | number | null) => updateSource((v ?? '') as ProspectSource | '')"
+        />
       </div>
 
       <!-- Contacto -->
@@ -132,6 +129,7 @@ import { es } from 'date-fns/locale'
 import type { Prospect, ProspectSource, ProspectTask } from '@/types/prospect'
 import { PROSPECT_SOURCES, probabilityFor } from '@/types/prospect'
 import { prospectService } from '@/services/prospectService'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
 
 interface Props {
   prospect: Prospect
@@ -200,6 +198,11 @@ const saveValue = async () => {
   emit('updated', { ...props.prospect, estimatedValue: v })
   await prospectService.setMetadata(props.prospect._id, { estimatedValue: v })
 }
+
+const sourceOptions = computed(() => [
+  { value: '', label: '— Sin definir —' },
+  ...PROSPECT_SOURCES.map(src => ({ value: src.value, label: src.label }))
+])
 
 const updateSource = async (source: ProspectSource | '') => {
   const value = (source || undefined) as ProspectSource | undefined

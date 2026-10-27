@@ -471,31 +471,21 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 block">Estado</label>
-              <select
+              <CustomSelect
                 v-model="selectedTask.boardStatus"
+                size="md"
                 @change="updateTaskStatus"
-                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                <option value="backlog">Backlog</option>
-                <option value="todo">To Do</option>
-                <option value="in-progress">In Progress</option>
-                <option value="review">Review</option>
-                <option value="testing">Testing</option>
-                <option value="done">Done</option>
-              </select>
+                :options="[{ value: 'backlog', label: 'Backlog' }, { value: 'todo', label: 'To Do' }, { value: 'in-progress', label: 'In Progress' }, { value: 'review', label: 'Review' }, { value: 'testing', label: 'Testing' }, { value: 'done', label: 'Done' }]"
+              />
             </div>
             <div>
               <label class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 block">Prioridad</label>
-              <select
+              <CustomSelect
                 v-model="selectedTask.priority"
+                size="md"
                 @change="updateTaskPriority"
-                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
-              </select>
+                :options="[{ value: 'low', label: 'Low' }, { value: 'medium', label: 'Medium' }, { value: 'high', label: 'High' }, { value: 'urgent', label: 'Urgent' }]"
+              />
             </div>
           </div>
 
@@ -546,16 +536,13 @@
           <!-- Sprint -->
           <div v-if="selectedBoard?.type === 'scrum'">
             <label class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 block">Sprint</label>
-            <select
+            <CustomSelect
               v-model="selectedTask.sprint"
+              size="md"
               @change="updateTaskSprint"
-              class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              <option value="">Backlog</option>
-              <option v-for="sprint in selectedBoard.sprints" :key="sprint._id" :value="sprint._id">
-                {{ sprint.name }} ({{ sprint.status }})
-              </option>
-            </select>
+              :options="selectedTaskSprintOptions"
+              placeholder="Backlog"
+            />
           </div>
           <div v-else>
             <label class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 block">Sprint</label>
@@ -748,42 +735,33 @@
           <!-- Repositorio -->
           <div>
             <label class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 block">Repositorio</label>
-            <select
+            <CustomSelect
               v-model="branchForm.repository"
-              class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 font-medium"
-            >
-              <option value="">Seleccionar...</option>
-              <option v-for="repo in githubStore.repositories" :key="repo.name" :value="repo.full_name">
-                {{ repo.name }}
-              </option>
-            </select>
+              size="md"
+              searchable
+              :options="branchRepositoryOptions"
+              placeholder="Seleccionar..."
+            />
           </div>
 
           <!-- Tipo -->
           <div>
             <label class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 block">Tipo</label>
-            <select
+            <CustomSelect
               v-model="branchForm.type"
-              class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 font-medium"
-            >
-              <option value="feature">Feature</option>
-              <option value="bugfix">Bugfix</option>
-              <option value="hotfix">Hotfix</option>
-              <option value="release">Release</option>
-            </select>
+              size="md"
+              :options="[{ value: 'feature', label: 'Feature' }, { value: 'bugfix', label: 'Bugfix' }, { value: 'hotfix', label: 'Hotfix' }, { value: 'release', label: 'Release' }]"
+            />
           </div>
 
           <!-- Rama base -->
           <div>
             <label class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 block">Desde rama</label>
-            <select
+            <CustomSelect
               v-model="branchForm.baseBranch"
-              class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 font-medium"
-            >
-              <option value="master">master</option>
-              <option value="main">main</option>
-              <option value="develop">develop</option>
-            </select>
+              size="md"
+              :options="[{ value: 'master', label: 'master' }, { value: 'main', label: 'main' }, { value: 'develop', label: 'develop' }]"
+            />
           </div>
 
           <!-- Nombre de la rama (editable) -->
@@ -1847,17 +1825,11 @@
               <!-- Tipo -->
               <div>
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Tipo *</label>
-                <select
+                <CustomSelect
                   v-model="newTask.type"
-                  required
-                  class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="epic">Épica</option>
-                  <option value="feature">Feature</option>
-                  <option value="user-story">User Story</option>
-                  <option value="task">Task</option>
-                  <option value="bug">Bug</option>
-                </select>
+                  size="md"
+                  :options="[{ value: 'epic', label: 'Épica' }, { value: 'feature', label: 'Feature' }, { value: 'user-story', label: 'User Story' }, { value: 'task', label: 'Task' }, { value: 'bug', label: 'Bug' }]"
+                />
               </div>
 
               <!-- Relación Jerárquica: Épica (solo para Features) -->
@@ -1866,16 +1838,14 @@
                   <i class="fas fa-mountain text-primary-500 mr-1"></i>
                   Épica *
                 </label>
-                <select
-                  v-model="newTask.epicId"
-                  required
-                  class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="">Selecciona una épica</option>
-                  <option v-for="epic in getEpics()" :key="epic._id" :value="epic._id">
-                    {{ epic.title }}
-                  </option>
-                </select>
+                <CustomSelect
+                  :model-value="newTask.epicId ?? ''"
+                  @update:model-value="newTask.epicId = String($event ?? '')"
+                  size="md"
+                  searchable
+                  :options="newTaskEpicOptions"
+                  placeholder="Selecciona una épica"
+                />
               </div>
 
               <!-- Relación Jerárquica: Feature (solo para User Stories) -->
@@ -1884,16 +1854,14 @@
                   <i class="fas fa-layer-group text-blue-500 mr-1"></i>
                   Feature *
                 </label>
-                <select
-                  v-model="newTask.featureId"
-                  required
-                  class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="">Selecciona una feature</option>
-                  <option v-for="feature in tasksStore.tasks.filter(t => t.type === 'feature')" :key="feature._id" :value="feature._id">
-                    {{ feature.title }}
-                  </option>
-                </select>
+                <CustomSelect
+                  :model-value="newTask.featureId ?? ''"
+                  @update:model-value="newTask.featureId = String($event ?? '')"
+                  size="md"
+                  searchable
+                  :options="newTaskFeatureOptions"
+                  placeholder="Selecciona una feature"
+                />
               </div>
 
               <!-- Relación Jerárquica: User Story (solo para Tasks) -->
@@ -1902,72 +1870,57 @@
                   <i class="fas fa-book-open text-emerald-500 mr-1"></i>
                   User Story (opcional)
                 </label>
-                <select
-                  v-model="newTask.userStoryId"
-                  class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="">Sin User Story (tarea independiente)</option>
-                  <option v-for="story in tasksStore.tasks.filter(t => t.type === 'user-story')" :key="story._id" :value="story._id">
-                    {{ story.title }}
-                  </option>
-                </select>
+                <CustomSelect
+                  :model-value="newTask.userStoryId ?? ''"
+                  @update:model-value="newTask.userStoryId = String($event ?? '')"
+                  size="md"
+                  searchable
+                  :options="newTaskUserStoryOptions"
+                  placeholder="Sin User Story (tarea independiente)"
+                />
               </div>
 
               <!-- Prioridad -->
               <div>
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Prioridad *</label>
-                <select
+                <CustomSelect
                   v-model="newTask.priority"
-                  required
-                  class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="low">Baja</option>
-                  <option value="medium">Media</option>
-                  <option value="high">Alta</option>
-                  <option value="critical">Crítica</option>
-                </select>
+                  size="md"
+                  :options="[{ value: 'low', label: 'Baja' }, { value: 'medium', label: 'Media' }, { value: 'high', label: 'Alta' }, { value: 'critical', label: 'Crítica' }]"
+                />
               </div>
 
               <!-- Estado del Board -->
               <div>
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Estado *</label>
-                <select
+                <CustomSelect
                   v-model="newTask.boardStatus"
-                  required
-                  class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  <option v-for="column in selectedBoard?.columns" :key="column.id" :value="column.mappedStatus">
-                    {{ column.name }}
-                  </option>
-                </select>
+                  size="md"
+                  :options="newTaskBoardStatusOptions"
+                />
               </div>
 
               <!-- Sprint -->
               <div v-if="selectedBoard?.type === 'scrum'">
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Sprint</label>
-                <select
+                <CustomSelect
                   v-model="newTask.sprint"
-                  class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="">Backlog</option>
-                  <option v-for="sprint in selectedBoard?.sprints" :key="sprint._id" :value="sprint._id">
-                    {{ sprint.name }}
-                  </option>
-                </select>
+                  size="md"
+                  :options="newTaskSprintOptions"
+                  placeholder="Backlog"
+                />
               </div>
 
               <!-- Asignado a -->
               <div>
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Asignar a</label>
-                <select
+                <CustomSelect
                   v-model="newTask.assignedTo"
-                  class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="">Sin asignar</option>
-                  <option v-for="member in teamMembers" :key="member._id" :value="member._id">
-                    {{ member.name }}
-                  </option>
-                </select>
+                  size="md"
+                  searchable
+                  :options="newTaskAssigneeOptions"
+                  placeholder="Sin asignar"
+                />
               </div>
 
               <!-- Story Points -->
@@ -1985,23 +1938,12 @@
               <!-- Estimación -->
               <div class="col-span-2">
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Estimación de tiempo</label>
-                <select
+                <CustomSelect
                   v-model="newTask.estimatedTime"
-                  class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="">Sin estimación</option>
-                  <option value="15m">15 minutos</option>
-                  <option value="30m">30 minutos</option>
-                  <option value="1h">1 hora</option>
-                  <option value="2h">2 horas</option>
-                  <option value="3h">3 horas</option>
-                  <option value="4h">4 horas</option>
-                  <option value="1d">1 día</option>
-                  <option value="2d">2 días</option>
-                  <option value="3d">3 días</option>
-                  <option value="1w">1 semana</option>
-                  <option value="2w">2 semanas</option>
-                </select>
+                  size="md"
+                  :options="[{ value: '', label: 'Sin estimación' }, { value: '15m', label: '15 minutos' }, { value: '30m', label: '30 minutos' }, { value: '1h', label: '1 hora' }, { value: '2h', label: '2 horas' }, { value: '3h', label: '3 horas' }, { value: '4h', label: '4 horas' }, { value: '1d', label: '1 día' }, { value: '2d', label: '2 días' }, { value: '3d', label: '3 días' }, { value: '1w', label: '1 semana' }, { value: '2w', label: '2 semanas' }]"
+                  placeholder="Sin estimación"
+                />
               </div>
 
               <!-- Etiquetas -->
@@ -2085,17 +2027,14 @@
                 No hay clientes disponibles. Debes crear un cliente primero.
               </div>
               
-              <select
+              <CustomSelect
                 v-model="newBoard.clientId"
-                required
+                size="md"
+                searchable
                 :disabled="clients.length === 0"
-                class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-              >
-                <option value="">{{ clients.length === 0 ? 'No hay clientes disponibles' : 'Selecciona un cliente' }}</option>
-                <option v-for="client in clients" :key="client._id" :value="client._id">
-                  {{ client.name }}{{ client.company ? ` - ${client.company}` : '' }}
-                </option>
-              </select>
+                :options="newBoardClientOptions"
+                :placeholder="clients.length === 0 ? 'No hay clientes disponibles' : 'Selecciona un cliente'"
+              />
               <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider mt-1.5 flex items-center gap-1">
                 <i class="fas fa-info-circle"></i>
                 El tablero se asociará a este cliente/proyecto
@@ -2352,17 +2291,12 @@
             <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
               Estado en Tablero
             </label>
-            <select
+            <CustomSelect
               v-model="taskFilters.boardStatus"
-              class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm"
-            >
-              <option value="">Todos los estados</option>
-              <option value="backlog">📋 Backlog</option>
-              <option value="todo">📝 Por Hacer</option>
-              <option value="in-progress">🔄 En Progreso</option>
-              <option value="review">👀 En Revisión</option>
-              <option value="done">✅ Completado</option>
-            </select>
+              size="md"
+              :options="[{ value: '', label: 'Todos los estados' }, { value: 'backlog', label: '📋 Backlog' }, { value: 'todo', label: '📝 Por Hacer' }, { value: 'in-progress', label: '🔄 En Progreso' }, { value: 'review', label: '👀 En Revisión' }, { value: 'done', label: '✅ Completado' }]"
+              placeholder="Todos los estados"
+            />
           </div>
 
           <!-- Filtro por Prioridad -->
@@ -2370,16 +2304,12 @@
             <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
               Prioridad
             </label>
-            <select
+            <CustomSelect
               v-model="taskFilters.priority"
-              class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm"
-            >
-              <option value="">Todas las prioridades</option>
-              <option value="critical">🔴 Crítica</option>
-              <option value="high">🟠 Alta</option>
-              <option value="medium">🟡 Media</option>
-              <option value="low">🟢 Baja</option>
-            </select>
+              size="md"
+              :options="[{ value: '', label: 'Todas las prioridades' }, { value: 'critical', label: '🔴 Crítica' }, { value: 'high', label: '🟠 Alta' }, { value: 'medium', label: '🟡 Media' }, { value: 'low', label: '🟢 Baja' }]"
+              placeholder="Todas las prioridades"
+            />
           </div>
 
           <!-- Filtro por Tipo -->
@@ -2387,17 +2317,12 @@
             <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
               Tipo de Tarea
             </label>
-            <select
+            <CustomSelect
               v-model="taskFilters.type"
-              class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm"
-            >
-              <option value="">Todos los tipos</option>
-              <option value="epic">🎯 Epic</option>
-              <option value="feature">⭐ Feature</option>
-              <option value="user-story">📖 User Story</option>
-              <option value="task">✅ Task</option>
-              <option value="bug">🐛 Bug</option>
-            </select>
+              size="md"
+              :options="[{ value: '', label: 'Todos los tipos' }, { value: 'epic', label: '🎯 Epic' }, { value: 'feature', label: '⭐ Feature' }, { value: 'user-story', label: '📖 User Story' }, { value: 'task', label: '✅ Task' }, { value: 'bug', label: '🐛 Bug' }]"
+              placeholder="Todos los tipos"
+            />
           </div>
 
           <!-- Filtro por Asignado -->
@@ -2405,16 +2330,13 @@
             <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
               Asignado a
             </label>
-            <select
+            <CustomSelect
               v-model="taskFilters.assignedTo"
-              class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm"
-            >
-              <option value="">Todos los miembros</option>
-              <option value="unassigned">Sin asignar</option>
-              <option v-for="member in teamMembers" :key="member._id" :value="member._id">
-                {{ member.name }}
-              </option>
-            </select>
+              size="md"
+              searchable
+              :options="taskFilterAssigneeOptions"
+              placeholder="Todos los miembros"
+            />
           </div>
 
           <!-- Filtro por Tags -->
@@ -4693,6 +4615,57 @@ const getTasksByStatus = (status: string) => {
 const getEpics = () => {
   return filteredTasks.value.filter(task => task.type === 'epic')
 }
+
+// Opciones para CustomSelect (mismos valores/etiquetas que los <option> originales)
+const selectedTaskSprintOptions = computed(() => [
+  { value: '', label: 'Backlog' },
+  ...(selectedBoard.value?.sprints || []).map(sprint => ({ value: sprint._id, label: `${sprint.name} (${sprint.status})` }))
+])
+
+const branchRepositoryOptions = computed(() => [
+  { value: '', label: 'Seleccionar...' },
+  ...githubStore.repositories.map(repo => ({ value: repo.full_name, label: repo.name }))
+])
+
+const newTaskEpicOptions = computed(() => [
+  { value: '', label: 'Selecciona una épica' },
+  ...getEpics().map(epic => ({ value: epic._id, label: epic.title }))
+])
+
+const newTaskFeatureOptions = computed(() => [
+  { value: '', label: 'Selecciona una feature' },
+  ...tasksStore.tasks.filter(t => t.type === 'feature').map(feature => ({ value: feature._id, label: feature.title }))
+])
+
+const newTaskUserStoryOptions = computed(() => [
+  { value: '', label: 'Sin User Story (tarea independiente)' },
+  ...tasksStore.tasks.filter(t => t.type === 'user-story').map(story => ({ value: story._id, label: story.title }))
+])
+
+const newTaskBoardStatusOptions = computed(() =>
+  (selectedBoard.value?.columns || []).map(column => ({ value: (column as { mappedStatus?: string }).mappedStatus ?? '', label: column.name }))
+)
+
+const newTaskSprintOptions = computed(() => [
+  { value: '', label: 'Backlog' },
+  ...(selectedBoard.value?.sprints || []).map(sprint => ({ value: sprint._id, label: sprint.name }))
+])
+
+const newTaskAssigneeOptions = computed(() => [
+  { value: '', label: 'Sin asignar' },
+  ...teamMembers.value.map(member => ({ value: member._id ?? '', label: member.name }))
+])
+
+const newBoardClientOptions = computed(() => [
+  { value: '', label: clients.value.length === 0 ? 'No hay clientes disponibles' : 'Selecciona un cliente' },
+  ...clients.value.map(client => ({ value: client._id ?? '', label: `${client.name}${client.company ? ` - ${client.company}` : ''}` }))
+])
+
+const taskFilterAssigneeOptions = computed(() => [
+  { value: '', label: 'Todos los miembros' },
+  { value: 'unassigned', label: 'Sin asignar' },
+  ...teamMembers.value.map(member => ({ value: member._id ?? '', label: member.name }))
+])
 
 const getEpicFeatures = (epicId: string) => {
   return filteredTasks.value.filter(task => task.type === 'feature' && task.epicId === epicId)

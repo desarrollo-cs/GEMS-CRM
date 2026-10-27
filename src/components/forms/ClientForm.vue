@@ -60,14 +60,16 @@
       <label class="block text-sm font-medium text-gray-300 mb-2">
         Estado
       </label>
-      <select
-        v-model="form.status"
-        class="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-      >
-        <option value="prospect">Prospecto</option>
-        <option value="active">Activo</option>
-        <option value="inactive">Inactivo</option>
-      </select>
+      <CustomSelect
+        :model-value="form.status ?? ''"
+        @update:model-value="form.status = $event"
+        :options="[
+          { value: 'prospect', label: 'Prospecto' },
+          { value: 'active', label: 'Activo' },
+          { value: 'inactive', label: 'Inactivo' }
+        ]"
+        size="md"
+      />
     </div>
 
     <!-- Dirección -->
@@ -119,6 +121,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch } from 'vue'
+import CustomSelect from '../ui/CustomSelect.vue'
 import { clientService, type ClientData } from '../../services/clientService'
 
 // Props

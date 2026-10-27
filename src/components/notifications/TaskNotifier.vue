@@ -64,45 +64,43 @@
             <!-- Filtro por persona -->
             <div>
               <label class="block text-xs font-medium text-gray-400 mb-1">Persona asignada</label>
-              <select 
-                v-model="filters.assignedTo" 
-                class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Todas las personas</option>
-                <option v-for="user in uniqueUsers" :key="user._id" :value="user._id">
-                  {{ user.name }}
-                </option>
-              </select>
+              <CustomSelect
+                v-model="filters.assignedTo"
+                :options="assignedToOptions"
+                placeholder="Todas las personas"
+                size="sm"
+                searchable
+              />
             </div>
             
             <!-- Filtro por cliente -->
             <div>
               <label class="block text-xs font-medium text-gray-400 mb-1">Cliente</label>
-              <select 
-                v-model="filters.clientId" 
-                class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Todos los clientes</option>
-                <option v-for="client in uniqueClients" :key="client._id" :value="client._id">
-                  {{ client.name }}
-                </option>
-              </select>
+              <CustomSelect
+                v-model="filters.clientId"
+                :options="clientOptions"
+                placeholder="Todos los clientes"
+                size="sm"
+                searchable
+              />
             </div>
             
             <!-- Filtro por estado -->
             <div>
               <label class="block text-xs font-medium text-gray-400 mb-1">Estado</label>
-              <select 
-                v-model="filters.status" 
-                class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Todos los estados</option>
-                <option value="pending">Pendiente</option>
-                <option value="in-progress">En progreso</option>
-                <option value="completed">Completada</option>
-                <option value="overdue">Vencida</option>
-                <option value="cancelled">Cancelada</option>
-              </select>
+              <CustomSelect
+                v-model="filters.status"
+                :options="[
+                  { value: '', label: 'Todos los estados' },
+                  { value: 'pending', label: 'Pendiente' },
+                  { value: 'in-progress', label: 'En progreso' },
+                  { value: 'completed', label: 'Completada' },
+                  { value: 'overdue', label: 'Vencida' },
+                  { value: 'cancelled', label: 'Cancelada' }
+                ]"
+                placeholder="Todos los estados"
+                size="sm"
+              />
             </div>
             
             <!-- Filtro por fechas -->
@@ -246,6 +244,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, defineProps, computed } from 'vue'
+import CustomSelect from '../ui/CustomSelect.vue'
 import { taskReportService } from '../../services/taskReportService'
 import { useToast } from '../../composables/useToast'
 
@@ -427,6 +426,16 @@ const uniqueClients = computed(() => {
   
   return Object.values(clients);
 })
+
+const assignedToOptions = computed(() => [
+  { value: '', label: 'Todas las personas' },
+  ...uniqueUsers.value.map((user: any) => ({ value: user._id, label: user.name }))
+])
+
+const clientOptions = computed(() => [
+  { value: '', label: 'Todos los clientes' },
+  ...uniqueClients.value.map((client: any) => ({ value: client._id, label: client.name }))
+])
 
 // Obtener nombre de usuario asignado para mostrar
 function getAssignedUserName(activity: Activity): string {

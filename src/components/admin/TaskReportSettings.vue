@@ -245,18 +245,21 @@
             <!-- Días de anticipación -->
             <div class="flex items-center gap-2">
               <span class="text-sm text-gray-300 w-28">Anticipación:</span>
-              <select 
-                v-model="settings.dueTomorrowAdvanceDays" 
-                class="bg-gray-700 text-white border border-gray-600 rounded-lg px-3 py-1 focus:border-yellow-500 focus:outline-none"
-                @change="updateSettings"
-              >
-                <option value="0">Mismo día</option>
-                <option value="1">1 día antes</option>
-                <option value="2">2 días antes</option>
-                <option value="3">3 días antes</option>
-                <option value="5">5 días antes</option>
-                <option value="7">1 semana antes</option>
-              </select>
+              <div class="min-w-[160px]">
+                <CustomSelect
+                  v-model="settings.dueTomorrowAdvanceDays"
+                  :options="[
+                    { value: 0, label: 'Mismo día' },
+                    { value: 1, label: '1 día antes' },
+                    { value: 2, label: '2 días antes' },
+                    { value: 3, label: '3 días antes' },
+                    { value: 5, label: '5 días antes' },
+                    { value: 7, label: '1 semana antes' }
+                  ]"
+                  size="sm"
+                  @change="updateSettings"
+                />
+              </div>
               
               <!-- Visualización en texto -->
               <span class="text-xs text-yellow-400 bg-yellow-900/30 px-2 py-1 rounded">
@@ -341,6 +344,7 @@
 
 <script setup lang="ts">
 import AppLoader from '@/components/ui/AppLoader.vue'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
 import { ref, onMounted } from 'vue'
 import { taskReportService } from '../../services/taskReportService'
 import { useToast } from '../../composables/useToast'

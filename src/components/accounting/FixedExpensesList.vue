@@ -26,14 +26,18 @@
             class="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
           >
         </div>
-        <select
-          v-model="statusFilter"
-          class="px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-        >
-          <option value="" class="bg-gray-700">Todos los estados</option>
-          <option value="true" class="bg-gray-700">Activos</option>
-          <option value="false" class="bg-gray-700">Inactivos</option>
-        </select>
+        <div class="min-w-[180px]">
+          <CustomSelect
+            v-model="statusFilter"
+            :options="[
+              { value: '', label: 'Todos los estados' },
+              { value: 'true', label: 'Activos' },
+              { value: 'false', label: 'Inactivos' }
+            ]"
+            placeholder="Todos los estados"
+            size="md"
+          />
+        </div>
       </div>
     </div>
 
@@ -143,6 +147,7 @@
 
 <script setup lang="ts">
 import AppLoader from '@/components/ui/AppLoader.vue'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
 import { ref, computed } from 'vue'
 import type { FixedExpense } from '../../services/accountingService'
 

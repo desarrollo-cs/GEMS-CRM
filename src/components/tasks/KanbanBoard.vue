@@ -27,21 +27,15 @@
           </button>
 
           <!-- Sprint selector (only for Scrum) -->
-          <select
-            v-if="board?.type === 'scrum' && sprints.length > 0"
-            v-model="selectedSprintId"
-            @change="loadTasks"
-            class="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all"
-          >
-            <option :value="null">Backlog</option>
-            <option 
-              v-for="sprint in sprints" 
-              :key="sprint._id"
-              :value="sprint._id"
-            >
-              {{ sprint.name }} ({{ sprintStatus(sprint) }})
-            </option>
-          </select>
+          <div v-if="board?.type === 'scrum' && sprints.length > 0" class="min-w-[180px]">
+            <CustomSelect
+              v-model="selectedSprintId"
+              @change="loadTasks"
+              :options="sprintOptions"
+              placeholder="Backlog"
+              size="sm"
+            />
+          </div>
 
           <!-- Add Task -->
           <button
@@ -62,33 +56,30 @@
         <div class="grid grid-cols-4 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-            <select v-model="filters.type" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
-              <option value="">Todos</option>
-              <option value="task">Task</option>
-              <option value="bug">Bug</option>
-              <option value="feature">Feature</option>
-              <option value="user-story">User Story</option>
-              <option value="epic">Epic</option>
-            </select>
+            <CustomSelect
+              v-model="filters.type"
+              :options="[{ value: '', label: 'Todos' }, { value: 'task', label: 'Task' }, { value: 'bug', label: 'Bug' }, { value: 'feature', label: 'Feature' }, { value: 'user-story', label: 'User Story' }, { value: 'epic', label: 'Epic' }]"
+              placeholder="Todos"
+              size="md"
+            />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Prioridad</label>
-            <select v-model="filters.priority" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
-              <option value="">Todas</option>
-              <option value="low">Baja</option>
-              <option value="medium">Media</option>
-              <option value="high">Alta</option>
-              <option value="critical">Crítica</option>
-            </select>
+            <CustomSelect
+              v-model="filters.priority"
+              :options="[{ value: '', label: 'Todas' }, { value: 'low', label: 'Baja' }, { value: 'medium', label: 'Media' }, { value: 'high', label: 'Alta' }, { value: 'critical', label: 'Crítica' }]"
+              placeholder="Todas"
+              size="md"
+            />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-            <select v-model="filters.status" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
-              <option value="">Todos</option>
-              <option value="active">Activo</option>
-              <option value="blocked">Bloqueado</option>
-              <option value="completed">Completado</option>
-            </select>
+            <CustomSelect
+              v-model="filters.status"
+              :options="[{ value: '', label: 'Todos' }, { value: 'active', label: 'Activo' }, { value: 'blocked', label: 'Bloqueado' }, { value: 'completed', label: 'Completado' }]"
+              placeholder="Todos"
+              size="md"
+            />
           </div>
           <div class="flex items-end">
             <button
@@ -135,6 +126,7 @@
 
 <script setup lang="ts">
 import Skeleton from '@/components/ui/Skeleton.vue'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useBoardsStore } from '@/stores/boards'
@@ -158,6 +150,11 @@ const filters = ref({
 const board = computed(() => boardsStore.currentBoard)
 const sprints = computed(() => boardsStore.currentBoardSprints)
 const loading = computed(() => boardsStore.loading || (tasksStore.loading && !isTaskDetailOpen.value))
+
+const sprintOptions = computed(() => [
+  { value: null, label: 'Backlog' },
+  ...sprints.value.map((sprint: any) => ({ value: sprint._id, label: `${sprint.name} (${sprintStatus(sprint)})` }))
+])
 
 const columns = computed(() => {
   if (!board.value) return []

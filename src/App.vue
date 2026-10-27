@@ -5,115 +5,29 @@
     
     <!-- Show main app if authenticated -->
   <div v-else class="min-h-screen bg-slate-50">
-      <!-- Navigation Sidebar -->
-      <div 
-        class="fixed inset-y-0 left-0 z-50 bg-white border-r border-slate-200 shadow-sm transition-all duration-300 ease-in-out lg:translate-x-0" 
-        :class="[
-          !sidebarOpen && !isDesktop ? '-translate-x-full' : 'translate-x-0',
-          isSidebarMini ? 'w-20' : 'w-64'
-        ]"
-      >
-        <!-- Toggle Button (Minimalist) -->
-        <button :title="isSidebarMini ? 'Expandir menú' : 'Contraer menú'" 
-          @click="isSidebarMini = !isSidebarMini"
-          class="hidden lg:flex absolute -right-3 top-7 w-6 h-6 bg-white text-slate-400 rounded-md items-center justify-center shadow-sm border border-slate-200 z-[60] transition-all hover:text-primary-600 hover:border-primary-300 active:scale-95"
-          :class="isSidebarMini ? 'rotate-180' : ''"
+      <!-- Barra lateral (escritorio: colapsable; móvil: drawer con overlay) -->
+      <AppSidebar
+        :modules="availableModules"
+        :user="authStore.user"
+        :open="sidebarOpen"
+        v-model:mini="isSidebarMini"
+        :is-desktop="isDesktop"
+        :approvals-to-review="approvalsToReview"
+        @close="sidebarOpen = false"
+        @logout="handleLogout"
+      />
+
+      <!-- Botón de menú (móvil) -->
+      <div class="lg:hidden fixed top-3 left-4 z-30">
+        <button
+          type="button"
+          title="Abrir menú"
+          aria-label="Abrir menú"
+          @click="sidebarOpen = true"
+          class="w-10 h-10 rounded-xl bg-white/90 backdrop-blur shadow-sm text-slate-600 border border-slate-200 flex items-center justify-center hover:text-primary-600 hover:border-primary-300"
         >
-          <i class="fas fa-chevron-left text-[9px]"></i>
-        </button>
-
-        <!-- Logo -->
-        <div 
-          class="flex items-center justify-center h-20 overflow-hidden transition-all duration-300"
-          :class="isSidebarMini ? 'opacity-0 h-0 border-none' : 'opacity-100 h-20'"
-        >
-          <img 
-            v-if="!isSidebarMini"
-            :src="logoCT" 
-            alt="Logo" 
-            class="h-28 w-auto transition-opacity duration-300 object-contain scale-110"
-          />
-        </div>
-
-        <!-- User Info -->
-        <div class="px-3 py-5 border-b border-slate-100 overflow-hidden transition-all" :class="isSidebarMini ? 'flex justify-center' : 'px-6'">
-          <div class="flex items-center min-w-0">
-            <UserAvatar
-              :name="authStore.user?.name || 'Usuario'"
-              :avatar="authStore.user?.avatar"
-              :photo="authStore.user?.photo || undefined"
-              size="md"
-              :clickable="true"
-              @click="router.push('/profile')"
-              class="shadow-sm border border-slate-200 flex-shrink-0"
-            />
-            <div v-if="!isSidebarMini" class="ml-3 min-w-0 transition-opacity duration-300">
-              <p class="text-slate-800 text-sm font-black truncate">{{ authStore.user?.name }}</p>
-              <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest truncate">{{ getRoleDisplayName(authStore.user?.role) }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Navigation Menu -->
-        <nav class="mt-6 flex-1 px-3 overflow-y-auto max-h-[calc(100vh-250px)] custom-scrollbar">
-          <div class="space-y-1.5">
-            <router-link
-              v-for="module in availableModules"
-              :key="module.id"
-              :to="module.path"
-              :class="[
-                'w-full flex items-center py-3 rounded-xl transition-all duration-200 text-sm font-bold group active:scale-[0.98]',
-                $route.path === module.path
-                  ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/20' 
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-primary-600',
-                isSidebarMini ? 'justify-center px-0' : 'px-4'
-              ]"
-              :title="isSidebarMini ? module.name : ''"
-              data-tooltip-placement="right"
-            >
-              <span class="relative flex">
-                <i :class="[module.icon, 'w-5 h-5 flex items-center justify-center opacity-80 transition-transform group-hover:scale-110', !isSidebarMini ? 'mr-3' : '', $route.path === module.path ? 'text-white' : 'text-slate-400 group-hover:text-primary-500']"></i>
-                <!-- Solicitudes que le toca aprobar al usuario -->
-                <span
-                  v-if="module.id === 'task-approvals' && approvalsToReview > 0 && isSidebarMini"
-                  class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-white"
-                ></span>
-              </span>
-              <span v-if="!isSidebarMini" class="flex-1 transition-opacity duration-300 whitespace-nowrap overflow-hidden">{{ module.name }}</span>
-              <span
-                v-if="!isSidebarMini && module.id === 'task-approvals' && approvalsToReview > 0"
-                class="ml-2 min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-black flex items-center justify-center"
-                :class="$route.path === module.path ? 'bg-white text-primary-600' : 'bg-amber-500 text-white'"
-                title="Solicitudes que requieren tu aprobación"
-              >{{ approvalsToReview }}</span>
-            </router-link>
-          </div>
-        </nav>
-
-        <!-- Logout Button -->
-        <div class="absolute bottom-0 left-0 right-0 px-3 py-4 border-t border-slate-100 bg-white overflow-hidden transition-all" :class="isSidebarMini ? 'flex justify-center' : 'px-6'">
-          <button
-            @click="handleLogout"
-            :title="isSidebarMini ? 'Cerrar sesión' : ''"
-            data-tooltip-placement="right"
-            class="flex items-center text-slate-400 hover:text-rose-500 transition-all duration-200 group"
-          >
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-rose-50 transition-colors" :class="!isSidebarMini ? 'mr-2' : ''">
-              <i class="fas fa-power-off text-sm"></i>
-            </div>
-            <span v-if="!isSidebarMini" class="text-[10px] font-black uppercase tracking-[0.15em] opacity-60 group-hover:opacity-100 whitespace-nowrap overflow-hidden">Cerrar Sesión</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Mobile menu button -->
-      <div class="lg:hidden fixed top-3 left-4 z-50">
-        <button title="Abrir o cerrar el menú"
-          @click="sidebarOpen = !sidebarOpen"
-          class="p-2 rounded-xl bg-white shadow-md text-slate-600 border border-slate-200"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24">
+            <path d="M4 7h16M4 12h16M4 17h16"></path>
           </svg>
         </button>
       </div>
@@ -121,7 +35,7 @@
       <!-- Main Content -->
       <div 
         class="flex flex-col h-screen transition-all duration-300 ease-in-out"
-        :class="isSidebarMini ? 'lg:ml-20' : 'lg:ml-64'"
+        :class="isSidebarMini ? 'lg:ml-[72px]' : 'lg:ml-[248px]'"
       >
         <!-- Main Content Area -->
         <main class="p-4 pb-8 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
@@ -133,9 +47,6 @@
           </router-view>
         </main>
       </div>
-
-  <!-- Mobile backdrop -->
-  <div v-if="sidebarOpen" class="lg:hidden fixed inset-0 z-40 bg-black/50" @click="sidebarOpen = false"></div>
 
   <!-- Global toast for nuevos mensajes (Hidden by user request) -->
   <!-- <NewMessageToast /> -->
@@ -162,12 +73,11 @@ import { taskApprovalService, APPROVALS_CHANGED_EVENT, APPROVALS_REFRESH_EVENT, 
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { useChatStore } from './stores/chatStore'
-import UserAvatar from './components/ui/UserAvatar.vue'
+import AppSidebar from './components/AppSidebar.vue'
 import NewMessageToast from './components/NewMessageToast.vue'
 import NotificationBell from './components/NotificationBell.vue'
 import ActivityFormModal from './components/forms/ActivityFormModal.vue'
 import { useActivityModalStore } from './stores/activityModal'
-import logoCT from '@/assets/logo.png'
 
 const route = useRoute()
 const router = useRouter()
@@ -177,7 +87,8 @@ const activityModalStore = useActivityModalStore()
 
 // Reactive data
 const sidebarOpen = ref(true)
-const isSidebarMini = ref(false)
+const isSidebarMini = ref(localStorage.getItem('crm:sidebar-mini') === '1')
+watch(isSidebarMini, v => localStorage.setItem('crm:sidebar-mini', v ? '1' : '0'))
 const isDesktop = ref(true)
 // Removed navbar mini-popup; use NewMessageToast instead
 
@@ -250,18 +161,6 @@ const getCurrentModuleDescription = () => {
     profile: 'Configuración de perfil de usuario'
   }
   return descriptions[currentModule.value] || 'Panel de control principal'
-}
-
-const getRoleDisplayName = (role?: string) => {
-  const roleNames: Record<string, string> = {
-    admin: 'Administrador',
-    manager: 'Gerente',
-    employee: 'Empleado',
-    support: 'Soporte Técnico',
-    client: 'Cliente',
-    viewer: 'Visualizador'
-  }
-  return roleNames[role || ''] || role
 }
 
 const handleLogout = async () => {

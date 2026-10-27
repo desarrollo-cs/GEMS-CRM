@@ -37,15 +37,12 @@
         </div>
 
         <!-- Filtros -->
-        <select 
-          v-model="statusFilter" 
-          class="bg-gray-800 border border-gray-700 text-white rounded-lg px-3 py-2 text-sm"
-        >
-          <option value="">Todos los estados</option>
-          <option value="active">Activo</option>
-          <option value="inactive">Inactivo</option>
-          <option value="prospect">Prospecto</option>
-        </select>
+        <CustomSelect
+          v-model="statusFilter"
+          :options="[{ value: '', label: 'Todos los estados' }, { value: 'active', label: 'Activo' }, { value: 'inactive', label: 'Inactivo' }, { value: 'prospect', label: 'Prospecto' }]"
+          placeholder="Todos los estados"
+          size="sm"
+        />
 
         <!-- Botón crear -->
         <button
@@ -245,6 +242,7 @@
 
 <script setup lang="ts">
 import AppLoader from '@/components/ui/AppLoader.vue'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
 import { ref, computed, onMounted, watch } from 'vue'
 import { clientService, type ClientData } from '../../services/clientService'
 import { useNotifications } from '../../composables/useNotifications'

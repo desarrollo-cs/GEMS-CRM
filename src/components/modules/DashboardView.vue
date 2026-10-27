@@ -36,11 +36,11 @@
       <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-purple-500/20">
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-xl font-bold text-white">Ingresos Mensuales</h3>
-          <select class="bg-gray-700 text-white rounded-lg px-3 py-1 text-sm">
-            <option>Últimos 12 meses</option>
-            <option>Últimos 6 meses</option>
-            <option>Último año</option>
-          </select>
+          <CustomSelect
+            v-model="revenuePeriod"
+            :options="[{ value: 'Últimos 12 meses', label: 'Últimos 12 meses' }, { value: 'Últimos 6 meses', label: 'Últimos 6 meses' }, { value: 'Último año', label: 'Último año' }]"
+            size="sm"
+          />
         </div>
         <div class="h-64 flex items-center justify-center">
           <div class="text-gray-400">
@@ -185,6 +185,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
+
+// Revenue chart period filter
+const revenuePeriod = ref('Últimos 12 meses')
 
 // Stats data
 const stats = ref([

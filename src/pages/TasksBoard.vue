@@ -5,27 +5,15 @@
       <div class="flex flex-col lg:flex-row gap-6 lg:items-center lg:justify-between">
         <!-- Selector de Board -->
         <div class="flex items-center gap-4">
-          <div class="relative group">
-            <select
+          <div class="min-w-[220px]">
+            <CustomSelect
               v-model="selectedBoardId"
               @change="onBoardChange"
-              class="pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 font-black text-xs uppercase tracking-widest focus:ring-4 focus:ring-primary-500/10 focus:border-primary-400 transition-all appearance-none cursor-pointer min-w-[220px]"
-            >
-              <option value="">Seleccionar Tablero</option>
-              <option 
-                v-for="board in boards" 
-                :key="board._id"
-                :value="board._id"
-              >
-                {{ board.name }}
-              </option>
-            </select>
-            <div class="absolute left-4 top-1/2 -translate-y-1/2 text-primary-500">
-              <i class="fas fa-th-large"></i>
-            </div>
-            <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none">
-              <i class="fas fa-chevron-down text-[10px]"></i>
-            </div>
+              :options="boardOptions"
+              placeholder="Seleccionar Tablero"
+              size="md"
+              searchable
+            />
           </div>
 
           <!-- Toggle Vista -->
@@ -66,24 +54,14 @@
           </button>
 
           <!-- Sprint Selector (only Scrum) -->
-          <div v-if="currentBoard?.type === 'scrum'" class="relative">
-            <select
+          <div v-if="currentBoard?.type === 'scrum'" class="min-w-[180px]">
+            <CustomSelect
               v-model="selectedSprintId"
               @change="loadTasks"
-              class="pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 font-black text-xs uppercase tracking-widest focus:ring-4 focus:ring-primary-500/10 focus:border-primary-400 transition-all appearance-none cursor-pointer"
-            >
-              <option :value="null">Backlog Activo</option>
-              <option 
-                v-for="sprint in sprints" 
-                :key="sprint._id"
-                :value="sprint._id"
-              >
-                {{ sprint.name }}
-              </option>
-            </select>
-            <div class="absolute left-4 top-1/2 -translate-y-1/2 text-primary-500">
-              <i class="fas fa-running"></i>
-            </div>
+              :options="sprintOptions"
+              placeholder="Backlog Activo"
+              size="md"
+            />
           </div>
 
           <!-- Nueva Tarea -->
@@ -111,39 +89,44 @@
       <div v-if="showFilters" class="mt-8 pt-8 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 animate-in slide-in-from-top-4 duration-300">
         <div class="space-y-2">
           <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo de Tarea</label>
-          <select v-model="filters.type" @change="loadTasks" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700">
-            <option value="">Todos los tipos</option>
-            <option value="task">Task</option>
-            <option value="bug">Bug</option>
-            <option value="feature">Feature</option>
-            <option value="user-story">User Story</option>
-            <option value="epic">Epic</option>
-          </select>
+          <CustomSelect
+            v-model="filters.type"
+            @change="loadTasks"
+            :options="[{ value: '', label: 'Todos los tipos' }, { value: 'task', label: 'Task' }, { value: 'bug', label: 'Bug' }, { value: 'feature', label: 'Feature' }, { value: 'user-story', label: 'User Story' }, { value: 'epic', label: 'Epic' }]"
+            placeholder="Todos los tipos"
+            size="dense"
+          />
         </div>
         <div class="space-y-2">
           <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Prioridad</label>
-          <select v-model="filters.priority" @change="loadTasks" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700">
-            <option value="">Cualquier prioridad</option>
-            <option value="low">Baja</option>
-            <option value="medium">Media</option>
-            <option value="high">Alta</option>
-            <option value="critical">Crítica</option>
-          </select>
+          <CustomSelect
+            v-model="filters.priority"
+            @change="loadTasks"
+            :options="[{ value: '', label: 'Cualquier prioridad' }, { value: 'low', label: 'Baja' }, { value: 'medium', label: 'Media' }, { value: 'high', label: 'Alta' }, { value: 'critical', label: 'Crítica' }]"
+            placeholder="Cualquier prioridad"
+            size="dense"
+          />
         </div>
         <div class="space-y-2">
           <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Equipo / Depto</label>
-          <select v-model="filters.department" @change="loadTasks" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700">
-            <option value="">Todos los equipos</option>
-            <option v-for="dept in departments" :key="dept" :value="dept">{{ dept }}</option>
-          </select>
+          <CustomSelect
+            v-model="filters.department"
+            @change="loadTasks"
+            :options="departmentOptions"
+            placeholder="Todos los equipos"
+            size="dense"
+          />
         </div>
         <div class="space-y-2">
           <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Responsable</label>
-          <select v-model="filters.assignedTo" @change="loadTasks" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700">
-            <option value="">Cualquier persona</option>
-            <option :value="authStore.user?._id">Mis Tareas (Yo)</option>
-            <option v-for="member in teamMembers" :key="member._id" :value="member._id">{{ member.name }}</option>
-          </select>
+          <CustomSelect
+            v-model="filters.assignedTo"
+            @change="loadTasks"
+            :options="assignedToOptions"
+            placeholder="Cualquier persona"
+            size="dense"
+            searchable
+          />
         </div>
         <div class="flex items-end gap-2">
           <button
@@ -366,6 +349,7 @@
 <script setup lang="ts">
 import Skeleton from '@/components/ui/Skeleton.vue'
 import PersonAvatar from '../components/ui/PersonAvatar.vue'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
 import { ref, computed, onMounted, watch } from 'vue'
 import { useBoardsStore } from '@/stores/boards'
 import { useTasksStore, type Task } from '@/stores/tasks'
@@ -421,6 +405,24 @@ const loading = computed(() => boardsStore.loading || tasksStore.loading)
 const activeFiltersCount = computed(() => {
   return Object.values(filters.value).filter(v => v !== '').length
 })
+
+const boardOptions = computed(() => [
+  { value: '', label: 'Seleccionar Tablero' },
+  ...boards.value.map((board: any) => ({ value: board._id, label: board.name }))
+])
+const sprintOptions = computed(() => [
+  { value: null, label: 'Backlog Activo' },
+  ...sprints.value.map((sprint: any) => ({ value: sprint._id, label: sprint.name }))
+])
+const departmentOptions = computed(() => [
+  { value: '', label: 'Todos los equipos' },
+  ...departments.value.map(dept => ({ value: dept, label: dept }))
+])
+const assignedToOptions = computed(() => [
+  { value: '', label: 'Cualquier persona' },
+  { value: authStore.user?._id ?? null, label: 'Mis Tareas (Yo)' },
+  ...teamMembers.value.map(member => ({ value: member._id, label: member.name }))
+])
 
 const columns = computed(() => {
   if (!currentBoard.value) return []

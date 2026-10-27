@@ -68,26 +68,17 @@
          </div>
          
          <div class="flex items-center gap-2 w-full md:w-auto">
-            <select v-model="selectedDepartment" class="px-4 py-2 bg-slate-50 border-none rounded-xl text-[9px] font-black uppercase tracking-widest text-slate-500 outline-none focus:ring-4 focus:ring-violet-500/5 transition-all cursor-pointer">
-               <option value="">Departamentos</option>
-               <option value="TI">TI</option>
-               <option value="Comercial">Comercial</option>
-               <option value="Marketing">Marketing</option>
-               <option value="Customer Success">Customer Success</option>
-            </select>
+            <div class="w-full md:w-44">
+              <CustomSelect v-model="selectedDepartment" size="sm" placeholder="Departamentos" :options="[{ value: '', label: 'Departamentos' }, ...departmentOptions]" />
+            </div>
 
-            <select v-model="selectedRole" class="px-4 py-2 bg-slate-50 border-none rounded-xl text-[9px] font-black uppercase tracking-widest text-slate-500 outline-none focus:ring-4 focus:ring-violet-500/5 transition-all cursor-pointer">
-               <option value="">Roles</option>
-               <option v-for="role in allAvailableRoles" :key="role._id || role.name" :value="role.name">
-                  {{ getRoleDisplayName(role.name) }}
-               </option>
-            </select>
+            <div class="w-full md:w-44">
+              <CustomSelect v-model="selectedRole" size="sm" searchable placeholder="Roles" :options="[{ value: '', label: 'Roles' }, ...roleOptions]" />
+            </div>
 
-            <select v-model="selectedStatus" class="px-4 py-2 bg-slate-50 border-none rounded-xl text-[9px] font-black uppercase tracking-widest text-slate-500 outline-none focus:ring-4 focus:ring-violet-500/5 transition-all cursor-pointer">
-               <option value="">Estado</option>
-               <option value="true">Activos</option>
-               <option value="false">Inactivos</option>
-            </select>
+            <div class="w-full md:w-36">
+              <CustomSelect v-model="selectedStatus" size="sm" placeholder="Estado" :options="[{ value: '', label: 'Estado' }, { value: 'true', label: 'Activos' }, { value: 'false', label: 'Inactivos' }]" />
+            </div>
          </div>
       </div>
     </div>
@@ -247,22 +238,11 @@
                 <div class="space-y-6">
                    <div class="space-y-2">
                       <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Rol Operativo</label>
-                      <select v-model="formData.role" required class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-violet-500/5">
-                        <option value="" disabled>Selecciona un rol</option>
-                        <option v-for="role in allAvailableRoles" :key="role._id || role.name" :value="role.name">
-                          {{ getRoleDisplayName(role.name) }}
-                        </option>
-                      </select>
+                      <CustomSelect v-model="formData.role" size="md" searchable placeholder="Selecciona un rol" :options="roleOptions" />
                    </div>
                    <div class="space-y-2">
                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Departamento</label>
-                       <select v-model="formData.department" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-violet-500/5">
-                         <option value="">Sin departamento</option>
-                         <option value="TI">TI</option>
-                         <option value="Comercial">Comercial</option>
-                         <option value="Marketing">Marketing</option>
-                         <option value="Customer Success">Customer Success</option>
-                       </select>
+                       <CustomSelect v-model="formData.department" size="md" placeholder="Sin departamento" :options="[{ value: '', label: 'Sin departamento' }, ...departmentOptions]" />
                     </div>
                     <!-- Rol dentro del departamento -->
                     <div class="space-y-2">
@@ -337,6 +317,7 @@
 <script setup lang="ts">
 import PersonAvatar from '../components/ui/PersonAvatar.vue'
 import Skeleton from '@/components/ui/Skeleton.vue'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useTeamStore } from '../stores'
@@ -362,22 +343,43 @@ const roles = ref<Role[]>([])
 const baseRolesNames = ['admin', 'manager', 'support', 'development', 'fullstack', 'employee', 'viewer', 'client']
 
 const allAvailableRoles = computed(() => {
-  // Start with dynamic roles
-  const combined = [...roles.value]
-  
-  // Add base roles if they are not already present (by name)
-  baseRolesNames.forEach(name => {
-    if (!combined.some(r => r.name.toLowerCase() === name.toLowerCase())) {
-      combined.push({
-        name: name,
-        isSystem: true,
-        permissions: {} as any // Will use backend defaults
-      })
-    }
+  // Start with dynamic roles (they win over base roles)
+  const combined: Role[] = []
+  const seen = new Set<string>()
+  const displayKey = (name: string) => getRoleDisplayName(name).trim().toLowerCase()
+
+  roles.value.forEach(r => {
+    const key = displayKey(r.name)
+    if (seen.has(key)) return
+    seen.add(key)
+    combined.push(r)
   })
-  
+
+  // Add base roles only if no role with the same displayed name exists
+  baseRolesNames.forEach(name => {
+    const key = displayKey(name)
+    if (seen.has(key) || combined.some(r => r.name.toLowerCase() === name.toLowerCase())) return
+    seen.add(key)
+    combined.push({
+      name: name,
+      isSystem: true,
+      permissions: {} as any // Will use backend defaults
+    })
+  })
+
   return combined
 })
+
+const roleOptions = computed(() =>
+  allAvailableRoles.value.map(role => ({ value: role.name, label: getRoleDisplayName(role.name) }))
+)
+
+const departmentOptions = [
+  { value: 'TI', label: 'TI' },
+  { value: 'Comercial', label: 'Comercial' },
+  { value: 'Marketing', label: 'Marketing' },
+  { value: 'Customer Success', label: 'Customer Success' }
+]
 
 const editingMember = ref<TeamMember | null>(null)
 const pagination = reactive({
@@ -494,6 +496,12 @@ const editMember = (member: TeamMember) => {
 const submitForm = async () => {
   try {
     isSubmitting.value = true
+    // Reemplaza el `required` del select nativo de rol
+    if (!formData.role) {
+      showError('Validación', 'Selecciona un rol')
+      isSubmitting.value = false
+      return
+    }
     if (showCreateModal.value) {
       // Validaciones extra
       if (formData.password.length < 6) {

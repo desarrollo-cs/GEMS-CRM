@@ -55,16 +55,15 @@
             <label class="block text-xs font-black text-slate-700 uppercase tracking-widest mb-3">
               Cliente <span class="text-slate-400 font-bold lowercase tracking-normal">(opcional)</span>
             </label>
-            <select
+            <CustomSelect
               v-model="form.clientId"
+              :options="clientOptions"
+              :placeholder="loadingClients ? 'Cargando clientes...' : 'Sin cliente'"
               :disabled="loadingClients"
-              class="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all text-sm font-bold shadow-sm disabled:opacity-50"
-            >
-              <option value="">{{ loadingClients ? 'Cargando clientes...' : 'Sin cliente' }}</option>
-              <option v-for="c in clients" :key="c._id" :value="c._id">
-                {{ c.name }}{{ c.company ? ` - ${c.company}` : '' }}
-              </option>
-            </select>
+              :loading="loadingClients"
+              size="dense"
+              searchable
+            />
           </div>
 
           <ProjectSelect
@@ -142,6 +141,7 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, onMounted } from 'vue'
 import ProjectSelect from '../forms/ProjectSelect.vue'
+import CustomSelect from '../ui/CustomSelect.vue'
 import { clientService, type ClientData } from '../../services/clientService'
 import { useAuthStore } from '../../stores/auth'
 
@@ -183,6 +183,11 @@ const dueDate = computed(() => {
 
 const clients = ref<ClientData[]>([])
 const loadingClients = ref(false)
+
+const clientOptions = computed(() => [
+  { value: '', label: loadingClients.value ? 'Cargando clientes...' : 'Sin cliente' },
+  ...clients.value.map(c => ({ value: c._id as string, label: `${c.name}${c.company ? ` - ${c.company}` : ''}` }))
+])
 
 const priorities = [
   { value: 'low', label: 'Baja', activeClass: 'bg-emerald-500 text-white border-emerald-500 ring-emerald-500/20' },

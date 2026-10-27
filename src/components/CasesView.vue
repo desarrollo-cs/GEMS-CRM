@@ -136,20 +136,8 @@
 
         <template v-if="viewMode === 'cases'">
           <div class="flex flex-wrap gap-2 mb-4">
-            <select v-model="gridFilterEstado" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none">
-              <option :value="null">Todos los estados</option>
-              <option value="abierto">Abierto</option>
-              <option value="en_progreso">En progreso</option>
-              <option value="resuelto">Resuelto</option>
-              <option value="cerrado">Cerrado</option>
-            </select>
-            <select v-model="gridFilterPrioridad" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none">
-              <option :value="null">Todas las prioridades</option>
-              <option value="baja">Baja</option>
-              <option value="media">Media</option>
-              <option value="alta">Alta</option>
-              <option value="critica">Crítica</option>
-            </select>
+            <CustomSelect v-model="gridFilterEstado" size="sm" placeholder="Todos los estados" :options="[{ value: null, label: 'Todos los estados' }, { value: 'abierto', label: 'Abierto' }, { value: 'en_progreso', label: 'En progreso' }, { value: 'resuelto', label: 'Resuelto' }, { value: 'cerrado', label: 'Cerrado' }]" />
+            <CustomSelect v-model="gridFilterPrioridad" size="sm" placeholder="Todas las prioridades" :options="[{ value: null, label: 'Todas las prioridades' }, { value: 'baja', label: 'Baja' }, { value: 'media', label: 'Media' }, { value: 'alta', label: 'Alta' }, { value: 'critica', label: 'Crítica' }]" />
           </div>
           <DataGridTable
             :columns="casesGridColumns"
@@ -173,13 +161,7 @@
 
         <template v-else>
           <div class="flex flex-wrap gap-2 mb-4">
-            <select v-model="gridFilterCategoria" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none">
-              <option :value="null">Todas las categorías</option>
-              <option value="proceso">Proceso</option>
-              <option value="codigo">Código</option>
-              <option value="manual">Manual</option>
-              <option value="otros">Otros</option>
-            </select>
+            <CustomSelect v-model="gridFilterCategoria" size="sm" placeholder="Todas las categorías" :options="[{ value: null, label: 'Todas las categorías' }, { value: 'proceso', label: 'Proceso' }, { value: 'codigo', label: 'Código' }, { value: 'manual', label: 'Manual' }, { value: 'otros', label: 'Otros' }]" />
           </div>
           <DataGridTable
             :columns="wikiGridColumns"
@@ -439,11 +421,7 @@
               <div class="space-y-1">
                 <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Categoría</p>
                 <div v-if="isEditingWikiItem">
-                  <select v-model="selectedWiki.categoria" class="bg-slate-50 border-none text-xs font-bold rounded px-2 py-1 outline-none text-slate-600">
-                    <option value="proceso">Proceso</option>
-                    <option value="codigo">Código</option>
-                    <option value="manual">Manual</option>
-                  </select>
+                  <CustomSelect v-model="selectedWiki.categoria" size="sm" :options="[{ value: 'proceso', label: 'Proceso' }, { value: 'codigo', label: 'Código' }, { value: 'manual', label: 'Manual' }]" />
                 </div>
                 <span v-else :class="getWikiCatClass(selectedWiki.categoria)" class="px-2 py-0.5 rounded-md text-[10px] font-bold inline-block uppercase">
                   {{ selectedWiki.categoria }}
@@ -629,10 +607,7 @@
                   <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-1">
                       <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Cliente</label>
-                      <select v-model="newCase.cliente_id" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none">
-                        <option value="">Seleccionar cliente...</option>
-                        <option v-for="c in clients" :key="c._id" :value="c._id">{{ c.name }}</option>
-                      </select>
+                      <CustomSelect v-model="newCase.cliente_id" size="dense" searchable placeholder="Seleccionar cliente..." :options="newCaseClientOptions" />
                     </div>
                     <div class="space-y-1">
                       <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Categoría</label>
@@ -680,11 +655,7 @@
                   <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-1">
                       <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Categoría</label>
-                      <select v-model="newWiki.categoria" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none">
-                        <option value="proceso">Proceso Estándar</option>
-                        <option value="codigo">Snippet de Código</option>
-                        <option value="manual">Manual de Usuario</option>
-                      </select>
+                      <CustomSelect :model-value="newWiki.categoria ?? ''" @update:model-value="newWiki.categoria = $event" size="dense" :options="[{ value: 'proceso', label: 'Proceso Estándar' }, { value: 'codigo', label: 'Snippet de Código' }, { value: 'manual', label: 'Manual de Usuario' }]" />
                     </div>
                     <div class="space-y-1">
                       <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Tags (palabras clave para búsqueda)</label>
@@ -795,6 +766,7 @@ import FileDropzone from './ui/FileDropzone.vue'
 import LinkedItemsSelector from './forms/LinkedItemsSelector.vue'
 import EmbeddedSpreadsheet from './EmbeddedSpreadsheet.vue'
 import DataGridTable, { type DataGridColumn } from './ui/DataGridTable.vue'
+import CustomSelect from './ui/CustomSelect.vue'
 import { useSortableFilterableList } from '../composables/useSortableFilterableList'
 
 const { showSuccess, showError, showLoading, closeLoading, confirmDelete } = useNotifications()
@@ -833,6 +805,10 @@ import { activityService } from '../services/activityService'
 // Form State
 const newCase = ref({ titulo: '', tipo: 'seguimiento' as any, prioridad: 'media' as any, descripcion: '', cliente_id: '', categoria: '', tags: [] as string[], archivos: [] as File[] })
 const newWiki = ref<WikiArticleInput>({ titulo: '', categoria: 'proceso', contenido: '', descripcion: '', tags: [], archivos: [] })
+const newCaseClientOptions = computed(() => [
+  { value: '', label: 'Seleccionar cliente...' },
+  ...clients.value.map((c) => ({ value: c._id ?? '', label: c.name }))
+])
 const newLog = ref({ que_se_hizo: '', sentimiento: '😐' as any })
 
 // Enlaces externos

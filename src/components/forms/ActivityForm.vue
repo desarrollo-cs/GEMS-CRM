@@ -22,23 +22,16 @@
         <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
           Cliente *
         </label>
-        <select
-          v-model="form.clientId"
-          required
+        <CustomSelect
+          :model-value="form.clientId ?? ''"
+          @update:model-value="form.clientId = $event"
+          :options="clientOptions"
+          :placeholder="loadingClients ? 'Cargando clientes...' : 'Selecciona un cliente'"
           :disabled="loadingClients"
-          class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors text-sm"
-        >
-          <option value="" disabled>
-            {{ loadingClients ? 'Cargando clientes...' : 'Selecciona un cliente' }}
-          </option>
-          <option 
-            v-for="client in clients" 
-            :key="client._id" 
-            :value="client._id"
-          >
-            {{ client.name }} {{ client.company ? `- ${client.company}` : '' }}
-          </option>
-        </select>
+          :loading="loadingClients"
+          size="md"
+          searchable
+        />
         <p v-if="!loadingClients && clients.length === 0" class="text-amber-500 text-xs font-bold mt-1.5">
           <i class="fas fa-exclamation-triangle mr-1"></i> No hay clientes disponibles. Crea un cliente primero.
         </p>
@@ -133,9 +126,10 @@
 <script setup lang="ts">
 import AssignedUsersSelector from '../AssignedUsersSelector.vue'
 import VoiceDictateButton from '@/components/ui/VoiceDictateButton.vue'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
 // import eliminado: computed
 // ...eliminado: helpers de chips y búsqueda, ahora en AssignedUsersSelector
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { activityService, type ActivityData } from '../../services/activityService'
 import { clientService, type ClientData } from '../../services/clientService'
 import ProjectSelect from './ProjectSelect.vue'
@@ -157,6 +151,10 @@ const loading = ref(false)
 const error = ref('')
 const clients = ref<ClientData[]>([])
 const loadingClients = ref(false)
+
+const clientOptions = computed(() =>
+  clients.value.map(client => ({ value: client._id as string, label: `${client.name} ${client.company ? `- ${client.company}` : ''}` }))
+)
 
 const form = reactive<Partial<ActivityData>>({
   title: '',

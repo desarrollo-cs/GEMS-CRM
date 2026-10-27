@@ -49,15 +49,13 @@
             class="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
           >
         </div>
-        <select
+        <CustomSelect
           v-model="roleFilter"
-          class="px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-        >
-          <option value="" class="bg-gray-700">Todos los roles</option>
-          <option v-for="role in allAvailableRoles" :key="role._id || role.name" :value="role.name" class="bg-gray-700">
-            {{ role.name }}
-          </option>
-        </select>
+          :options="roleFilterOptions"
+          placeholder="Todos los roles"
+          size="md"
+          searchable
+        />
       </div>
     </div>
 
@@ -135,6 +133,7 @@
 
 <script setup lang="ts">
 import Skeleton from '@/components/ui/Skeleton.vue'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
 import { ref, computed, onMounted } from 'vue'
 import { teamService, type TeamMember } from '../services/teamService'
 import TeamForm from './TeamForm.vue'
@@ -163,6 +162,11 @@ const allAvailableRoles = computed(() => {
   })
   return combined
 })
+
+const roleFilterOptions = computed(() => [
+  { value: '', label: 'Todos los roles' },
+  ...allAvailableRoles.value.map(role => ({ value: role.name, label: role.name }))
+])
 
 const loading = ref(false)
 const searchTerm = ref('')

@@ -52,16 +52,12 @@
       <div class="flex-1">
         <label class="block text-[10px] font-black text-slate-400 mb-1.5 uppercase">Minutos</label>
         <div class="relative group">
-          <select
-            v-model.number="customMinutes"
+          <CustomSelect
+            v-model="customMinutes"
+            :options="[{ value: 0, label: '0' }, { value: 15, label: '15' }, { value: 30, label: '30' }, { value: 45, label: '45' }]"
+            size="dense"
             @change="updateCustomTime"
-            class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all font-bold text-sm appearance-none cursor-pointer"
-          >
-            <option value="0">0</option>
-            <option value="15">15</option>
-            <option value="30">30</option>
-            <option value="45">45</option>
-          </select>
+          />
           <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase pointer-events-none">m</span>
         </div>
       </div>
@@ -94,6 +90,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
 
 // Props
 interface Props {

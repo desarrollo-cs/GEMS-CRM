@@ -32,15 +32,16 @@
           <label class="block text-sm font-medium text-gray-300 mb-2">
             Tipo de Transacción *
           </label>
-          <select
+          <CustomSelect
             v-model="form.tipo"
-            required
-            class="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-          >
-            <option value="" class="bg-gray-700">Seleccionar tipo</option>
-            <option value="ingreso" class="bg-gray-700">Ingreso</option>
-            <option value="egreso" class="bg-gray-700">Egreso</option>
-          </select>
+            :options="[
+              { value: '', label: 'Seleccionar tipo' },
+              { value: 'ingreso', label: 'Ingreso' },
+              { value: 'egreso', label: 'Egreso' }
+            ]"
+            placeholder="Seleccionar tipo"
+            size="md"
+          />
         </div>
 
         <!-- Concepto -->
@@ -91,20 +92,22 @@
           <label class="block text-sm font-medium text-gray-300 mb-2">
             Método de Pago
           </label>
-          <select
+          <CustomSelect
             v-model="form.metodo"
-            class="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-          >
-            <option value="" class="bg-gray-700">Seleccionar método</option>
-            <option value="efectivo" class="bg-gray-700">Efectivo</option>
-            <option value="transferencia" class="bg-gray-700">Transferencia</option>
-            <option value="tarjeta_credito" class="bg-gray-700">Tarjeta de Crédito</option>
-            <option value="tarjeta_debito" class="bg-gray-700">Tarjeta de Débito</option>
-            <option value="cheque" class="bg-gray-700">Cheque</option>
-            <option value="pse" class="bg-gray-700">PSE</option>
-            <option value="nequi" class="bg-gray-700">Nequi</option>
-            <option value="daviplata" class="bg-gray-700">Daviplata</option>
-          </select>
+            :options="[
+              { value: '', label: 'Seleccionar método' },
+              { value: 'efectivo', label: 'Efectivo' },
+              { value: 'transferencia', label: 'Transferencia' },
+              { value: 'tarjeta_credito', label: 'Tarjeta de Crédito' },
+              { value: 'tarjeta_debito', label: 'Tarjeta de Débito' },
+              { value: 'cheque', label: 'Cheque' },
+              { value: 'pse', label: 'PSE' },
+              { value: 'nequi', label: 'Nequi' },
+              { value: 'daviplata', label: 'Daviplata' }
+            ]"
+            placeholder="Seleccionar método"
+            size="md"
+          />
         </div>
 
         <!-- Cliente (solo si hay clientes disponibles) -->
@@ -112,20 +115,13 @@
           <label class="block text-sm font-medium text-gray-300 mb-2">
             Cliente (opcional)
           </label>
-          <select
+          <CustomSelect
             v-model="form.cliente_id"
-            class="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-          >
-            <option value="" class="bg-gray-700">Sin cliente asignado</option>
-            <option 
-              v-for="client in clients" 
-              :key="client._id" 
-              :value="client._id"
-              class="bg-gray-700"
-            >
-              {{ client.nombre }} {{ client.apellido }}
-            </option>
-          </select>
+            :options="clientOptions"
+            placeholder="Sin cliente asignado"
+            size="md"
+            searchable
+          />
         </div>
 
         <!-- Pago Recurrente (solo para ingresos) -->
@@ -147,17 +143,18 @@
             <label class="block text-sm font-medium text-gray-300 mb-2">
               Frecuencia de Pago *
             </label>
-            <select
+            <CustomSelect
               v-model="form.frecuencia"
-              required
-              class="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-            >
-              <option value="" class="bg-gray-700">Seleccionar frecuencia</option>
-              <option value="mensual" class="bg-gray-700">Mensual</option>
-              <option value="trimestral" class="bg-gray-700">Trimestral</option>
-              <option value="semestral" class="bg-gray-700">Semestral</option>
-              <option value="anual" class="bg-gray-700">Anual</option>
-            </select>
+              :options="[
+                { value: '', label: 'Seleccionar frecuencia' },
+                { value: 'mensual', label: 'Mensual' },
+                { value: 'trimestral', label: 'Trimestral' },
+                { value: 'semestral', label: 'Semestral' },
+                { value: 'anual', label: 'Anual' }
+              ]"
+              placeholder="Seleccionar frecuencia"
+              size="md"
+            />
           </div>
         </div>
 
@@ -190,7 +187,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
 import type { Transaction } from '../../services/accountingService'
 import { clientService, type Client } from '../../services/clientService'
 
@@ -208,6 +206,14 @@ const emit = defineEmits<{
 }>()
 
 const clients = ref<Client[]>([])
+
+const clientOptions = computed(() => [
+  { value: '', label: 'Sin cliente asignado' },
+  ...clients.value.map((client: Client) => ({
+    value: client._id,
+    label: `${client.nombre} ${client.apellido}`
+  }))
+])
 
 const form = ref({
   tipo: '' as 'ingreso' | 'egreso' | '',

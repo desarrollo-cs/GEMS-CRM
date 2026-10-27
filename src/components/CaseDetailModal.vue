@@ -203,14 +203,11 @@
                   class="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 ></textarea>
                 <div class="flex flex-col space-y-2">
-                  <select
+                  <CustomSelect
                     v-model="commentType"
-                    class="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  >
-                    <option value="comentario">Comentario</option>
-                    <option value="actualizacion">Actualización</option>
-                    <option value="resolucion">Resolución</option>
-                  </select>
+                    size="sm"
+                    :options="[{ value: 'comentario', label: 'Comentario' }, { value: 'actualizacion', label: 'Actualización' }, { value: 'resolucion', label: 'Resolución' }]"
+                  />
                   <button
                     @click="addComment"
                     :disabled="!newComment.trim()"
@@ -432,6 +429,7 @@ import { ref, reactive } from 'vue'
 import { casesService, type Case } from '../services/casesService'
 import { API_CONFIG } from '../config/api'
 import { useNotifications } from '../composables/useNotifications'
+import CustomSelect from './ui/CustomSelect.vue'
 
 const { confirmDelete } = useNotifications()
 

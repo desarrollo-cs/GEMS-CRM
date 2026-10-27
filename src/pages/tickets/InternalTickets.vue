@@ -63,35 +63,56 @@
           <!-- Status -->
           <div class="flex items-center gap-2 px-3 py-2 bg-slate-100/40 rounded-xl border border-transparent hover:border-slate-200 transition-all cursor-pointer group">
             <i class="fas fa-layer-group text-[10px] text-slate-400 group-hover:text-primary-500"></i>
-            <select v-model="filterStatus" class="bg-transparent text-[11px] font-black text-slate-600 outline-none cursor-pointer">
-              <option value="open">En Proceso</option>
-              <option value="waiting">Pendiente Cliente</option>
-              <option value="resolved">Resueltos</option>
-            </select>
+            <div class="min-w-[140px]">
+              <CustomSelect
+                v-model="filterStatus"
+                :options="[
+                  { value: 'open', label: 'En Proceso' },
+                  { value: 'waiting', label: 'Pendiente Cliente' },
+                  { value: 'resolved', label: 'Resueltos' }
+                ]"
+                placeholder="Todos los estados"
+                size="sm"
+              />
+            </div>
           </div>
 
           <!-- Category -->
           <div class="flex items-center gap-2 px-3 py-2 bg-slate-100/40 rounded-xl border border-transparent hover:border-slate-200 transition-all cursor-pointer group">
             <i class="fas fa-tag text-[10px] text-slate-400 group-hover:text-primary-500"></i>
-            <select v-model="filterCategory" class="bg-transparent text-[11px] font-black text-slate-600 outline-none cursor-pointer">
-              <option value="">Todas las categorías</option>
-              <option value="technical">Technical</option>
-              <option value="billing">Billing</option>
-              <option value="sales">Sales</option>
-              <option value="other">Other</option>
-            </select>
+            <div class="min-w-[160px]">
+              <CustomSelect
+                v-model="filterCategory"
+                :options="[
+                  { value: '', label: 'Todas las categorías' },
+                  { value: 'technical', label: 'Technical' },
+                  { value: 'billing', label: 'Billing' },
+                  { value: 'sales', label: 'Sales' },
+                  { value: 'other', label: 'Other' }
+                ]"
+                placeholder="Todas las categorías"
+                size="sm"
+              />
+            </div>
           </div>
 
           <!-- Priority -->
           <div class="flex items-center gap-2 px-3 py-2 bg-slate-100/40 rounded-xl border border-transparent hover:border-slate-200 transition-all cursor-pointer group">
             <i class="fas fa-flag text-[10px] text-slate-400 group-hover:text-primary-500"></i>
-            <select v-model="filterPriority" class="bg-transparent text-[11px] font-black text-slate-600 outline-none cursor-pointer">
-              <option value="">Prioridades</option>
-              <option value="urgent">P1 · Crítico (&lt;15min)</option>
-              <option value="high">P2 · Alto (&lt;1h)</option>
-              <option value="medium">P3 · Medio (&lt;4h)</option>
-              <option value="low">P4 · Bajo (&lt;24h)</option>
-            </select>
+            <div class="min-w-[160px]">
+              <CustomSelect
+                v-model="filterPriority"
+                :options="[
+                  { value: '', label: 'Prioridades' },
+                  { value: 'urgent', label: 'P1 · Crítico (<15min)' },
+                  { value: 'high', label: 'P2 · Alto (<1h)' },
+                  { value: 'medium', label: 'P3 · Medio (<4h)' },
+                  { value: 'low', label: 'P4 · Bajo (<24h)' }
+                ]"
+                placeholder="Prioridades"
+                size="sm"
+              />
+            </div>
           </div>
 
           <div class="h-8 w-px bg-slate-200/60 mx-2"></div>
@@ -99,12 +120,15 @@
           <!-- Responsible -->
           <div class="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200/80 rounded-xl shadow-sm hover:border-primary-300 transition-all cursor-pointer group">
             <i class="fas fa-user-shield text-[10px] text-primary-500"></i>
-            <select v-model="filterAssignedTo" class="bg-transparent text-[11px] font-black text-slate-700 outline-none cursor-pointer max-w-[160px]">
-              <option value="">Cualquier Agente</option>
-              <option v-for="member in supportAgents" :key="member._id" :value="member._id">
-                {{ member.name }}
-              </option>
-            </select>
+            <div class="min-w-[140px] max-w-[160px]">
+              <CustomSelect
+                v-model="filterAssignedTo"
+                :options="supportAgentOptions"
+                placeholder="Cualquier Agente"
+                size="sm"
+                searchable
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -654,21 +678,29 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Prioridad</label>
-              <select v-model="newTicketData.priority" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:outline-none">
-                <option value="low">Baja</option>
-                <option value="medium">Media</option>
-                <option value="high">Alta</option>
-                <option value="urgent">Urgente</option>
-              </select>
+              <CustomSelect
+                v-model="newTicketData.priority"
+                :options="[
+                  { value: 'low', label: 'Baja' },
+                  { value: 'medium', label: 'Media' },
+                  { value: 'high', label: 'Alta' },
+                  { value: 'urgent', label: 'Urgente' }
+                ]"
+                size="md"
+              />
             </div>
             <div>
               <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Categoría</label>
-              <select v-model="newTicketData.category" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:outline-none">
-                <option value="technical">Técnica</option>
-                <option value="billing">Facturación</option>
-                <option value="sales">Ventas</option>
-                <option value="other">Otro</option>
-              </select>
+              <CustomSelect
+                v-model="newTicketData.category"
+                :options="[
+                  { value: 'technical', label: 'Técnica' },
+                  { value: 'billing', label: 'Facturación' },
+                  { value: 'sales', label: 'Ventas' },
+                  { value: 'other', label: 'Otro' }
+                ]"
+                size="md"
+              />
             </div>
           </div>
           <div>
@@ -740,6 +772,7 @@
 
 <script setup lang="ts">
 import Skeleton from '@/components/ui/Skeleton.vue'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
 import PersonAvatar from '../../components/ui/PersonAvatar.vue'
 import { ref, computed, onMounted, watch, reactive } from 'vue'
 import { ticketService } from '../../services/ticketService'
@@ -850,6 +883,11 @@ const supportAgents = computed(() => {
     ['admin', 'manager', 'support', 'development', 'fullstack'].includes(member.role)
   )
 })
+
+const supportAgentOptions = computed(() => [
+  { value: '', label: 'Cualquier Agente' },
+  ...supportAgents.value.map(member => ({ value: member._id as string, label: member.name }))
+])
 
 const inboxTickets = computed(() => {
   if (!myInboxTickets.value) return []

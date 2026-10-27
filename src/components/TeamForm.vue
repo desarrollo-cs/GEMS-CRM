@@ -34,17 +34,14 @@
           <label for="role" class="block text-sm font-medium text-gray-300 mb-2">
             Rol *
           </label>
-          <select
+          <CustomSelect
             id="role"
             v-model="form.role"
-            required
-            class="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-          >
-            <option value="" class="bg-gray-700">Selecciona un rol</option>
-            <option v-for="role in roles" :key="role._id" :value="role.name" class="bg-gray-700">
-              {{ role.name }}
-            </option>
-          </select>
+            :options="roleOptions"
+            placeholder="Selecciona un rol"
+            size="md"
+            searchable
+          />
         </div>
 
         <!-- Email -->
@@ -67,18 +64,19 @@
           <label for="department" class="block text-sm font-medium text-gray-300 mb-2">
             Departamento *
           </label>
-          <select
+          <CustomSelect
             id="department"
             v-model="form.department"
-            required
-            class="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-          >
-            <option value="" class="bg-gray-700">Selecciona un departamento</option>
-            <option value="TI" class="bg-gray-700">TI</option>
-            <option value="MARKETING" class="bg-gray-700">Marketing</option>
-            <option value="VENTAS" class="bg-gray-700">Ventas</option>
-            <option value="SOPORTE" class="bg-gray-700">Soporte</option>
-          </select>
+            :options="[
+              { value: '', label: 'Selecciona un departamento' },
+              { value: 'TI', label: 'TI' },
+              { value: 'MARKETING', label: 'Marketing' },
+              { value: 'VENTAS', label: 'Ventas' },
+              { value: 'SOPORTE', label: 'Soporte' }
+            ]"
+            placeholder="Selecciona un departamento"
+            size="md"
+          />
         </div>
 
         <!-- Actions -->
@@ -111,6 +109,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import CustomSelect from './ui/CustomSelect.vue'
 import { teamService, type TeamMember } from '../services/teamService'
 import { rolesService, type Role } from '../services/rolesService'
 import { useNotifications } from '../composables/useNotifications'
@@ -141,6 +140,11 @@ const form = ref({
 
 // Computed
 const isEditing = computed(() => !!props.member)
+
+const roleOptions = computed(() => [
+  { value: '', label: 'Selecciona un rol' },
+  ...roles.value.map(role => ({ value: role.name, label: role.name }))
+])
 
 const isFormValid = computed(() => {
   return form.value.name.trim() !== '' && 

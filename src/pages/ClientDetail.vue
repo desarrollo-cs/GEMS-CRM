@@ -255,12 +255,9 @@
             </div>
             <div class="w-full sm:w-auto">
               <label class="sr-only">Estado</label>
-              <select v-model="serviceStatus" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none shadow-sm">
-                <option value="active">Activo</option>
-                <option value="paused">Pausado</option>
-                <option value="cancelled">Cancelado</option>
-                <option value="trial">Prueba</option>
-              </select>
+              <div class="w-full min-w-[140px]">
+                <CustomSelect :model-value="serviceStatus" @update:model-value="(v: any) => (serviceStatus = v)" :options="serviceStatusOptions" size="md" />
+              </div>
             </div>
             <button @click="createService" class="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-primary-600 text-white font-bold hover:bg-primary-700 shadow-sm transition-colors">
               <i class="fas fa-plus mr-1"></i> Agregar
@@ -298,12 +295,9 @@
               <div v-else class="flex flex-col gap-3">
                 <div class="flex flex-col sm:flex-row gap-3">
                   <input v-model="editServicePlan" placeholder="Plan" class="w-full sm:w-1/2 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary-500" />
-                  <select v-model="editServiceStatus" class="w-full sm:w-1/2 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary-500">
-                    <option value="active">Activo</option>
-                    <option value="paused">Pausado</option>
-                    <option value="cancelled">Cancelado</option>
-                    <option value="trial">Prueba</option>
-                  </select>
+                  <div class="w-full sm:w-1/2">
+                    <CustomSelect :model-value="editServiceStatus" @update:model-value="(v: any) => (editServiceStatus = v)" :options="serviceStatusOptions" size="md" />
+                  </div>
                 </div>
                 <input v-model="editServiceNotes" placeholder="Notas del servicio..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary-500" />
                 <div class="flex gap-2 justify-end mt-2">
@@ -336,12 +330,9 @@
             </div>
             <div class="w-full sm:w-auto">
               <label class="sr-only">Estado</label>
-              <select v-model="commitStatus" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none shadow-sm">
-                <option value="pending">Pendiente</option>
-                <option value="in_progress">En progreso</option>
-                <option value="completed">Completado</option>
-                <option value="cancelled">Cancelado</option>
-              </select>
+              <div class="w-full min-w-[150px]">
+                <CustomSelect :model-value="commitStatus" @update:model-value="(v: any) => (commitStatus = v)" :options="commitStatusOptions" size="md" />
+              </div>
             </div>
             <button @click="createCommitment" class="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-primary-600 text-white font-bold hover:bg-primary-700 shadow-sm transition-colors">
               <i class="fas fa-plus mr-1"></i> Agregar
@@ -378,12 +369,9 @@
               <div v-else class="flex flex-col gap-3">
                 <div class="flex flex-col sm:flex-row gap-3">
                   <input v-model="editCommitDueDate" type="date" class="w-full sm:w-1/3 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary-500" />
-                  <select v-model="editCommitStatus" class="w-full sm:w-1/3 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary-500">
-                    <option value="pending">Pendiente</option>
-                    <option value="in_progress">En progreso</option>
-                    <option value="completed">Completado</option>
-                    <option value="cancelled">Cancelado</option>
-                  </select>
+                  <div class="w-full sm:w-1/3">
+                    <CustomSelect :model-value="editCommitStatus" @update:model-value="(v: any) => (editCommitStatus = v)" :options="commitStatusOptions" size="md" />
+                  </div>
                 </div>
                 <input v-model="editCommitDescription" placeholder="Descripción detallada..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary-500" />
                 <div class="flex gap-2 justify-end mt-2">
@@ -705,6 +693,20 @@ const projectStatusOptions = [
   { value: 'paused', label: 'Pausado' },
   { value: 'completed', label: 'Completado' },
   { value: 'archived', label: 'Archivado' }
+]
+
+const serviceStatusOptions = [
+  { value: 'active', label: 'Activo' },
+  { value: 'paused', label: 'Pausado' },
+  { value: 'cancelled', label: 'Cancelado' },
+  { value: 'trial', label: 'Prueba' }
+]
+
+const commitStatusOptions = [
+  { value: 'pending', label: 'Pendiente' },
+  { value: 'in_progress', label: 'En progreso' },
+  { value: 'completed', label: 'Completado' },
+  { value: 'cancelled', label: 'Cancelado' }
 ]
 
 // Colores por estado: ícono de la tarjeta, badge y punto

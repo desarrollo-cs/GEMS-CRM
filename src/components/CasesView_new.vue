@@ -67,50 +67,39 @@
           <label class="block text-sm font-medium text-gray-300 mb-2">
             <i class="fas fa-tag mr-2 text-purple-400"></i>Tipo
           </label>
-          <select
+          <CustomSelect
             v-model="filters.tipo"
+            size="md"
+            placeholder="Todos los tipos"
+            :options="[{ value: '', label: 'Todos los tipos' }, { value: 'documento', label: 'Documentos' }, { value: 'incidencia', label: 'Incidencias' }, { value: 'seguimiento', label: 'Seguimientos' }]"
             @change="loadCases"
-            class="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
-          >
-            <option value="">Todos los tipos</option>
-            <option value="documento">Documentos</option>
-            <option value="incidencia">Incidencias</option>
-            <option value="seguimiento">Seguimientos</option>
-          </select>
+          />
         </div>
         
         <div>
           <label class="block text-sm font-medium text-gray-300 mb-2">
             <i class="fas fa-flag mr-2 text-purple-400"></i>Estado
           </label>
-          <select
+          <CustomSelect
             v-model="filters.estado"
+            size="md"
+            placeholder="Todos los estados"
+            :options="[{ value: '', label: 'Todos los estados' }, { value: 'abierto', label: 'Abierto' }, { value: 'en_progreso', label: 'En Progreso' }, { value: 'resuelto', label: 'Resuelto' }, { value: 'cerrado', label: 'Cerrado' }]"
             @change="loadCases"
-            class="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
-          >
-            <option value="">Todos los estados</option>
-            <option value="abierto">Abierto</option>
-            <option value="en_progreso">En Progreso</option>
-            <option value="resuelto">Resuelto</option>
-            <option value="cerrado">Cerrado</option>
-          </select>
+          />
         </div>
         
         <div>
           <label class="block text-sm font-medium text-gray-300 mb-2">
             <i class="fas fa-star mr-2 text-purple-400"></i>Prioridad
           </label>
-          <select
+          <CustomSelect
             v-model="filters.prioridad"
+            size="md"
+            placeholder="Todas las prioridades"
+            :options="[{ value: '', label: 'Todas las prioridades' }, { value: 'baja', label: 'Baja' }, { value: 'media', label: 'Media' }, { value: 'alta', label: 'Alta' }, { value: 'critica', label: 'Crítica' }]"
             @change="loadCases"
-            class="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
-          >
-            <option value="">Todas las prioridades</option>
-            <option value="baja">Baja</option>
-            <option value="media">Media</option>
-            <option value="alta">Alta</option>
-            <option value="critica">Crítica</option>
-          </select>
+          />
         </div>
 
         <div>
@@ -250,6 +239,7 @@ import { ref, computed, onMounted } from 'vue'
 import { casesService, type Case } from '../services/casesService'
 import CaseFormModal from './CaseFormModal.vue'
 import CaseDetailModal from './CaseDetailModal.vue'
+import CustomSelect from './ui/CustomSelect.vue'
 
 // State
 const cases = ref<Case[]>([])

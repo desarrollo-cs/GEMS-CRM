@@ -27,40 +27,46 @@
       <div class="flex flex-wrap items-center gap-3">
         <!-- Filtros Rápidos -->
         <div class="flex flex-wrap items-center gap-2">
-          <select 
-            v-model="selectedPeriod" 
-            @change="loadData"
-            class="bg-white/90 backdrop-blur-md border border-white/40 text-xs font-bold text-slate-600 rounded-xl px-4 py-2.5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] focus:ring-2 focus:ring-primary-500/20 transition-all outline-none"
-          >
-            <option v-for="p in periods" :key="p.value" :value="p.value">{{ p.label }}</option>
-          </select>
+          <div class="min-w-[150px]">
+            <CustomSelect
+              v-model="selectedPeriod"
+              @change="loadData"
+              :options="periodOptions"
+              size="sm"
+            />
+          </div>
 
-          <select 
-            v-model="filters.department" 
-            @change="loadData"
-            class="bg-white/90 backdrop-blur-md border border-white/40 text-xs font-bold text-slate-600 rounded-xl px-4 py-2.5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] focus:ring-2 focus:ring-primary-500/20 transition-all outline-none"
-          >
-            <option value="">Todos los Equipos</option>
-            <option v-for="dept in departments" :key="dept" :value="dept">{{ dept }}</option>
-          </select>
+          <div class="min-w-[170px]">
+            <CustomSelect
+              v-model="filters.department"
+              @change="loadData"
+              :options="departmentOptions"
+              placeholder="Todos los Equipos"
+              size="sm"
+            />
+          </div>
 
-          <select 
-            v-model="filters.clientId" 
-            @change="loadData"
-            class="bg-white/90 backdrop-blur-md border border-white/40 text-xs font-bold text-slate-600 rounded-xl px-4 py-2.5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] focus:ring-2 focus:ring-primary-500/20 transition-all outline-none"
-          >
-            <option value="">Todos los Clientes</option>
-            <option v-for="client in clients" :key="client._id" :value="client._id">{{ client.name }}</option>
-          </select>
+          <div class="min-w-[180px]">
+            <CustomSelect
+              v-model="filters.clientId"
+              @change="loadData"
+              :options="clientOptions"
+              placeholder="Todos los Clientes"
+              size="sm"
+              searchable
+            />
+          </div>
 
-          <select 
-            v-model="filters.assignedTo" 
-            @change="loadData"
-            class="bg-white/90 backdrop-blur-md border border-white/40 text-xs font-bold text-slate-600 rounded-xl px-4 py-2.5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] focus:ring-2 focus:ring-primary-500/20 transition-all outline-none"
-          >
-            <option value="">Todo el Personal</option>
-            <option v-for="member in availableMembers" :key="member._id" :value="member._id">{{ member.name }}</option>
-          </select>
+          <div class="min-w-[170px]">
+            <CustomSelect
+              v-model="filters.assignedTo"
+              @change="loadData"
+              :options="memberOptions"
+              placeholder="Todo el Personal"
+              size="sm"
+              searchable
+            />
+          </div>
         </div>
 
         <div class="h-8 w-[1px] bg-slate-200 hidden md:block"></div>
@@ -277,12 +283,11 @@
             </div>
             <div>
               <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1.5">Período del reporte</label>
-              <select v-model="reportPeriod"
-                class="w-full px-4 py-2.5 text-xs font-bold border border-slate-200 rounded-xl focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all bg-white">
-                <option value="week">Semanal</option>
-                <option value="month">Mensual</option>
-                <option value="quarter">Trimestral</option>
-              </select>
+              <CustomSelect
+                v-model="reportPeriod"
+                :options="[{ value: 'week', label: 'Semanal' }, { value: 'month', label: 'Mensual' }, { value: 'quarter', label: 'Trimestral' }]"
+                size="dense"
+              />
             </div>
             <button @click="sendManualReport" :disabled="sendingReport"
               class="w-full py-3 bg-gradient-to-r from-primary-600 to-indigo-500 hover:from-primary-500 hover:to-indigo-400 text-white text-xs font-black rounded-xl shadow-[0_8px_20px_rgb(99,102,241,0.25)] hover:shadow-[0_8px_25px_rgb(99,102,241,0.4)] transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:transform-none flex items-center justify-center gap-2">
@@ -308,20 +313,22 @@
             </div>
             <div v-if="scheduleEnabled" class="space-y-3 pt-2">
               <div class="flex gap-2">
-                <select v-model="scheduleFrequency" @change="saveSchedule"
-                  class="flex-1 px-3 py-2 text-xs font-bold border border-slate-200 rounded-xl outline-none bg-white">
-                  <option value="daily">Diario (L-V)</option>
-                  <option value="weekly">Semanal</option>
-                  <option value="monthly">Mensual</option>
-                </select>
-                <select v-if="scheduleFrequency === 'weekly'" v-model.number="scheduleDayOfWeek" @change="saveSchedule"
-                  class="flex-1 px-3 py-2 text-xs font-bold border border-slate-200 rounded-xl outline-none bg-white">
-                  <option :value="1">Lunes</option>
-                  <option :value="2">Martes</option>
-                  <option :value="3">Miércoles</option>
-                  <option :value="4">Jueves</option>
-                  <option :value="5">Viernes</option>
-                </select>
+                <div class="flex-1">
+                  <CustomSelect
+                    v-model="scheduleFrequency"
+                    @change="saveSchedule"
+                    :options="[{ value: 'daily', label: 'Diario (L-V)' }, { value: 'weekly', label: 'Semanal' }, { value: 'monthly', label: 'Mensual' }]"
+                    size="sm"
+                  />
+                </div>
+                <div v-if="scheduleFrequency === 'weekly'" class="flex-1">
+                  <CustomSelect
+                    v-model="scheduleDayOfWeek"
+                    @change="saveSchedule"
+                    :options="[{ value: 1, label: 'Lunes' }, { value: 2, label: 'Martes' }, { value: 3, label: 'Miércoles' }, { value: 4, label: 'Jueves' }, { value: 5, label: 'Viernes' }]"
+                    size="sm"
+                  />
+                </div>
               </div>
               <div class="flex gap-2 items-center">
                 <label class="text-[10px] text-slate-400 font-black shrink-0">Hora:</label>
@@ -578,6 +585,7 @@
 <script setup lang="ts">
 import Skeleton from '@/components/ui/Skeleton.vue'
 import PersonAvatar from '../components/ui/PersonAvatar.vue'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
 import { ref, onMounted, nextTick, computed, watch } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 import { reportsService } from '../services/reportsService'
@@ -626,6 +634,20 @@ const periods = [
   { value: 'quarter', label: 'Este Trimestre' },
   { value: 'year', label: 'Este Año' }
 ]
+
+const periodOptions = computed(() => periods.map(p => ({ value: p.value, label: p.label })))
+const departmentOptions = computed(() => [
+  { value: '', label: 'Todos los Equipos' },
+  ...departments.value.map((dept: string) => ({ value: dept, label: dept }))
+])
+const clientOptions = computed(() => [
+  { value: '', label: 'Todos los Clientes' },
+  ...clients.value.map(client => ({ value: client._id, label: client.name }))
+])
+const memberOptions = computed(() => [
+  { value: '', label: 'Todo el Personal' },
+  ...availableMembers.value.map(member => ({ value: member._id, label: member.name }))
+])
 
 // API Data
 const dashboardStats = ref<DashboardStats | null>(null)

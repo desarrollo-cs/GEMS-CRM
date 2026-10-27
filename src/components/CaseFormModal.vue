@@ -35,16 +35,12 @@
             <label class="block text-sm font-medium text-purple-200 mb-2">
               Tipo *
             </label>
-            <select
+            <CustomSelect
               v-model="form.tipo"
-              required
-              class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="">Seleccionar tipo</option>
-              <option value="documento">Documento</option>
-              <option value="incidencia">Incidencia</option>
-              <option value="seguimiento">Seguimiento</option>
-            </select>
+              size="md"
+              placeholder="Seleccionar tipo"
+              :options="[{ value: '', label: 'Seleccionar tipo' }, { value: 'documento', label: 'Documento' }, { value: 'incidencia', label: 'Incidencia' }, { value: 'seguimiento', label: 'Seguimiento' }]"
+            />
           </div>
         </div>
 
@@ -68,32 +64,22 @@
             <label class="block text-sm font-medium text-purple-200 mb-2">
               Estado *
             </label>
-            <select
+            <CustomSelect
               v-model="form.estado"
-              required
-              class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="abierto">Abierto</option>
-              <option value="en_progreso">En Progreso</option>
-              <option value="resuelto">Resuelto</option>
-              <option value="cerrado">Cerrado</option>
-            </select>
+              size="md"
+              :options="[{ value: 'abierto', label: 'Abierto' }, { value: 'en_progreso', label: 'En Progreso' }, { value: 'resuelto', label: 'Resuelto' }, { value: 'cerrado', label: 'Cerrado' }]"
+            />
           </div>
 
           <div>
             <label class="block text-sm font-medium text-purple-200 mb-2">
               Prioridad *
             </label>
-            <select
+            <CustomSelect
               v-model="form.prioridad"
-              required
-              class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="baja">Baja</option>
-              <option value="media">Media</option>
-              <option value="alta">Alta</option>
-              <option value="critica">Crítica</option>
-            </select>
+              size="md"
+              :options="[{ value: 'baja', label: 'Baja' }, { value: 'media', label: 'Media' }, { value: 'alta', label: 'Alta' }, { value: 'critica', label: 'Crítica' }]"
+            />
           </div>
 
           <div>
@@ -119,30 +105,26 @@
             <label class="block text-sm font-medium text-purple-200 mb-2">
               Cliente
             </label>
-            <select
+            <CustomSelect
               v-model="form.cliente_id"
-              class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="">Sin asignar</option>
-              <option v-for="client in clients" :key="client._id" :value="client._id">
-                {{ client.nombre }} - {{ client.empresa }}
-              </option>
-            </select>
+              size="md"
+              searchable
+              placeholder="Sin asignar"
+              :options="clientOptions"
+            />
           </div>
 
           <div>
             <label class="block text-sm font-medium text-purple-200 mb-2">
               Asignado a
             </label>
-            <select
+            <CustomSelect
               v-model="form.asignado_a"
-              class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="">Sin asignar</option>
-              <option v-for="member in teamMembers" :key="member._id" :value="member._id">
-                {{ member.name }} - {{ member.role }}
-              </option>
-            </select>
+              size="md"
+              searchable
+              placeholder="Sin asignar"
+              :options="teamMemberOptions"
+            />
           </div>
         </div>
 
@@ -177,31 +159,26 @@
             <label class="block text-sm font-medium text-purple-200 mb-2">
               Gravedad
             </label>
-            <select
-              v-model="form.gravedad"
-              class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="">Seleccionar gravedad</option>
-              <option value="menor">Menor</option>
-              <option value="moderada">Moderada</option>
-              <option value="mayor">Mayor</option>
-              <option value="critica">Crítica</option>
-            </select>
+            <CustomSelect
+              :model-value="form.gravedad ?? ''"
+              @update:model-value="form.gravedad = $event"
+              size="md"
+              placeholder="Seleccionar gravedad"
+              :options="[{ value: '', label: 'Seleccionar gravedad' }, { value: 'menor', label: 'Menor' }, { value: 'moderada', label: 'Moderada' }, { value: 'mayor', label: 'Mayor' }, { value: 'critica', label: 'Crítica' }]"
+            />
           </div>
 
           <div>
             <label class="block text-sm font-medium text-purple-200 mb-2">
               Impacto
             </label>
-            <select
-              v-model="form.impacto"
-              class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="">Seleccionar impacto</option>
-              <option value="bajo">Bajo</option>
-              <option value="medio">Medio</option>
-              <option value="alto">Alto</option>
-            </select>
+            <CustomSelect
+              :model-value="form.impacto ?? ''"
+              @update:model-value="form.impacto = $event"
+              size="md"
+              placeholder="Seleccionar impacto"
+              :options="[{ value: '', label: 'Seleccionar impacto' }, { value: 'bajo', label: 'Bajo' }, { value: 'medio', label: 'Medio' }, { value: 'alto', label: 'Alto' }]"
+            />
           </div>
         </div>
 
@@ -333,6 +310,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { casesService, type Case } from '../services/casesService'
+import CustomSelect from './ui/CustomSelect.vue'
 
 // Props
 const props = defineProps<{
@@ -351,6 +329,15 @@ const selectedFiles = ref<File[]>([])
 const tagsInput = ref('')
 const clients = ref<any[]>([])
 const teamMembers = ref<any[]>([])
+
+const clientOptions = computed(() => [
+  { value: '', label: 'Sin asignar' },
+  ...clients.value.map((client: any) => ({ value: client._id, label: `${client.nombre} - ${client.empresa}` }))
+])
+const teamMemberOptions = computed(() => [
+  { value: '', label: 'Sin asignar' },
+  ...teamMembers.value.map((member: any) => ({ value: member._id, label: `${member.name} - ${member.role}` }))
+])
 
 // Form data
 const form = ref({

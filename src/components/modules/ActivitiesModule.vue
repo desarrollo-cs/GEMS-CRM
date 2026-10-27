@@ -46,26 +46,19 @@
     <!-- Filters and Search -->
     <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
       <div class="flex items-center space-x-3">
-        <select
+        <CustomSelect
           v-model="statusFilter"
-          class="bg-gray-800 text-white border border-gray-700 rounded-lg px-3 py-2"
-        >
-          <option value="">Todos los estados</option>
-          <option value="completed">Completadas</option>
-          <option value="pending">Pendientes</option>
-          <option value="in-progress">En Progreso</option>
-        </select>
-        
-        <select
+          :options="[{ value: '', label: 'Todos los estados' }, { value: 'completed', label: 'Completadas' }, { value: 'pending', label: 'Pendientes' }, { value: 'in-progress', label: 'En Progreso' }]"
+          placeholder="Todos los estados"
+          size="sm"
+        />
+
+        <CustomSelect
           v-model="typeFilter"
-          class="bg-gray-800 text-white border border-gray-700 rounded-lg px-3 py-2"
-        >
-          <option value="">Todos los tipos</option>
-          <option value="call">Llamada</option>
-          <option value="meeting">Reunión</option>
-          <option value="email">Email</option>
-          <option value="task">Tarea</option>
-        </select>
+          :options="[{ value: '', label: 'Todos los tipos' }, { value: 'call', label: 'Llamada' }, { value: 'meeting', label: 'Reunión' }, { value: 'email', label: 'Email' }, { value: 'task', label: 'Tarea' }]"
+          placeholder="Todos los tipos"
+          size="sm"
+        />
       </div>
 
       <button
@@ -200,6 +193,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useNotifications } from '@/composables/useNotifications'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
 
 const { confirmDelete } = useNotifications()
 

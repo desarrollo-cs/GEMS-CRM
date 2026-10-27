@@ -26,14 +26,18 @@
             class="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
           >
         </div>
-        <select
-          v-model="typeFilter"
-          class="px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-        >
-          <option value="" class="bg-gray-700">Todos los tipos</option>
-          <option value="ingreso" class="bg-gray-700">Ingresos</option>
-          <option value="egreso" class="bg-gray-700">Egresos</option>
-        </select>
+        <div class="min-w-[180px]">
+          <CustomSelect
+            v-model="typeFilter"
+            :options="[
+              { value: '', label: 'Todos los tipos' },
+              { value: 'ingreso', label: 'Ingresos' },
+              { value: 'egreso', label: 'Egresos' }
+            ]"
+            placeholder="Todos los tipos"
+            size="md"
+          />
+        </div>
         <input
           v-model="dateFilter"
           type="month"
@@ -129,6 +133,7 @@
 
 <script setup lang="ts">
 import AppLoader from '@/components/ui/AppLoader.vue'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
 import { ref, computed } from 'vue'
 import type { Transaction } from '../../services/accountingService'
 
