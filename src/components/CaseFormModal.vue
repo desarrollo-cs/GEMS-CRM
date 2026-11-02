@@ -106,11 +106,25 @@
               Cliente
             </label>
             <CustomSelect
-              v-model="form.cliente_id"
+              :model-value="form.cliente_id"
+              @update:model-value="form.cliente_id = String($event ?? ''); form.proyecto_id = ''"
               size="md"
               searchable
               placeholder="Sin asignar"
               :options="clientOptions"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-purple-200 mb-2">
+              Proyecto <span class="text-purple-300/70 font-normal">(opcional)</span>
+            </label>
+            <CustomSelect
+              v-model="form.proyecto_id"
+              size="md"
+              placeholder="Sin proyecto"
+              :disabled="!form.cliente_id"
+              :options="projectOptions"
             />
           </div>
 
@@ -334,6 +348,10 @@ const clientOptions = computed(() => [
   { value: '', label: 'Sin asignar' },
   ...clients.value.map((client: any) => ({ value: client._id, label: `${client.nombre} - ${client.empresa}` }))
 ])
+const projectOptions = computed(() => [
+  { value: '', label: 'Sin proyecto' },
+  ...(clients.value.find((c: any) => c._id === form.value.cliente_id)?.projects || []).map((p: any) => ({ value: p._id, label: p.name }))
+])
 const teamMemberOptions = computed(() => [
   { value: '', label: 'Sin asignar' },
   ...teamMembers.value.map((member: any) => ({ value: member._id, label: `${member.name} - ${member.role}` }))
@@ -347,6 +365,7 @@ const form = ref({
   estado: 'abierto' as Case['estado'],
   prioridad: 'media' as Case['prioridad'],
   cliente_id: '',
+  proyecto_id: '',
   asignado_a: '',
   fecha_limite: '',
   fecha_resolucion: '',
@@ -369,7 +388,8 @@ watch(() => props.caseItem, (newCase) => {
       tipo: newCase.tipo,
       estado: newCase.estado,
       prioridad: newCase.prioridad,
-      cliente_id: newCase.cliente_id || '',
+      cliente_id: (typeof newCase.cliente_id === 'object' ? newCase.cliente_id?._id : newCase.cliente_id) || '',
+      proyecto_id: newCase.proyecto_id || '',
       asignado_a: newCase.asignado_a || '',
       fecha_limite: newCase.fecha_limite ? formatDateForInput(newCase.fecha_limite) : '',
       fecha_resolucion: newCase.fecha_resolucion ? formatDateForInput(newCase.fecha_resolucion) : '',
@@ -405,7 +425,9 @@ const handleSubmit = async () => {
       formData.append('prioridad', caseData.prioridad!)
       formData.append('progreso', caseData.progreso?.toString() || '0')
       
-      if (caseData.cliente_id) formData.append('cliente_id', caseData.cliente_id)
+      // Se envían siempre: '' limpia el vínculo en el backend
+      formData.append('cliente_id', form.value.cliente_id)
+      formData.append('proyecto_id', form.value.proyecto_id)
       if (caseData.asignado_a) formData.append('asignado_a', caseData.asignado_a)
       if (caseData.fecha_limite) formData.append('fecha_limite', caseData.fecha_limite.toISOString())
       if (caseData.fecha_resolucion) formData.append('fecha_resolucion', caseData.fecha_resolucion.toISOString())

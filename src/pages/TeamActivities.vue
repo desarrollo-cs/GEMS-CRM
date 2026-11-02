@@ -1,86 +1,68 @@
 <template>
-  <div class="flex flex-col h-full min-h-0 relative">
-    <div class="flex-1 min-h-0 overflow-y-auto">
-      
-      <!-- Header -->
-      <div class="mb-6 space-y-4">
-        <!-- Top Row: View Mode & Export Button -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div class="flex items-center gap-4">
-            <h1 class="text-xl font-black text-slate-800 mr-2">Actividades del Equipo</h1>
-            <div class="flex bg-slate-100 rounded-lg p-1 border border-slate-200">
-              <button
-                @click="viewMode = 'cards'"
-                :class="[
-                  'px-4 py-1.5 rounded-md text-sm font-bold transition-all',
-                  viewMode === 'cards' ? 'bg-white text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-                ]"
-              >
-                <i class="fas fa-th-large mr-2"></i>Tarjetas
-              </button>
-              <button
-                @click="viewMode = 'table'"
-                :class="[
-                  'px-4 py-1.5 rounded-md text-sm font-bold transition-all',
-                  viewMode === 'table' ? 'bg-white text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-                ]"
-              >
-                <i class="fas fa-table mr-2"></i>Tabla
-              </button>
-            </div>
-          </div>
+  <div class="flex flex-col gap-4 h-full min-h-0">
+    <!-- Cabecera compacta -->
+    <PageHeader icon="fas fa-users" title="Actividades del Equipo">
+      <template #subtitle>{{ teamMembersWithActivities.length }} colaboradores · {{ allActivities.length }} actividades</template>
+      <div class="seg">
+        <button @click="viewMode = 'cards'" :aria-pressed="viewMode === 'cards'">
+          <i class="fas fa-th-large text-[10px] mr-1.5"></i>Tarjetas
+        </button>
+        <button @click="viewMode = 'table'" :aria-pressed="viewMode === 'table'">
+          <i class="fas fa-table text-[10px] mr-1.5"></i>Tabla
+        </button>
+      </div>
+      <button
+        @click="copySummary"
+        class="btn-secondary btn-sm"
+      >
+        <i class="fab fa-whatsapp text-emerald-500 text-[10px]"></i>
+        Copiar resumen
+      </button>
+    </PageHeader>
 
-          <button 
-            @click="copySummary"
-            class="flex items-center justify-center gap-3 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-all font-black text-sm shadow-lg shadow-emerald-200/50 group"
-          >
-            <i class="fas fa-file-export group-hover:translate-x-1 transition-transform"></i>
-            COPIAR RESUMEN PARA WHATSAPP
-          </button>
-        </div>
-
-        <!-- Bottom Row: Filters -->
-        <div class="flex flex-wrap items-center gap-3 bg-slate-50/50 p-3 rounded-xl border border-slate-100">
-          <div class="flex items-center gap-2">
-            <i class="fas fa-filter text-slate-400 text-xs ml-1"></i>
-            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Filtros:</span>
-          </div>
-
-          <!-- Filtro de Cliente -->
-          <div class="min-w-[200px]">
-            <CustomSelect
-              v-model="selectedClient"
-              searchable
-              :options="[
-                { value: '', label: 'Todos los clientes' },
-                ...clients.map(c => ({ value: c._id || '', label: c.name }))
-              ]"
-            />
-          </div>
-
-          <!-- Filtros de fecha -->
-          <div class="flex items-center gap-2 bg-white rounded-lg p-1 border border-slate-200 shadow-sm">
-            <div class="flex items-center gap-1.5 px-2">
-              <span class="text-[10px] font-black text-slate-400 uppercase">Desde</span>
-              <input type="date" v-model="startDate" class="text-xs border-none focus:ring-0 p-0 text-slate-600 font-bold bg-transparent" />
-            </div>
-            <div class="w-px h-4 bg-slate-200"></div>
-            <div class="flex items-center gap-1.5 px-2">
-              <span class="text-[10px] font-black text-slate-400 uppercase">Hasta</span>
-              <input type="date" v-model="endDate" class="text-xs border-none focus:ring-0 p-0 text-slate-600 font-bold bg-transparent" />
-            </div>
-            <button 
-              v-if="startDate || endDate || selectedClient" 
-              @click="startDate = ''; endDate = ''; selectedClient = ''"
-              class="p-1 text-slate-400 hover:text-red-500 transition-colors"
-              title="Limpiar filtros"
-            >
-              <i class="fas fa-times-circle"></i>
-            </button>
-          </div>
-        </div>
+    <!-- Filtros -->
+    <div class="flex-shrink-0 flex flex-wrap items-center gap-2 bg-slate-50/50 p-2 rounded-xl border border-slate-100">
+      <div class="flex items-center gap-2">
+        <i class="fas fa-filter text-slate-400 text-[10px] ml-1"></i>
+        <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Filtros:</span>
       </div>
 
+      <!-- Filtro de Cliente -->
+      <div class="w-full sm:w-52">
+        <CustomSelect
+          v-model="selectedClient"
+          searchable
+          size="sm"
+          :options="[
+            { value: '', label: 'Todos los clientes' },
+            ...clients.map(c => ({ value: c._id || '', label: c.name }))
+          ]"
+        />
+      </div>
+
+      <!-- Filtros de fecha -->
+      <div class="flex items-center gap-2 bg-white rounded-lg p-1 border border-slate-200">
+        <div class="flex items-center gap-1.5 px-2">
+          <span class="text-[10px] font-black text-slate-400 uppercase">Desde</span>
+          <input type="date" v-model="startDate" class="text-xs border-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 p-0 text-slate-600 font-bold bg-transparent" />
+        </div>
+        <div class="w-px h-4 bg-slate-200"></div>
+        <div class="flex items-center gap-1.5 px-2">
+          <span class="text-[10px] font-black text-slate-400 uppercase">Hasta</span>
+          <input type="date" v-model="endDate" class="text-xs border-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 p-0 text-slate-600 font-bold bg-transparent" />
+        </div>
+        <button
+          v-if="startDate || endDate || selectedClient"
+          @click="startDate = ''; endDate = ''; selectedClient = ''"
+          class="p-1 text-slate-400 hover:text-red-500 transition-colors"
+          title="Limpiar filtros"
+        >
+          <i class="fas fa-times-circle"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
       <!-- Loading state -->
       <div v-if="loading">
         <Skeleton v-if="viewMode === 'table'" preset="table" :rows="8" />
@@ -88,11 +70,11 @@
       </div>
 
       <!-- Vista de tarjetas por miembro -->
-      <div v-else-if="viewMode === 'cards'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 motion-stagger">
+      <div v-else-if="viewMode === 'cards'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 motion-stagger">
         <div
           v-for="member in teamMembersWithActivities"
           :key="member._id"
-          class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md hover:border-primary-200 transition-all duration-200"
+          class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm hover:shadow-md hover:border-primary-200 transition-all duration-200"
         >
           <!-- Header del miembro -->
           <div class="flex items-center gap-3 mb-4">
@@ -167,7 +149,7 @@
       </div>
 
       <!-- Vista de tabla -->
-      <div v-else-if="viewMode === 'table'" class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div v-else-if="viewMode === 'table'" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full">
             <thead class="bg-slate-50">
@@ -225,17 +207,13 @@
       </div>
 
       <!-- Estado vacío -->
-      <div v-if="!loading && teamMembersWithActivities.length === 0" class="text-center py-12">
-        <div class="bg-white rounded-2xl p-10 border border-slate-200 shadow-sm max-w-md mx-auto">
-          <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="fas fa-users text-2xl text-slate-300"></i>
-          </div>
-          <h3 class="text-lg font-black text-slate-800 mb-2">No hay miembros del equipo</h3>
-          <p class="text-slate-500 text-sm mb-6 font-medium">Agrega miembros al equipo para poder asignar actividades</p>
-          <router-link to="/team" class="px-6 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-bold text-sm shadow-sm inline-flex items-center gap-2">
-            <i class="fas fa-user-plus"></i>Gestionar Equipo
-          </router-link>
-        </div>
+      <div v-if="!loading && teamMembersWithActivities.length === 0" class="empty-state">
+        <div class="empty-state__icon"><i class="fas fa-users"></i></div>
+        <p class="empty-state__title">No hay miembros del equipo</p>
+        <p class="empty-state__text">Agrega miembros al equipo para poder asignar actividades</p>
+        <router-link to="/team" class="btn-primary btn-sm mt-2">
+          <i class="fas fa-user-plus text-[10px]"></i>Gestionar equipo
+        </router-link>
       </div>
     </div>
 
@@ -257,6 +235,7 @@ import type { TeamMember } from '../types'
 import AssignActivityModal from '../components/modals/AssignActivityModal.vue'
 import ActivityFormModal from '../components/forms/ActivityFormModal.vue'
 import CustomSelect from '../components/ui/CustomSelect.vue'
+import PageHeader from '../components/ui/PageHeader.vue'
 
 // Reactive data
 const loading = ref(true)

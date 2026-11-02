@@ -2,34 +2,33 @@
   <!-- Modal Backdrop -->
   <div
     v-if="show"
-    class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4"
     @click="closeModal"
   >
     <!-- Modal Content -->
     <div
-      class="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-purple-500/20"
+      class="bg-white rounded-2xl shadow-xl border border-slate-100 w-full max-w-lg max-h-[90vh] overflow-y-auto animate-fade-in"
       @click.stop
     >
       <!-- Header -->
-      <div class="p-6 border-b border-gray-700">
-        <div class="flex justify-between items-center">
-          <h2 class="text-xl font-bold text-white">
-            {{ editingTransaction ? 'Editar Transacción' : 'Nueva Transacción' }}
-          </h2>
-          <button title="Cerrar"
-            @click="closeModal"
-            class="text-gray-400 hover:text-white transition-colors"
-          >
-            <i class="fas fa-times text-xl"></i>
-          </button>
-        </div>
+      <div class="flex items-center justify-between p-5 border-b border-slate-100">
+        <h2 class="text-sm font-extrabold text-slate-800">
+          {{ editingTransaction ? 'Editar Transacción' : 'Nueva transacción' }}
+        </h2>
+        <button title="Cerrar"
+          type="button"
+          @click="closeModal"
+          class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+        >
+          <i class="fas fa-times"></i>
+        </button>
       </div>
 
       <!-- Form -->
-      <form @submit.prevent="handleSubmit" class="p-6 space-y-6">
+      <form @submit.prevent="handleSubmit" class="p-5 space-y-4">
         <!-- Tipo -->
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">
+          <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
             Tipo de Transacción *
           </label>
           <CustomSelect
@@ -46,7 +45,7 @@
 
         <!-- Concepto -->
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">
+          <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
             Concepto *
           </label>
           <input
@@ -54,13 +53,13 @@
             type="text"
             required
             placeholder="Descripción de la transacción"
-            class="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all"
           >
         </div>
 
         <!-- Monto -->
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">
+          <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
             Monto *
           </label>
           <input
@@ -70,26 +69,26 @@
             min="0"
             step="0.01"
             placeholder="0.00"
-            class="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all"
           >
         </div>
 
         <!-- Fecha -->
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">
+          <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
             Fecha *
           </label>
           <input
             v-model="form.fecha"
             type="date"
             required
-            class="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all"
           >
         </div>
 
         <!-- Método de Pago -->
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">
+          <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
             Método de Pago
           </label>
           <CustomSelect
@@ -112,7 +111,7 @@
 
         <!-- Cliente (solo si hay clientes disponibles) -->
         <div v-if="clients.length > 0">
-          <label class="block text-sm font-medium text-gray-300 mb-2">
+          <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
             Cliente (opcional)
           </label>
           <CustomSelect
@@ -126,21 +125,21 @@
 
         <!-- Pago Recurrente (solo para ingresos) -->
         <div v-if="form.tipo === 'ingreso'">
-          <div class="flex items-center mb-4">
+          <div class="flex items-center mb-3">
             <input
               v-model="form.es_recurrente"
               type="checkbox"
               id="es_recurrente"
-              class="h-4 w-4 text-purple-600 focus:ring-purple-500 bg-gray-700 border-gray-600 rounded"
+              class="h-4 w-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500/30"
             >
-            <label for="es_recurrente" class="ml-3 text-white">
+            <label for="es_recurrente" class="ml-2.5 text-sm text-slate-700 font-medium">
               Es un pago recurrente
             </label>
           </div>
 
           <!-- Frecuencia (solo si es recurrente) -->
           <div v-if="form.es_recurrente">
-            <label class="block text-sm font-medium text-gray-300 mb-2">
+            <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
               Frecuencia de Pago *
             </label>
             <CustomSelect
@@ -159,18 +158,18 @@
         </div>
 
         <!-- Buttons -->
-        <div class="flex gap-3 pt-4">
+        <div class="flex gap-2 pt-2">
           <button
             type="button"
             @click="closeModal"
-            class="flex-1 px-4 py-3 bg-gray-600 text-white rounded-xl hover:bg-gray-700 transition-colors"
+            class="btn-secondary btn-sm flex-1"
           >
             Cancelar
           </button>
           <button
             type="submit"
             :disabled="loading"
-            class="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 disabled:opacity-50"
+            class="btn-primary btn-sm flex-1"
           >
             <span v-if="loading">
               <i class="fas fa-spinner fa-spin mr-2"></i>

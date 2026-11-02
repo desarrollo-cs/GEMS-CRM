@@ -1,11 +1,11 @@
 <template>
   <!-- Carga del equipo: quién tiene vencidas y cuánto lleva cada persona. -->
-  <DashCard :eyebrow="eyebrow" title="Carga del equipo" flush>
+  <DashCard :eyebrow="eyebrow" title="Carga del equipo" flush wrapper-class="flex-1 min-h-0">
     <div v-if="rows.length === 0" class="empty-state empty-state--sm border-0 rounded-none py-10">
       <p class="empty-state__title">Sin personas en tu área</p>
       <p class="empty-state__text">Agrega miembros desde Equipo para ver su carga aquí.</p>
     </div>
-    <ul v-else class="divide-y divide-slate-100">
+    <ul v-else class="divide-y divide-slate-100 h-full overflow-y-auto custom-scrollbar">
       <li v-for="m in rows" :key="m._id" class="flex items-center gap-3 px-5 py-2.5">
         <PersonAvatar :name="m.name" :photo="m.photo" :letters="2" class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 text-[10px] font-semibold shrink-0" />
         <div class="flex-1 min-w-0">

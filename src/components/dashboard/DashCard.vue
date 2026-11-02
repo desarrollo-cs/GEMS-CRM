@@ -4,8 +4,8 @@
   <section class="bg-white border border-slate-200 rounded-2xl flex flex-col min-w-0 overflow-hidden" :class="wrapperClass">
     <header v-if="title || $slots.action" class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-5 pt-4 pb-3 shrink-0">
       <div class="min-w-0">
-        <p v-if="eyebrow" class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 leading-none mb-1">{{ eyebrow }}</p>
-        <h3 class="text-[15px] font-semibold text-slate-900 leading-tight truncate">{{ title }}</h3>
+        <p v-if="eyebrow" class="text-[10px] font-black uppercase tracking-wider text-slate-400 leading-none mb-1">{{ eyebrow }}</p>
+        <h3 class="text-sm font-extrabold text-slate-800 leading-tight truncate">{{ title }}</h3>
       </div>
       <div class="flex items-center gap-2 shrink-0 ml-auto max-w-full">
         <slot name="action"></slot>

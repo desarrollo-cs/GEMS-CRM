@@ -1,6 +1,6 @@
 <template>
   <!-- Mi día: vencidas primero y luego lo de hoy, en una sola lista. -->
-  <DashCard eyebrow="Mi día" :title="title" flush>
+  <DashCard eyebrow="Mi día" :title="title" flush wrapper-class="flex-1 min-h-0">
     <div v-if="items.length === 0" class="empty-state empty-state--sm border-0 rounded-none py-10">
       <p class="empty-state__title">Nada vence hoy</p>
       <p class="empty-state__text">
@@ -8,7 +8,7 @@
         <template v-else>Aprovecha para adelantar lo que viene.</template>
       </p>
     </div>
-    <ul v-else class="divide-y divide-slate-100 max-h-[520px] overflow-y-auto custom-scrollbar">
+    <ul v-else class="divide-y divide-slate-100 h-full max-h-[560px] overflow-y-auto custom-scrollbar">
       <li v-for="a in items" :key="a._id">
         <button type="button" @click="$emit('open', a)" class="w-full text-left flex items-center gap-3 px-5 py-3 hover:bg-slate-50 transition-colors group">
           <span class="w-1.5 h-1.5 rounded-full shrink-0" :class="isOverdue(a) ? 'bg-red-500' : 'bg-primary-500'"></span>

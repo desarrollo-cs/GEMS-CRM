@@ -1,49 +1,39 @@
 <template>
   <div class="flex flex-col h-full min-h-0 gap-4">
-    <!-- Header Controls (New Ticket & Refresh) -->
-    <div class="flex-shrink-0 flex items-center justify-end pr-24">
-      
-      <div class="flex items-center gap-5">
-        <!-- View Toggle -->
-        <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
-          <button 
-            @click="viewMode = 'board'"
-            class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
-            :class="viewMode === 'board' ? 'bg-white text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
-          >
-            <i class="fas fa-columns text-[10px]"></i> Tablero
-          </button>
-          <button 
-            @click="viewMode = 'inbox'"
-            class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
-            :class="viewMode === 'inbox' ? 'bg-white text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
-          >
-            <i class="fas fa-list text-[10px]"></i> Mi Bandeja
-          </button>
-        </div>
-
-        <div class="h-8 w-px bg-slate-200 mx-1"></div>
-
-        <button title="Actualizar" 
-          @click="loadTickets"
-          :disabled="loading"
-          class="p-2 text-slate-400 hover:text-primary-600 transition-colors"
-        >
-          <i class="fas fa-sync-alt" :class="{ 'fa-spin': loading }"></i>
+    <!-- Cabecera compacta -->
+    <PageHeader icon="fas fa-ticket" title="Tickets">
+      <template #subtitle>{{ filteredTickets.length }} de {{ tickets.length }} tickets</template>
+      <!-- View Toggle -->
+      <div class="seg">
+        <button @click="viewMode = 'board'" :aria-pressed="viewMode === 'board'">
+          <i class="fas fa-columns text-[10px] mr-1.5"></i>Tablero
         </button>
-
-        <button
-          @click="showNewTicketModal = true"
-          class="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-primary-600 hover:bg-primary-50 border border-slate-200 hover:border-primary-200 transition-all active:bg-primary-100"
-          title="Nuevo Ticket"
-        >
-          <i class="fas fa-plus text-xs"></i>
+        <button @click="viewMode = 'inbox'" :aria-pressed="viewMode === 'inbox'">
+          <i class="fas fa-list text-[10px] mr-1.5"></i>Mi Bandeja
         </button>
       </div>
-    </div>
 
-    <!-- Modern Filters Toolbar -->
-    <div class="flex-shrink-0 flex items-center justify-between bg-white/80 backdrop-blur-md px-4 py-3 rounded-2xl border border-slate-200/60 shadow-sm mb-6">
+      <button title="Actualizar"
+        @click="loadTickets"
+        :disabled="loading"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-slate-500 bg-white border border-slate-200 rounded-lg hover:text-primary-600 hover:border-primary-200 disabled:opacity-50 transition-colors"
+      >
+        <i class="fas fa-sync-alt text-[10px]" :class="{ 'fa-spin': loading }"></i>
+        Actualizar
+      </button>
+
+      <button
+        @click="showNewTicketModal = true"
+        class="btn-primary btn-sm"
+        title="Nuevo ticket"
+      >
+        <i class="fas fa-plus text-[10px]"></i>
+        Nuevo ticket
+      </button>
+    </PageHeader>
+
+    <!-- Filtros -->
+    <div class="flex-shrink-0 flex flex-wrap items-center justify-between gap-2 bg-slate-50/50 p-2 rounded-xl border border-slate-100">
       <div class="flex items-center gap-4 flex-1">
         <!-- Search Group -->
         <div class="relative w-80 group">
@@ -138,7 +128,7 @@
         <button 
           v-if="hasActiveFilters"
           @click="clearFilters"
-          class="px-3 py-2 text-[10px] font-black text-rose-500 hover:bg-rose-50 rounded-xl uppercase tracking-widest flex items-center gap-2 transition-all"
+          class="px-3 py-2 text-[10px] font-black text-rose-500 hover:bg-rose-50 rounded-xl uppercase tracking-wider flex items-center gap-2 transition-all"
         >
           <i class="fas fa-times-circle"></i>
           Limpiar
@@ -154,11 +144,11 @@
     <div class="flex-1 min-h-0 relative">
       
       <!-- BOARD VIEW -->
-      <div v-if="viewMode === 'board'" class="h-full flex gap-6 overflow-x-auto pb-6 custom-scrollbar px-2">
+      <div v-if="viewMode === 'board'" class="h-full flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
         <div 
           v-for="col in columns" 
           :key="col.id" 
-          class="flex flex-col flex-1 min-w-[350px] bg-gradient-to-b from-slate-50/50 to-white rounded-[2rem] border border-slate-200/60 shadow-inner"
+          class="flex flex-col flex-1 min-w-[350px] bg-slate-50/50 rounded-2xl border border-slate-200"
         >
           <!-- Column Header -->
           <div class="flex-shrink-0 p-5 pb-3 flex items-center justify-between">
@@ -167,7 +157,7 @@
                 <i :class="col.icon" class="text-xs"></i>
               </div>
               <div>
-                <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest">{{ col.title }}</h3>
+                <h3 class="text-xs font-black text-slate-700 uppercase tracking-wider">{{ col.title }}</h3>
                 <p class="text-[9px] font-bold text-slate-400">{{ getTicketsByStatus(col.id).length }} tickets</p>
               </div>
             </div>
@@ -237,7 +227,7 @@
             <div v-if="hasMoreInColumn(col.id)" class="pt-2 pb-2">
               <button 
                 @click="increaseColumnLimit(col.id)"
-                class="w-full py-3 bg-white/40 hover:bg-white border border-dashed border-slate-200 rounded-2xl text-[10px] font-black text-slate-500 uppercase tracking-widest transition-all hover:border-primary-300 hover:text-primary-600 shadow-sm"
+                class="w-full py-3 bg-white/40 hover:bg-white border border-dashed border-slate-200 rounded-2xl text-[10px] font-black text-slate-500 uppercase tracking-wider transition-all hover:border-primary-300 hover:text-primary-600 shadow-sm"
               >
                 <i class="fas fa-plus-circle mr-2"></i>
                 Ver más tickets
@@ -249,18 +239,17 @@
                <div class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center mb-3">
                  <i class="fas fa-inbox text-xl text-slate-300"></i>
                </div>
-               <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Columna Vacía</span>
+               <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Columna vacía</span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- INBOX VIEW -->
-      <div v-else class="h-full bg-white rounded-[2.5rem] border border-slate-200 shadow-xl flex flex-col overflow-hidden animate-fade-in relative">
-        <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary-500 to-indigo-500 opacity-80"></div>
+      <div v-else class="h-full bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden animate-fade-in relative">
         
         <!-- Inbox Toolbar -->
-        <div class="flex-shrink-0 border-b border-slate-100 px-8 py-6 bg-slate-50/30 flex items-center justify-between">
+        <div class="flex-shrink-0 border-b border-slate-100 px-5 py-3 bg-slate-50/30 flex items-center justify-between">
            <div class="flex items-center gap-6">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-white shadow-sm border border-slate-100 rounded-2xl flex items-center justify-center">
@@ -295,12 +284,12 @@
           <table v-else class="w-full text-left border-collapse mt-4 motion-content-in">
             <thead>
               <tr class="border-b border-slate-100">
-                <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Ticket</th>
-                <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Asunto</th>
-                <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Cliente</th>
-                <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Prioridad</th>
-                <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Antigüedad</th>
+                <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider">Status</th>
+                <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider">Ticket</th>
+                <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider">Asunto</th>
+                <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider">Cliente</th>
+                <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider">Prioridad</th>
+                <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider">Antigüedad</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-50">
@@ -352,11 +341,11 @@
 
               <tr v-if="inboxTickets.length === 0">
                 <td colspan="6" class="py-32 text-center">
-                   <div class="w-20 h-20 bg-emerald-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6 border border-emerald-100 shadow-sm animate-bounce-subtle">
-                     <i class="fas fa-check-circle text-3xl text-emerald-500"></i>
+                   <div class="empty-state empty-state--sm border-0 bg-transparent">
+                     <div class="empty-state__icon bg-emerald-50 text-emerald-500"><i class="fas fa-check-circle"></i></div>
+                     <h4 class="empty-state__title">¡Bandeja al día!</h4>
+                     <p class="empty-state__text">No tienes tickets asignados pendientes</p>
                    </div>
-                   <h4 class="text-lg font-black text-slate-800 mb-1">¡Bandeja al día!</h4>
-                   <p class="text-xs font-black text-slate-400 uppercase tracking-widest">No tienes tickets asignados pendientes</p>
                 </td>
               </tr>
             </tbody>
@@ -370,7 +359,7 @@
       <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"></div>
       
       <div class="absolute inset-y-0 right-0 max-w-2xl w-full flex">
-        <div class="w-full bg-white shadow-2xl flex flex-col animate-slide-in-right">
+        <div class="w-full bg-white shadow-xl flex flex-col animate-slide-in-right">
           
           <!-- Detail Header -->
           <div class="flex-shrink-0 p-6 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
@@ -397,13 +386,13 @@
           </div>
 
           <!-- Detail Content -->
-          <div class="flex-1 overflow-y-auto flex flex-col p-6 space-y-8 custom-scrollbar">
+          <div class="flex-1 overflow-y-auto flex flex-col p-5 space-y-5 custom-scrollbar">
             
             <!-- Description -->
             <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 relative">
                <div class="absolute -top-3 left-4 bg-white border border-slate-100 px-3 py-1 rounded-full flex items-center gap-2">
                  <i class="fas fa-info-circle text-[10px] text-primary-500"></i>
-                 <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Descripción Inicial</span>
+                 <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Descripción Inicial</span>
                </div>
                <p class="text-sm text-slate-700 leading-relaxed font-medium whitespace-pre-wrap mt-2">{{ selectedTicket.description }}</p>
                
@@ -426,7 +415,7 @@
             <!-- Meta info grid -->
             <div class="grid grid-cols-2 gap-4">
               <div class="bg-white rounded-xl p-4 border border-slate-200 flex flex-col gap-2">
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Asignado a:</span>
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Asignado a:</span>
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-3">
                     <PersonAvatar :name="selectedTicket.assignedTo?.name || '?'" :photo="selectedTicket.assignedTo?.photo" class="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 text-xs font-black text-indigo-600" />
@@ -441,9 +430,9 @@
                     </button>
                     
                     <!-- Dropdown de agentes -->
-                    <div v-if="showAgentSelector" class="absolute right-0 top-full mt-2 w-64 bg-white border border-slate-200 rounded-2xl shadow-2xl z-[70] py-2 animate-fade-in ring-4 ring-slate-900/5">
+                    <div v-if="showAgentSelector" class="absolute right-0 top-full mt-2 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl z-[70] py-2 animate-fade-in ring-4 ring-slate-900/5">
                        <div class="px-4 py-2 mb-2 border-b border-slate-100 flex items-center justify-between">
-                         <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Reasignar a...</span>
+                         <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Reasignar a...</span>
                          <button title="Cerrar" @click="showAgentSelector = false" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-[10px]"></i></button>
                        </div>
                        <div class="max-h-64 overflow-y-auto custom-scrollbar-slim px-2">
@@ -465,7 +454,7 @@
                 </div>
               </div>
               <div class="bg-white rounded-xl p-4 border border-slate-200 flex flex-col gap-2">
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estado Actual:</span>
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Estado Actual:</span>
                 <div class="flex items-center justify-between">
                   <span :class="getStatusPillClass(selectedTicket.status)" class="text-[10px] font-black px-2 py-1 rounded-lg uppercase border">
                     {{ selectedTicket.status }}
@@ -482,7 +471,7 @@
             <!-- Linked Resources -->
             <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
               <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                <h3 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
                   <i class="fas fa-link text-primary-500"></i> Recursos Vinculados
                 </h3>
                 <div class="flex gap-2">
@@ -499,7 +488,7 @@
                 <div v-if="(selectedTicket.linkedCases?.length || 0) + (selectedTicket.linkedWikiArticles?.length || 0) === 0" 
                      class="py-6 border border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center opacity-40">
                   <i class="fas fa-puzzle-piece text-lg mb-2 text-slate-300"></i>
-                  <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Sin recursos asociados</span>
+                  <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider">Sin recursos asociados</span>
                 </div>
                 
                 <div class="grid grid-cols-1 gap-2">
@@ -553,7 +542,7 @@
             <!-- Conversation/Timeline -->
             <div class="flex flex-col gap-4">
               <div class="flex items-center justify-between">
-                <h3 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
                   <i class="fas fa-comments text-primary-500"></i> Seguimiento
                 </h3>
                 <span class="text-[10px] font-bold text-slate-400">{{ selectedTicket.comments?.length || 0 }} mensajes</span>
@@ -646,7 +635,7 @@
       </div>
     </div>
 
-    <!-- Modal Nuevo Ticket (Para uso interno) -->
+    <!-- Modal Nuevo ticket (Para uso interno) -->
     <Teleport to="body">
     <div v-if="showNewTicketModal" class="fixed -inset-1 bg-slate-950/40 backdrop-blur-sm flex items-center justify-center z-[100] p-4" @click.self="showNewTicketModal = false">
       <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md animate-fade-in overflow-hidden">
@@ -664,20 +653,20 @@
         </div>
         <div class="p-6 space-y-4">
           <div>
-            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Nombre del Cliente</label>
+            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Nombre del Cliente</label>
             <input v-model="newTicketData.name" type="text" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-primary-500/20 focus:outline-none transition-all">
           </div>
           <div>
-            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Email del Cliente</label>
+            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Email del Cliente</label>
             <input v-model="newTicketData.email" type="email" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-primary-500/20 focus:outline-none transition-all">
           </div>
           <div>
-            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Asunto</label>
+            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Asunto</label>
             <input v-model="newTicketData.subject" type="text" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-primary-500/20 focus:outline-none transition-all">
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Prioridad</label>
+              <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Prioridad</label>
               <CustomSelect
                 v-model="newTicketData.priority"
                 :options="[
@@ -690,7 +679,7 @@
               />
             </div>
             <div>
-              <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Categoría</label>
+              <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Categoría</label>
               <CustomSelect
                 v-model="newTicketData.category"
                 :options="[
@@ -704,16 +693,16 @@
             </div>
           </div>
           <div>
-            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Descripción</label>
+            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Descripción</label>
             <textarea v-model="newTicketData.description" rows="3" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 resize-none"></textarea>
           </div>
         </div>
         <div class="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
-          <button @click="showNewTicketModal = false" class="flex-1 px-4 py-3 bg-white text-slate-600 border border-slate-200 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-colors">Cancelar</button>
+          <button @click="showNewTicketModal = false" class="flex-1 px-4 py-3 bg-white text-slate-600 border border-slate-200 rounded-xl font-black text-xs uppercase tracking-wider hover:bg-slate-50 transition-colors">Cancelar</button>
           <button 
             @click="createNewTicket"
             :disabled="creating"
-            class="flex-1 px-4 py-3 bg-primary-600 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-primary-700 transition-all shadow-md flex items-center justify-center gap-2"
+            class="flex-1 px-4 py-3 bg-primary-600 text-white rounded-xl font-black text-xs uppercase tracking-wider hover:bg-primary-700 transition-all shadow-md flex items-center justify-center gap-2"
           >
             {{ creating ? 'Creando...' : 'Crear Ticket' }}
             <i class="fas fa-check"></i>
@@ -725,9 +714,9 @@
 
     <!-- Link Resource Modal -->
     <div v-if="showLinkModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4" @click.self="showLinkModal = null">
-      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-zoom-in">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-zoom-in">
         <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-          <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+          <h3 class="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
             <i :class="showLinkModal === 'case' ? 'fas fa-briefcase text-indigo-500' : 'fas fa-book-open text-emerald-500'"></i>
             Vincular {{ showLinkModal === 'case' ? 'Caso' : 'Wiki' }}
           </h3>
@@ -773,6 +762,7 @@
 <script setup lang="ts">
 import Skeleton from '@/components/ui/Skeleton.vue'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
 import PersonAvatar from '../../components/ui/PersonAvatar.vue'
 import { ref, computed, onMounted, watch, reactive } from 'vue'
 import { ticketService } from '../../services/ticketService'
@@ -848,7 +838,7 @@ const columnLimits = reactive<Record<string, number>>({
 })
 
 const columns = [
-  { id: 'new', title: 'Nuevos', icon: 'fas fa-inbox', color: 'bg-violet-500', textColor: 'text-violet-500' },
+  { id: 'new', title: 'Nuevos', icon: 'fas fa-inbox', color: 'bg-primary-500', textColor: 'text-primary-500' },
   { id: 'open', title: 'En Proceso', icon: 'fas fa-spinner', color: 'bg-blue-500', textColor: 'text-blue-500' },
   { id: 'resolved', title: 'Resueltos', icon: 'fas fa-check-circle', color: 'bg-emerald-500', textColor: 'text-emerald-500' }
 ]
@@ -1263,14 +1253,6 @@ onMounted(async () => {
   background: #cbd5e1;
 }
 
-@keyframes bounce-subtle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-
-.animate-bounce-subtle {
-  animation: bounce-subtle 3s ease-in-out infinite;
-}
 .dashed-border {
   border-style: dashed;
 }
@@ -1293,12 +1275,4 @@ onMounted(async () => {
   animation: fadeIn 0.2s ease-out forwards;
 }
 
-@keyframes bounce-subtle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-
-.animate-bounce-subtle {
-  animation: bounce-subtle 3s ease-in-out infinite;
-}
 </style>

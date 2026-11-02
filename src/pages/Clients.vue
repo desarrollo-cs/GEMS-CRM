@@ -1,61 +1,52 @@
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-40 animate-fade-in">
-    <!-- Header with Title -->
-    <div class="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-      <div>
-        <h1 class="text-4xl font-black text-slate-900 tracking-tight">Clientes</h1>
-        <p class="text-slate-400 text-sm font-medium">Gestiona tus contactos y relaciones comerciales.</p>
-      </div>
-      
+  <div class="flex flex-col gap-4 h-full min-h-0">
+    <!-- Cabecera compacta -->
+    <PageHeader icon="fas fa-building" title="Clientes">
+      <template #subtitle>{{ clients.length }} clientes · Gestiona tus contactos y relaciones comerciales.</template>
       <PermissionGuard :permissions="['create-clients']" :fallback="false">
-        <button 
+        <button
           @click="showModal = true; resetForm()"
-          class="btn-primary"
+          class="btn-primary btn-sm"
         >
-          <PlusIcon class="w-5 h-5" />
-          Añadir Cliente
+          <i class="fas fa-plus text-[10px]"></i>
+          Nuevo cliente
         </button>
       </PermissionGuard>
-    </div>
+    </PageHeader>
 
-    <!-- Toolbar & Filters -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm mb-6 p-4">
-      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <!-- Search & Sort -->
-        <div class="flex flex-col sm:flex-row items-center gap-3 flex-1 lg:justify-end">
-          <div class="relative w-full sm:max-w-xs group">
-            <MagnifyingGlassIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
-            <input
-              v-model="searchTerm"
-              type="text"
-              placeholder="Buscar por empresa, contacto o correo..."
-              class="w-full bg-slate-50 border border-slate-100 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all"
-            />
-          </div>
-          
-          <div class="flex items-center gap-2 w-full sm:w-auto">
-            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Ordenar por</span>
-            <div class="w-full sm:w-auto min-w-[200px]">
-              <CustomSelect
-                v-model="sortBy"
-                :options="[{ value: 'company', label: 'Empresa / Organización' }, { value: 'name', label: 'Nombre de contacto' }, { value: 'createdAt', label: 'Recientes' }]"
-                size="sm"
-              />
-            </div>
-          </div>
+    <!-- Buscador y orden -->
+    <div class="flex-shrink-0 flex flex-wrap items-center gap-2 bg-slate-50/50 p-2 rounded-xl border border-slate-100">
+      <div class="relative flex-1 min-w-[220px] max-w-md">
+        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        <input
+          v-model="searchTerm"
+          type="text"
+          placeholder="Buscar por empresa, contacto o correo..."
+          class="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all"
+        />
+      </div>
+      <span class="text-xs text-slate-500 tabular-nums">{{ filteredClients.length }} clientes</span>
+      <div class="flex items-center gap-2 ml-auto">
+        <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider whitespace-nowrap">Ordenar por</span>
+        <div class="w-44">
+          <CustomSelect
+            v-model="sortBy"
+            :options="[{ value: 'company', label: 'Empresa / Organización' }, { value: 'name', label: 'Nombre de contacto' }, { value: 'createdAt', label: 'Recientes' }]"
+            size="sm"
+          />
         </div>
       </div>
     </div>
 
-    <!-- Main Content Area -->
-    <div class="space-y-4 pb-20">
-      <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden flex flex-col min-h-[400px] relative">
+    <!-- Lista -->
+    <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+      <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col min-h-[400px] relative">
         <div v-if="loading" class="p-4 sm:p-6">
           <Skeleton preset="table" :rows="7" :cols="5" />
         </div>
       
         <div v-else-if="error" class="flex-1 flex items-center justify-center p-12">
-          <div class="max-w-md w-full text-center p-8 bg-red-50 rounded-3xl border border-red-100">
+          <div class="max-w-md w-full text-center p-8 bg-red-50 rounded-2xl border border-red-100">
             <ExclamationTriangleIcon class="w-12 h-12 text-red-500 mx-auto mb-4" />
             <h3 class="text-red-900 font-black text-lg mb-2">Error de conexión</h3>
             <p class="text-red-600/70 text-sm mb-6">{{ error }}</p>
@@ -68,14 +59,14 @@
         <div v-else class="flex-1 motion-content-in">
           <!-- Desktop Table View -->
           <div class="hidden md:block overflow-x-auto">
-            <table class="min-w-full divide-y divide-slate-100">
+            <table class="w-full table-auto divide-y divide-slate-100">
               <thead>
                 <tr class="bg-slate-50/50">
-                  <th class="px-8 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Empresa / Organización</th>
-                  <th class="px-8 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Nombre de Contacto</th>
-                  <th class="px-8 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Correo / WhatsApp</th>
-                  <th class="px-8 py-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">Registro</th>
-                  <th class="px-8 py-4 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">Acciones</th>
+                  <th class="px-5 py-2.5 text-left text-[10px] font-black text-slate-500 uppercase tracking-wider">Empresa / Organización</th>
+                  <th class="px-5 py-2.5 text-left text-[10px] font-black text-slate-500 uppercase tracking-wider">Nombre de Contacto</th>
+                  <th class="px-5 py-2.5 text-left text-[10px] font-black text-slate-500 uppercase tracking-wider">Correo / WhatsApp</th>
+                  <th class="hidden xl:table-cell px-5 py-2.5 text-center text-[10px] font-black text-slate-500 uppercase tracking-wider">Registro</th>
+                  <th class="px-5 py-2.5 text-right text-[10px] font-black text-slate-500 uppercase tracking-wider">Acciones</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-50">
@@ -84,46 +75,46 @@
                   :key="client._id"
                   class="hover:bg-slate-50/80 transition-all group"
                 >
-                  <td class="px-8 py-6 whitespace-nowrap">
-                    <router-link :to="`/clients/${client._id}`" class="flex items-center gap-4 w-fit" title="Abrir el expediente del cliente">
-                      <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100/50 flex items-center justify-center text-primary-600 font-black text-sm shadow-sm ring-1 ring-primary-100">
+                  <td class="px-5 py-3">
+                    <router-link :to="`/clients/${client._id}`" class="flex items-center gap-3 w-fit max-w-[280px]" title="Abrir el expediente del cliente">
+                      <div class="w-9 h-9 rounded-xl bg-primary-50 border border-primary-100 flex items-center justify-center text-primary-600 font-black text-sm shrink-0">
                         {{ clientOrgName(client).charAt(0).toUpperCase() }}
                       </div>
-                      <div>
-                        <div class="flex items-center gap-2">
-                          <span class="text-slate-900 font-bold text-sm leading-tight group-hover:text-primary-600 group-hover:underline transition-colors">{{ clientOrgName(client) }}</span>
+                      <div class="min-w-0">
+                        <div class="flex items-center gap-2 min-w-0">
+                          <span class="text-slate-900 font-bold text-sm leading-tight truncate group-hover:text-primary-600 group-hover:underline transition-colors">{{ clientOrgName(client) }}</span>
                           <span v-if="client.status === 'inactive'" class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500">Inactivo</span>
                         </div>
                         <div class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-0.5">{{ clientNit(client) ? `NIT ${clientNit(client)}` : 'Sin NIT' }}</div>
                       </div>
                     </router-link>
                   </td>
-                  <td class="px-8 py-6 whitespace-nowrap">
-                    <div class="flex items-center gap-2">
-                      <i class="fas fa-user text-slate-300 text-[11px]"></i>
-                      <span class="text-slate-700 text-xs font-bold">{{ client.name || '—' }}</span>
+                  <td class="px-5 py-3">
+                    <div class="flex items-center gap-2 max-w-[200px]">
+                      <i class="fas fa-user text-slate-300 text-[11px] shrink-0"></i>
+                      <span class="text-slate-700 text-xs font-bold truncate">{{ client.name || '—' }}</span>
                     </div>
                   </td>
-                  <td class="px-8 py-6 whitespace-nowrap">
-                    <div class="space-y-1">
-                      <div class="text-slate-600 text-[11px] font-bold flex items-center gap-2">
-                        <i class="fas fa-envelope text-slate-300 w-3 text-center"></i> 
-                        {{ client.email }}
+                  <td class="px-5 py-3">
+                    <div class="space-y-1 max-w-[240px]">
+                      <div class="text-slate-600 text-[11px] font-bold flex items-center gap-2 min-w-0">
+                        <i class="fas fa-envelope text-slate-300 w-3 text-center shrink-0"></i>
+                        <span class="truncate">{{ client.email }}</span>
                       </div>
-                      <div class="text-slate-400 text-[11px] font-medium flex items-center gap-2">
-                        <i class="fab fa-whatsapp text-slate-300 w-3 text-center"></i>
-                        {{ client.phone }}
+                      <div class="text-slate-400 text-[11px] font-medium flex items-center gap-2 min-w-0">
+                        <i class="fab fa-whatsapp text-slate-300 w-3 text-center shrink-0"></i>
+                        <span class="truncate">{{ client.phone }}</span>
                       </div>
                     </div>
                   </td>
-                  <td class="px-8 py-6 whitespace-nowrap">
+                  <td class="hidden xl:table-cell px-5 py-3 whitespace-nowrap">
                     <div class="flex flex-col items-center">
                       <span class="text-slate-700 text-xs font-bold">{{ formatDate(client.createdAt) }}</span>
                       <span class="text-slate-400 text-[9px] font-bold uppercase tracking-widest">Confirmado</span>
                     </div>
                   </td>
-                  <td class="px-8 py-6 whitespace-nowrap text-right">
-                    <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                  <td class="px-5 py-3 whitespace-nowrap text-right">
+                    <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 group-focus-within:translate-x-0">
                       <router-link :to="`/clients/${client._id}`" class="p-2 text-slate-400 hover:text-primary-500 hover:bg-primary-50 rounded-xl transition-all" title="Ver expediente y editar datos del cliente">
                         <i class="fas fa-arrow-right text-sm"></i>
                       </router-link>
@@ -177,64 +168,62 @@
           </div>
           
           <!-- Empty State -->
-          <div v-if="filteredClients.length === 0" class="flex-1 flex flex-col items-center justify-center p-20 text-center">
-            <div class="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center mb-6 text-slate-200">
-              <UserGroupIcon class="w-12 h-12" />
-            </div>
-            <h3 class="text-xl font-black text-slate-900 mb-2">
+          <div v-if="filteredClients.length === 0" class="empty-state m-4">
+            <div class="empty-state__icon"><i class="fas fa-building"></i></div>
+            <p class="empty-state__title">
               {{ searchTerm ? 'Sin coincidencias' : 'Directorio vacío' }}
-            </h3>
-            <p class="text-slate-400 text-sm font-medium max-w-xs mx-auto mb-8">
+            </p>
+            <p class="empty-state__text">
               {{ searchTerm ? 'No encontramos ningún cliente que coincida con tu búsqueda. Intenta con otros términos.' : 'Aún no tienes clientes registrados en la plataforma. Comienza a construir tu base de contactos.' }}
             </p>
-            <button v-if="!searchTerm" @click="showModal = true; resetForm()" class="btn-primary">
-              <PlusIcon class="w-5 h-5" />
-              Añadir Primer Cliente
+            <button v-if="!searchTerm" @click="showModal = true; resetForm()" class="btn-primary btn-sm mt-2">
+              <i class="fas fa-plus text-[10px]"></i>
+              Crear el primer cliente
             </button>
-            <button v-else @click="searchTerm = ''" class="btn-secondary btn-sm">Limpiar Búsqueda</button>
+            <button v-else @click="searchTerm = ''" class="btn-secondary btn-sm mt-2">Limpiar búsqueda</button>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Pagination Controls (Premium Style - Outside) -->
-    <div v-if="totalPages > 1" class="mt-12 flex items-center justify-center gap-3">
-       <button title="Página anterior" 
-         @click="currentPage--" 
-         :disabled="currentPage === 1"
-         class="w-12 h-12 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-slate-400 hover:text-primary-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm shadow-slate-200/50"
-       >
-         <i class="fas fa-chevron-left text-sm"></i>
-       </button>
-       
-       <div class="flex items-center gap-2 bg-white border border-slate-100 p-2 rounded-2xl shadow-sm shadow-slate-200/50">
-          <button 
-            v-for="page in totalPages" 
-            :key="page"
-            @click="currentPage = page"
-            :class="currentPage === page ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20' : 'text-slate-400 hover:bg-slate-50'"
-            class="w-10 h-10 rounded-xl text-xs font-black transition-all"
-          >
-            {{ page }}
-          </button>
-       </div>
+      <!-- Paginación -->
+      <div v-if="totalPages > 1" class="mt-4 flex items-center justify-center gap-2">
+         <button title="Página anterior"
+           @click="currentPage--"
+           :disabled="currentPage === 1"
+           class="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 hover:text-primary-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm"
+         >
+           <i class="fas fa-chevron-left text-xs"></i>
+         </button>
 
-       <button title="Página siguiente" 
-         @click="currentPage++" 
-         :disabled="currentPage === totalPages"
-         class="w-12 h-12 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-slate-400 hover:text-primary-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm shadow-slate-200/50"
-       >
-         <i class="fas fa-chevron-right text-sm"></i>
-       </button>
+         <div class="flex items-center gap-1 bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
+            <button
+              v-for="page in totalPages"
+              :key="page"
+              @click="currentPage = page"
+              :class="currentPage === page ? 'bg-primary-500 text-white shadow-sm' : 'text-slate-400 hover:bg-slate-50'"
+              class="w-7 h-7 rounded-lg text-xs font-black transition-all"
+            >
+              {{ page }}
+            </button>
+         </div>
+
+         <button title="Página siguiente"
+           @click="currentPage++"
+           :disabled="currentPage === totalPages"
+           class="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 hover:text-primary-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm"
+         >
+           <i class="fas fa-chevron-right text-xs"></i>
+         </button>
+      </div>
     </div>
     
     <!-- Create Modal — la edición se centraliza en el expediente del cliente (/clients/:id) -->
     <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" @click="showModal = false"></div>
-      <div class="relative bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in border border-slate-100">
-        <div class="flex items-center justify-between p-8 border-b border-slate-50">
+      <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-fade-in border border-slate-100">
+        <div class="flex items-center justify-between p-5 border-b border-slate-50">
           <div>
-            <h3 class="text-xl font-black text-slate-900 leading-tight">Nuevo Cliente</h3>
+            <h3 class="text-sm font-extrabold text-slate-800 leading-tight">Nuevo Cliente</h3>
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Completa los datos de contacto</p>
           </div>
           <button title="Cerrar" @click="showModal = false" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
@@ -242,7 +231,7 @@
           </button>
         </div>
 
-        <form @submit.prevent="saveClient" class="p-8">
+        <form @submit.prevent="saveClient" class="p-5">
           <div class="space-y-6">
             <div class="space-y-2">
               <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Empresa / Organización</label>
@@ -278,7 +267,7 @@
             </div>
           </div>
 
-          <div class="flex items-center gap-4 mt-10 pt-8 border-t border-slate-50">
+          <div class="flex items-center gap-4 mt-5 pt-4 border-t border-slate-50">
             <button type="button" @click="showModal = false" class="btn-secondary flex-1">Cancelar</button>
             <button type="submit" :disabled="loading" class="btn-primary flex-1">
               <i v-if="!loading" class="fas fa-check mr-2"></i>
@@ -293,12 +282,12 @@
     <!-- Delete Confirmation Modal -->
     <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" @click="showDeleteModal = false"></div>
-      <div class="relative bg-white rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden animate-fade-in border border-slate-100 p-8 text-center">
-        <div class="w-20 h-20 bg-red-50 text-red-500 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
+      <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-fade-in border border-slate-100 p-5 text-center">
+        <div class="w-14 h-14 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
           <TrashIcon class="w-10 h-10" />
         </div>
         <template v-if="!deleteBlockedMessage">
-          <h3 class="text-xl font-black text-slate-900 mb-2">¿Eliminar Cliente?</h3>
+          <h3 class="text-sm font-extrabold text-slate-800 mb-2">¿Eliminar Cliente?</h3>
           <p class="text-slate-400 text-sm font-medium mb-3 leading-relaxed">
             Se eliminará permanentemente a <span class="text-slate-900 font-bold">{{ clientToDelete ? clientOrgName(clientToDelete) : '' }}</span>.
           </p>
@@ -317,7 +306,7 @@
 
         <!-- El cliente tiene historial asociado: no se puede borrar, se ofrece inactivar -->
         <template v-else>
-          <h3 class="text-xl font-black text-slate-900 mb-2">No se puede eliminar</h3>
+          <h3 class="text-sm font-extrabold text-slate-800 mb-2">No se puede eliminar</h3>
           <p class="text-slate-400 text-sm font-medium mb-8 leading-relaxed">{{ deleteBlockedMessage }}</p>
           <div class="flex flex-col gap-3">
             <button @click="deactivateClient" :disabled="loading" class="btn-primary w-full">
@@ -336,14 +325,12 @@
 <script setup lang="ts">
 import Skeleton from '@/components/ui/Skeleton.vue'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useClientStore } from '../stores/clientStore'
 import type { Client, ClientForm } from '../types'
 import {
-  PlusIcon,
-  MagnifyingGlassIcon,
   TrashIcon,
-  UserGroupIcon,
   ExclamationTriangleIcon
 } from '@heroicons/vue/24/outline'
 

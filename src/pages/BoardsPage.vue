@@ -1,145 +1,132 @@
 <template>
-  <div class="boards-page h-full">
-    <div class="container mx-auto px-6 py-8">
-      <!-- Header -->
-      <div class="flex items-center justify-between mb-8">
-        <div>
-          <h1 class="text-3xl font-bold text-white">Tableros</h1>
-          <p class="mt-2 text-gray-400">Gestiona tus proyectos con tableros Kanban y Scrum</p>
+  <div class="flex flex-col gap-4 h-full min-h-0">
+    <!-- Header -->
+    <PageHeader icon="fas fa-columns" title="Tableros" subtitle="Gestiona tus proyectos con tableros Kanban y Scrum">
+      <button type="button" @click="openCreateModal" class="btn-primary btn-sm">
+        <i class="fas fa-plus text-[10px]"></i>
+        <span>Nuevo tablero</span>
+      </button>
+    </PageHeader>
+
+    <!-- Loading -->
+    <Skeleton v-if="loading" preset="cards" :rows="6" :cols="3" wrapper-class="opacity-40" />
+
+    <!-- Boards Grid -->
+    <div v-else-if="boards.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 motion-stagger">
+      <div
+        v-for="board in boards"
+        :key="board._id"
+        @click="openBoard(board._id)"
+        class="board-card motion-lift bg-white border border-slate-200 rounded-2xl shadow-sm cursor-pointer p-5 hover:border-primary-200 hover:shadow-md transition-all"
+      >
+        <!-- Board Type Badge -->
+        <div class="flex items-center justify-between mb-3">
+          <span
+            class="rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider border"
+            :class="getBoardTypeClass(board.type)"
+          >
+            {{ getBoardTypeLabel(board.type) }}
+          </span>
+          <button title="Configurar tablero"
+            type="button"
+            @click.stop="openBoardSettings(board)"
+            class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+          >
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
         </div>
-        <button
-          @click="openCreateModal"
-          class="px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg hover:from-purple-700 hover:to-pink-700 flex items-center space-x-2 shadow-lg"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          <span>Nuevo Tablero</span>
-        </button>
-      </div>
 
-      <!-- Loading -->
-      <Skeleton v-if="loading" preset="cards" :rows="6" :cols="3" wrapper-class="opacity-40" />
+        <!-- Board Info -->
+        <h3 class="text-sm font-extrabold text-slate-800 mb-1">{{ board.name }}</h3>
+        <p class="text-xs text-slate-500 mb-4 line-clamp-2">{{ board.description || 'Sin descripción' }}</p>
 
-      <!-- Boards Grid -->
-      <div v-else-if="boards.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 motion-stagger">
-        <div
-          v-for="board in boards"
-          :key="board._id"
-          @click="openBoard(board._id)"
-          class="board-card motion-lift bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-lg cursor-pointer border border-purple-500/20 p-6 hover:border-purple-500/50"
-        >
-          <!-- Board Type Badge -->
-          <div class="flex items-center justify-between mb-4">
-            <span 
-              class="px-3 py-1 text-xs font-medium rounded-full"
-              :class="getBoardTypeClass(board.type)"
-            >
-              {{ getBoardTypeLabel(board.type) }}
-            </span>
-            <button title="Configurar tablero"
-              @click.stop="openBoardSettings(board)"
-              class="p-1 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-              </svg>
-            </button>
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-2 mb-4 bg-slate-50 border border-slate-100 rounded-xl py-2.5 divide-x divide-slate-100">
+          <div class="text-center">
+            <div class="text-lg font-black text-slate-800 tabular-nums leading-none">{{ getTaskCount(board._id) }}</div>
+            <div class="mt-1 text-[10px] font-black uppercase tracking-wider text-slate-400">Tareas</div>
           </div>
-
-          <!-- Board Info -->
-          <h3 class="text-lg font-semibold text-white mb-2">{{ board.name }}</h3>
-          <p class="text-sm text-gray-400 mb-4 line-clamp-2">{{ board.description || 'Sin descripción' }}</p>
-
-          <!-- Stats -->
-          <div class="grid grid-cols-3 gap-4 mb-4">
-            <div class="text-center">
-              <div class="text-2xl font-bold text-blue-600">{{ getTaskCount(board._id) }}</div>
-              <div class="text-xs text-gray-500">Tareas</div>
-            </div>
-            <div class="text-center">
-              <div class="text-2xl font-bold text-purple-600">{{ board.members.length }}</div>
-              <div class="text-xs text-gray-500">Miembros</div>
-            </div>
-            <div class="text-center">
-              <div class="text-2xl font-bold text-green-600">{{ board.sprints?.length || 0 }}</div>
-              <div class="text-xs text-gray-500">Sprints</div>
-            </div>
+          <div class="text-center">
+            <div class="text-lg font-black text-slate-800 tabular-nums leading-none">{{ board.members.length }}</div>
+            <div class="mt-1 text-[10px] font-black uppercase tracking-wider text-slate-400">Miembros</div>
           </div>
-
-          <!-- Members Avatars -->
-          <div class="flex items-center space-x-2">
-            <div class="flex -space-x-2">
-              <PersonAvatar v-for="member in board.members.slice(0, 5)"
-                :key="member.user._id" :name="member.user.name" :photo="member.user.photo" class="w-8 h-8 rounded-full bg-blue-500 text-white text-xs font-medium border-2 border-white" />
-              <div
-                v-if="board.members.length > 5"
-                class="w-8 h-8 rounded-full bg-gray-300 text-gray-700 flex items-center justify-center text-xs font-medium border-2 border-white"
-              >
-                +{{ board.members.length - 5 }}
-              </div>
-            </div>
-
-            <!-- GitHub Badge -->
-            <div v-if="board.github" class="ml-auto flex items-center space-x-1 text-xs text-gray-600">
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clip-rule="evenodd" />
-              </svg>
-              <span>Conectado</span>
-            </div>
+          <div class="text-center">
+            <div class="text-lg font-black text-slate-800 tabular-nums leading-none">{{ board.sprints?.length || 0 }}</div>
+            <div class="mt-1 text-[10px] font-black uppercase tracking-wider text-slate-400">Sprints</div>
           </div>
         </div>
-      </div>
 
-      <!-- Empty State -->
-      <div v-else class="text-center py-12">
-        <svg class="w-24 h-24 mx-auto text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-        </svg>
-        <h3 class="text-lg font-medium text-white mb-2">No hay tableros</h3>
-        <p class="text-gray-400 mb-6">Crea tu primer tablero para comenzar a gestionar tareas</p>
-        <button
-          @click="openCreateModal"
-          class="px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg hover:from-purple-700 hover:to-pink-700 shadow-lg"
-        >
-          Crear Tablero
-        </button>
+        <!-- Members Avatars -->
+        <div class="flex items-center gap-2">
+          <div class="flex -space-x-2">
+            <PersonAvatar v-for="member in board.members.slice(0, 5)"
+              :key="member.user._id" :name="member.user.name" :photo="member.user.photo" class="w-8 h-8 rounded-full bg-primary-50 text-primary-700 border border-primary-100 text-xs font-bold border-2 border-white" />
+            <div
+              v-if="board.members.length > 5"
+              class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold border-2 border-white"
+            >
+              +{{ board.members.length - 5 }}
+            </div>
+          </div>
+
+          <!-- GitHub Badge -->
+          <div v-if="board.github" class="ml-auto inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-slate-50 text-slate-600 border border-slate-200">
+            <i class="fab fa-github text-[10px]"></i>
+            <span>Conectado</span>
+          </div>
+        </div>
       </div>
     </div>
 
+    <!-- Empty State -->
+    <div v-else class="empty-state">
+      <div class="empty-state__icon"><i class="fas fa-columns"></i></div>
+      <p class="empty-state__title">No hay tableros</p>
+      <p class="empty-state__text">Crea tu primer tablero para comenzar a gestionar tareas</p>
+      <button type="button" @click="openCreateModal" class="btn-primary btn-sm mt-2">
+        <i class="fas fa-plus text-[10px]"></i>
+        Crear tablero
+      </button>
+    </div>
+
     <!-- Create Board Modal -->
-    <div v-if="showCreateModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[9999]" @click.self="showCreateModal = false">
-      <div class="bg-gray-800 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-purple-500/20">
-        <h2 class="text-xl font-bold text-white mb-4">Crear Nuevo Tablero</h2>
-        
-        <form @submit.prevent="createBoard">
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-300 mb-2">Nombre</label>
+    <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4" @click.self="showCreateModal = false">
+      <div class="bg-white rounded-2xl shadow-xl border border-slate-100 w-full max-w-lg animate-fade-in">
+        <div class="flex items-center justify-between p-5 border-b border-slate-100">
+          <h2 class="text-sm font-extrabold text-slate-800">Nuevo tablero</h2>
+          <button title="Cerrar" type="button" @click="showCreateModal = false" class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <form @submit.prevent="createBoard" class="p-5 space-y-4">
+          <div>
+            <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Nombre</label>
             <input
               v-model="newBoard.name"
               type="text"
               required
-              class="w-full px-4 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all"
               placeholder="Mi Proyecto"
             />
           </div>
 
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-300 mb-2">Descripción</label>
+          <div>
+            <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Descripción</label>
             <textarea
               v-model="newBoard.description"
               rows="3"
-              class="w-full px-4 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all"
               placeholder="Descripción del proyecto..."
             ></textarea>
           </div>
 
-          <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-300 mb-2">Tipo de Tablero</label>
+          <div>
+            <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Tipo de Tablero</label>
             <div class="grid grid-cols-2 gap-3">
-              <label 
-                class="relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors"
-                :class="newBoard.type === 'kanban' ? 'border-blue-500 bg-blue-500/10' : 'border-gray-600 hover:border-gray-500 bg-gray-700/30'"
+              <label
+                class="relative flex items-center p-3 border rounded-xl cursor-pointer transition-colors"
+                :class="newBoard.type === 'kanban' ? 'border-primary-400 bg-primary-50' : 'border-slate-200 hover:border-slate-300 bg-slate-50'"
               >
                 <input
                   v-model="newBoard.type"
@@ -148,14 +135,14 @@
                   class="sr-only"
                 />
                 <div class="flex-1">
-                  <div class="font-medium text-white">Kanban</div>
-                  <div class="text-xs text-gray-400">Flujo continuo</div>
+                  <div class="text-sm font-extrabold text-slate-800">Kanban</div>
+                  <div class="text-xs text-slate-500">Flujo continuo</div>
                 </div>
               </label>
 
-              <label 
-                class="relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors"
-                :class="newBoard.type === 'scrum' ? 'border-purple-500 bg-purple-500/10' : 'border-gray-600 hover:border-gray-500 bg-gray-700/30'"
+              <label
+                class="relative flex items-center p-3 border rounded-xl cursor-pointer transition-colors"
+                :class="newBoard.type === 'scrum' ? 'border-primary-400 bg-primary-50' : 'border-slate-200 hover:border-slate-300 bg-slate-50'"
               >
                 <input
                   v-model="newBoard.type"
@@ -164,27 +151,27 @@
                   class="sr-only"
                 />
                 <div class="flex-1">
-                  <div class="font-medium text-white">Scrum</div>
-                  <div class="text-xs text-gray-400">Con sprints</div>
+                  <div class="text-sm font-extrabold text-slate-800">Scrum</div>
+                  <div class="text-xs text-slate-500">Con sprints</div>
                 </div>
               </label>
             </div>
           </div>
 
-          <div class="flex justify-end space-x-3">
+          <div class="flex justify-end gap-2 pt-2">
             <button
               type="button"
               @click="showCreateModal = false"
-              class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-lg hover:bg-gray-600"
+              class="btn-secondary btn-sm"
             >
               Cancelar
             </button>
             <button
               type="submit"
               :disabled="!newBoard.name"
-              class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="btn-primary btn-sm"
             >
-              Crear Tablero
+              Crear tablero
             </button>
           </div>
         </form>
@@ -195,6 +182,7 @@
 
 <script setup lang="ts">
 import Skeleton from '@/components/ui/Skeleton.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
 import PersonAvatar from '../components/ui/PersonAvatar.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -224,11 +212,11 @@ function openCreateModal() {
 
 function getBoardTypeClass(type: string): string {
   const classes: Record<string, string> = {
-    'kanban': 'bg-blue-100 text-blue-800',
-    'scrum': 'bg-purple-100 text-purple-800',
-    'custom': 'bg-gray-100 text-gray-800'
+    'kanban': 'bg-primary-50 text-primary-700 border-primary-100',
+    'scrum': 'bg-amber-50 text-amber-700 border-amber-100',
+    'custom': 'bg-slate-50 text-slate-600 border-slate-200'
   }
-  return classes[type] || 'bg-gray-100 text-gray-800'
+  return classes[type] || 'bg-slate-50 text-slate-600 border-slate-200'
 }
 
 function getBoardTypeLabel(type: string): string {

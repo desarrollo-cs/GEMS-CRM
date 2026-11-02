@@ -2,34 +2,33 @@
   <!-- Modal Backdrop -->
   <div
     v-if="show"
-    class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4"
     @click="closeModal"
   >
     <!-- Modal Content -->
     <div
-      class="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-purple-500/20"
+      class="bg-white rounded-2xl shadow-xl border border-slate-100 w-full max-w-lg max-h-[90vh] overflow-y-auto animate-fade-in"
       @click.stop
     >
       <!-- Header -->
-      <div class="p-6 border-b border-gray-700">
-        <div class="flex justify-between items-center">
-          <h2 class="text-xl font-bold text-white">
-            {{ editingExpense ? 'Editar Gasto Fijo' : 'Nuevo Gasto Fijo' }}
-          </h2>
-          <button title="Cerrar"
-            @click="closeModal"
-            class="text-gray-400 hover:text-white transition-colors"
-          >
-            <i class="fas fa-times text-xl"></i>
-          </button>
-        </div>
+      <div class="flex items-center justify-between p-5 border-b border-slate-100">
+        <h2 class="text-sm font-extrabold text-slate-800">
+          {{ editingExpense ? 'Editar Gasto Fijo' : 'Nuevo gasto fijo' }}
+        </h2>
+        <button title="Cerrar"
+          type="button"
+          @click="closeModal"
+          class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+        >
+          <i class="fas fa-times"></i>
+        </button>
       </div>
 
       <!-- Form -->
-      <form @submit.prevent="handleSubmit" class="p-6 space-y-6">
+      <form @submit.prevent="handleSubmit" class="p-5 space-y-4">
         <!-- Nombre -->
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">
+          <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
             Nombre del Gasto *
           </label>
           <input
@@ -37,13 +36,13 @@
             type="text"
             required
             placeholder="Ej: Arriendo oficina, Servicios públicos, etc."
-            class="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all"
           >
         </div>
 
         <!-- Monto Mensual -->
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">
+          <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
             Monto Mensual *
           </label>
           <div class="relative">
@@ -54,20 +53,20 @@
               min="0"
               step="0.01"
               placeholder="0.00"
-              class="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+              class="w-full px-3 py-2 pr-14 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all"
             >
             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-              <span class="text-gray-400 text-sm">/ mes</span>
+              <span class="text-slate-400 text-xs font-semibold">/ mes</span>
             </div>
           </div>
         </div>
 
         <!-- Estado -->
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">
+          <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
             Estado
           </label>
-          <div class="space-y-3">
+          <div class="space-y-2.5">
             <div class="flex items-center">
               <input
                 v-model="form.activo"
@@ -75,11 +74,11 @@
                 type="radio"
                 id="activo"
                 name="estado"
-                class="h-4 w-4 text-purple-600 focus:ring-purple-500 bg-gray-700 border-gray-600"
+                class="h-4 w-4 border-slate-300 text-primary-600 focus:ring-primary-500/30"
               >
-              <label for="activo" class="ml-3 flex items-center">
-                <span class="text-white font-medium">Activo</span>
-                <span class="ml-2 px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">
+              <label for="activo" class="ml-2.5 flex items-center">
+                <span class="text-sm text-slate-700 font-medium">Activo</span>
+                <span class="ml-2 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider">
                   Se incluye en cálculos
                 </span>
               </label>
@@ -91,11 +90,11 @@
                 type="radio"
                 id="inactivo"
                 name="estado"
-                class="h-4 w-4 text-purple-600 focus:ring-purple-500 bg-gray-700 border-gray-600"
+                class="h-4 w-4 border-slate-300 text-primary-600 focus:ring-primary-500/30"
               >
-              <label for="inactivo" class="ml-3 flex items-center">
-                <span class="text-white font-medium">Inactivo</span>
-                <span class="ml-2 px-2 py-1 bg-gray-500/20 text-gray-400 text-xs rounded-full">
+              <label for="inactivo" class="ml-2.5 flex items-center">
+                <span class="text-sm text-slate-700 font-medium">Inactivo</span>
+                <span class="ml-2 bg-slate-50 text-slate-600 border border-slate-200 rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider">
                   No se incluye en cálculos
                 </span>
               </label>
@@ -104,55 +103,55 @@
         </div>
 
         <!-- Preview Card -->
-        <div v-if="form.nombre && form.monto_mensual > 0" 
-             class="bg-gradient-to-r from-purple-600/10 to-pink-600/10 rounded-xl p-4 border border-purple-500/20">
-          <h3 class="text-sm font-medium text-gray-300 mb-2">Vista Previa:</h3>
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
+        <div v-if="form.nombre && form.monto_mensual > 0"
+             class="bg-slate-50 border border-slate-100 rounded-xl p-4">
+          <h3 class="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Vista Previa:</h3>
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
               <div :class="[
-                'p-2 rounded-full',
-                form.activo 
-                  ? 'bg-green-500/20 text-green-400' 
-                  : 'bg-gray-500/20 text-gray-400'
+                'w-9 h-9 shrink-0 rounded-xl border flex items-center justify-center',
+                form.activo
+                  ? 'bg-emerald-50 border-emerald-100 text-emerald-600'
+                  : 'bg-white border-slate-200 text-slate-400'
               ]">
                 <i :class="[
                   form.activo ? 'fas fa-check-circle' : 'fas fa-pause-circle'
                 ]"></i>
               </div>
-              <div>
-                <p class="font-medium text-white">{{ form.nombre }}</p>
+              <div class="min-w-0">
+                <p class="text-sm font-extrabold text-slate-800 truncate">{{ form.nombre }}</p>
                 <span :class="[
-                  'px-2 py-1 rounded-full text-xs font-medium',
-                  form.activo 
-                    ? 'bg-green-500/20 text-green-400' 
-                    : 'bg-gray-500/20 text-gray-400'
+                  'rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider border',
+                  form.activo
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                    : 'bg-white text-slate-600 border-slate-200'
                 ]">
                   {{ form.activo ? 'Activo' : 'Inactivo' }}
                 </span>
               </div>
             </div>
-            <div class="text-right">
-              <p class="text-lg font-bold text-orange-400">
+            <div class="text-right shrink-0">
+              <p class="text-lg font-black text-slate-800 tabular-nums leading-none">
                 ${{ formatCurrency(form.monto_mensual) }}
               </p>
-              <p class="text-xs text-gray-400">por mes</p>
+              <p class="mt-1 text-[10px] font-black uppercase tracking-wider text-slate-500">por mes</p>
             </div>
           </div>
         </div>
 
         <!-- Buttons -->
-        <div class="flex gap-3 pt-4">
+        <div class="flex gap-2 pt-2">
           <button
             type="button"
             @click="closeModal"
-            class="flex-1 px-4 py-3 bg-gray-600 text-white rounded-xl hover:bg-gray-700 transition-colors"
+            class="btn-secondary btn-sm flex-1"
           >
             Cancelar
           </button>
           <button
             type="submit"
             :disabled="loading"
-            class="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 disabled:opacity-50"
+            class="btn-primary btn-sm flex-1"
           >
             <span v-if="loading">
               <i class="fas fa-spinner fa-spin mr-2"></i>

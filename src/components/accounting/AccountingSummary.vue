@@ -1,39 +1,39 @@
 <template>
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
     <!-- Resumen Financiero -->
     <div class="lg:col-span-2">
-      <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-purple-500/20">
-        <h3 class="text-xl font-bold text-white mb-6">Resumen Financiero</h3>
-        
+      <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+        <h3 class="text-sm font-extrabold text-slate-800 mb-4">Resumen Financiero</h3>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <!-- Ingresos vs Egresos -->
-          <div class="bg-gradient-to-br from-green-500/10 to-red-500/10 rounded-xl p-4 border border-purple-500/20">
-            <h4 class="text-lg font-semibold text-white mb-4">Flujo de Efectivo</h4>
-            <div class="space-y-3">
+          <div class="bg-slate-50 border border-slate-100 rounded-xl p-4">
+            <h4 class="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-3">Flujo de Efectivo</h4>
+            <div class="space-y-2.5 text-sm">
               <div class="flex justify-between items-center">
-                <span class="text-green-400 flex items-center">
-                  <i class="fas fa-arrow-up mr-2"></i>
+                <span class="text-slate-600 flex items-center">
+                  <i class="fas fa-arrow-up mr-2 text-emerald-500 text-xs"></i>
                   Ingresos
                 </span>
-                <span class="text-green-400 font-bold">
+                <span class="text-emerald-600 font-bold tabular-nums">
                   ${{ formatCurrency(summary.ingresos) }}
                 </span>
               </div>
               <div class="flex justify-between items-center">
-                <span class="text-red-400 flex items-center">
-                  <i class="fas fa-arrow-down mr-2"></i>
+                <span class="text-slate-600 flex items-center">
+                  <i class="fas fa-arrow-down mr-2 text-red-500 text-xs"></i>
                   Egresos
                 </span>
-                <span class="text-red-400 font-bold">
+                <span class="text-red-600 font-bold tabular-nums">
                   ${{ formatCurrency(summary.egresos) }}
                 </span>
               </div>
-              <hr class="border-gray-600">
+              <hr class="border-slate-200">
               <div class="flex justify-between items-center">
-                <span class="text-white font-semibold">Balance</span>
+                <span class="text-slate-800 font-extrabold">Balance</span>
                 <span :class="[
-                  'font-bold text-lg',
-                  summary.balance >= 0 ? 'text-green-400' : 'text-red-400'
+                  'font-black text-base tabular-nums',
+                  summary.balance >= 0 ? 'text-emerald-600' : 'text-red-600'
                 ]">
                   ${{ formatCurrency(summary.balance) }}
                 </span>
@@ -42,35 +42,33 @@
           </div>
 
           <!-- Gastos Fijos -->
-          
-          <!-- Gastos Fijos -->
-          <div class="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 rounded-xl p-4 border border-purple-500/20">
-            <h4 class="text-lg font-semibold text-white mb-4">Gastos Fijos</h4>
-            <div class="space-y-3">
+          <div class="bg-slate-50 border border-slate-100 rounded-xl p-4">
+            <h4 class="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-3">Gastos Fijos</h4>
+            <div class="space-y-2.5 text-sm">
               <div class="flex justify-between items-center">
-                <span class="text-yellow-400 flex items-center">
-                  <i class="fas fa-calendar-alt mr-2"></i>
+                <span class="text-slate-600 flex items-center">
+                  <i class="fas fa-calendar-alt mr-2 text-amber-500 text-xs"></i>
                   Mensuales
                 </span>
-                <span class="text-yellow-400 font-bold">
+                <span class="text-amber-600 font-bold tabular-nums">
                   ${{ formatCurrency(summary.gastos_fijos_mensuales) }}
                 </span>
               </div>
               <div class="flex justify-between items-center">
-                <span class="text-orange-400 flex items-center">
-                  <i class="fas fa-calendar mr-2"></i>
+                <span class="text-slate-600 flex items-center">
+                  <i class="fas fa-calendar mr-2 text-amber-500 text-xs"></i>
                   Proyección Anual
                 </span>
-                <span class="text-orange-400 font-bold">
+                <span class="text-amber-600 font-bold tabular-nums">
                   ${{ formatCurrency(summary.gastos_fijos_mensuales * 12) }}
                 </span>
               </div>
               <div class="flex justify-between items-center">
-                <span class="text-gray-400 flex items-center">
-                  <i class="fas fa-percentage mr-2"></i>
+                <span class="text-slate-600 flex items-center">
+                  <i class="fas fa-percentage mr-2 text-slate-400 text-xs"></i>
                   % del Balance
                 </span>
-                <span class="text-gray-400 font-bold">
+                <span class="text-slate-700 font-bold tabular-nums">
                   {{ getFixedExpensePercentage() }}%
                 </span>
               </div>
@@ -82,47 +80,48 @@
 
     <!-- Pagos Pendientes -->
     <div>
-      <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-purple-500/20">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-xl font-bold text-white">Pagos Pendientes</h3>
-          <span class="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm font-medium">
+      <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-sm font-extrabold text-slate-800">Pagos Pendientes</h3>
+          <span class="bg-red-50 text-red-700 border border-red-100 rounded-full px-2 py-0.5 text-[10px] font-black tabular-nums">
             {{ summary.pagos_pendientes.length }}
           </span>
         </div>
 
-        <div v-if="summary.pagos_pendientes.length === 0" class="text-center py-8">
-          <i class="fas fa-check-circle text-4xl text-green-500 mb-3"></i>
-          <p class="text-gray-400">¡Todos los pagos al día!</p>
+        <div v-if="summary.pagos_pendientes.length === 0" class="empty-state empty-state--sm">
+          <div class="empty-state__icon bg-emerald-50 text-emerald-600"><i class="fas fa-check-circle"></i></div>
+          <p class="empty-state__title">¡Todos los pagos al día!</p>
         </div>
 
         <div v-else class="space-y-3 max-h-96 overflow-y-auto">
           <div
             v-for="pago in summary.pagos_pendientes"
             :key="pago._id"
-            class="p-4 bg-gradient-to-r from-red-500/10 to-pink-500/10 rounded-xl border border-red-500/20"
+            class="p-3 bg-slate-50 border border-slate-100 rounded-xl"
           >
-            <div class="flex justify-between items-start">
-              <div class="flex-1">
-                <h4 class="font-semibold text-white">{{ pago.concepto }}</h4>
-                <p v-if="pago.cliente_id" class="text-sm text-gray-400">
+            <div class="flex justify-between items-start gap-3">
+              <div class="flex-1 min-w-0">
+                <h4 class="text-sm font-extrabold text-slate-800 truncate">{{ pago.concepto }}</h4>
+                <p v-if="pago.cliente_id" class="text-xs text-slate-500">
                   <i class="fas fa-user mr-1"></i>
                   {{ getClientName(pago.cliente_id) }}
                 </p>
-                <p v-if="pago.proximo_pago" class="text-sm text-red-400">
+                <p v-if="pago.proximo_pago" class="text-xs text-red-600 font-semibold">
                   <i class="fas fa-clock mr-1"></i>
                   Vence: {{ formatDate(pago.proximo_pago) }}
                 </p>
               </div>
-              <div class="text-right">
-                <p class="font-bold text-red-400">
+              <div class="text-right shrink-0">
+                <p class="font-black text-red-600 tabular-nums">
                   ${{ formatCurrency(pago.monto) }}
                 </p>
                 <button
+                  type="button"
                   @click="$emit('markAsPaid', pago)"
-                  class="mt-2 px-3 py-1 bg-green-600/20 text-green-400 rounded-lg hover:bg-green-600/30 transition-colors border border-green-500/30 text-xs"
+                  class="mt-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-100 text-[11px] font-bold transition-colors"
                 >
-                  <i class="fas fa-check mr-1"></i>
-                  Marcar Pagado
+                  <i class="fas fa-check"></i>
+                  Marcar pagado
                 </button>
               </div>
             </div>

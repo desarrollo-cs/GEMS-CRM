@@ -42,6 +42,9 @@ export interface ExternalLink {
   fecha?: Date
 }
 
+/** cliente_id llega como id o populado (`name company projects`) según el endpoint */
+export type LinkedClientRef = string | { _id: string; name?: string; company?: string; projects?: { _id: string; name: string }[] }
+
 export interface Case {
   _id?: string
   titulo: string
@@ -49,7 +52,8 @@ export interface Case {
   tipo: 'documento' | 'incidencia' | 'seguimiento'
   estado: 'abierto' | 'en_progreso' | 'resuelto' | 'cerrado'
   prioridad: 'baja' | 'media' | 'alta' | 'critica'
-  cliente_id?: string
+  cliente_id?: LinkedClientRef
+  proyecto_id?: string
   asignado_a?: string
   archivos: CaseFile[]
   fecha_limite?: Date
@@ -82,6 +86,7 @@ export interface CaseFilters {
   estado?: string
   prioridad?: string
   cliente_id?: string
+  proyecto_id?: string
   asignado_a?: string
   categoria?: string
   page?: number

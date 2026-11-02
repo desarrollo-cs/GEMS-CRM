@@ -1,33 +1,33 @@
 <template>
-  <div class="space-y-6">
-    <!-- Encabezado del Cliente -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
-      <div class="flex items-center gap-4">
-        <div class="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 text-2xl font-black border border-primary-200">
+  <div class="flex flex-col gap-4">
+    <!-- Encabezado del Cliente (compacto, misma cabecera que las demás páginas) -->
+    <div class="flex-shrink-0 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-11 h-11 rounded-xl bg-primary-50 border border-primary-100 flex items-center justify-center text-primary-600 text-base font-black shrink-0">
           {{ (client?.company || client?.name || 'C').charAt(0).toUpperCase() }}
         </div>
-        <div>
+        <div class="min-w-0">
           <!-- Mismo criterio que la lista: la empresa identifica al cliente -->
-          <h1 class="text-2xl font-black text-slate-800">{{ client?.company || client?.name }}</h1>
-          <p class="text-slate-500 font-medium text-sm mt-0.5">
+          <h1 class="text-base font-black text-slate-800 tracking-tight leading-tight truncate">{{ client?.company || client?.name }}</h1>
+          <p class="text-xs text-slate-500 truncate">
             <template v-if="client?.nit">NIT {{ client.nit }} · </template>Contacto: {{ client?.name || '—' }}
           </p>
         </div>
       </div>
-      <div class="flex items-center gap-3">
-        <router-link to="/clients" class="px-5 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-sm" title="Volver a la lista de clientes">
-          <i class="fas fa-arrow-left mr-2"></i> Volver
+      <div class="flex flex-wrap items-center gap-2">
+        <router-link to="/clients" class="btn-secondary btn-sm" title="Volver a la lista de clientes">
+          <i class="fas fa-arrow-left text-[10px]"></i> Volver
         </router-link>
         <button
           @click="editOverview = !editOverview"
           :title="editOverview ? 'Descartar los cambios sin guardar' : 'Editar los datos del cliente (empresa, NIT, contacto, correo, WhatsApp y perfil)'"
-          class="px-5 py-2.5 text-sm font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors shadow-sm"
+          class="btn-secondary btn-sm"
         >
-          <i :class="editOverview ? 'fas fa-times' : 'fas fa-edit'" class="mr-2"></i>
-          {{ editOverview ? 'Cancelar Edición' : 'Editar Cliente' }}
+          <i :class="editOverview ? 'fas fa-times' : 'fas fa-edit'" class="text-[10px]"></i>
+          {{ editOverview ? 'Cancelar edición' : 'Editar cliente' }}
         </button>
-        <button v-if="editOverview" @click="saveOverview" title="Guardar los cambios del cliente" class="px-5 py-2.5 text-sm font-bold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors shadow-sm">
-          <i class="fas fa-save mr-2"></i> Guardar Cambios
+        <button v-if="editOverview" @click="saveOverview" title="Guardar los cambios del cliente" class="btn-primary btn-sm">
+          <i class="fas fa-save text-[10px]"></i> Guardar cambios
         </button>
       </div>
     </div>
@@ -35,94 +35,92 @@
     <!-- Contenedor Principal (Tabs y Contenido) -->
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
       <!-- Tabs -->
-      <div class="flex gap-2 p-3 border-b border-slate-100 bg-slate-50 overflow-x-auto scroll-smooth">
-        <button v-for="t in tabs" :key="t.key" @click="activeTab = t.key"
-          :aria-pressed="activeTab === t.key"
-          :class="[
-            'px-4 py-2.5 rounded-lg whitespace-nowrap text-sm font-bold transition-all duration-200 flex items-center min-w-max border',
-            activeTab === t.key
-              ? 'bg-primary-600 text-white shadow-md shadow-primary-600/20 border-primary-600'
-              : 'text-slate-600 hover:bg-white hover:text-slate-900 border-transparent hover:border-slate-200 hover:shadow-sm'
-          ]">
-          <i :class="[t.icon, 'mr-2 transition-transform duration-200', activeTab === t.key ? 'opacity-100 scale-110' : 'opacity-70']"></i>{{ t.label }}
-        </button>
+      <div class="p-2 border-b border-slate-100 overflow-x-auto scroll-smooth">
+        <div class="seg">
+          <button v-for="t in tabs" :key="t.key" @click="activeTab = t.key"
+            :aria-pressed="activeTab === t.key"
+            class="whitespace-nowrap flex items-center gap-1.5 min-w-max">
+            <i :class="t.icon" class="text-[10px]"></i>{{ t.label }}
+          </button>
+        </div>
       </div>
 
       <!-- Contenido de las Tabs -->
-      <div class="p-6 md:p-8">
+      <div class="p-4 sm:p-5">
         <!-- Overview -->
-        <div v-if="activeTab === 'overview'" class="motion-content-in grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-          <div class="lg:col-span-2 space-y-6">
+        <div v-if="activeTab === 'overview'" class="motion-content-in grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="lg:col-span-2 space-y-4">
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Acerca de</label>
+              <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Acerca de</label>
               <textarea v-model="draft.profile.about" :readonly="!editOverview"
-                class="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all min-h-[140px] resize-y"
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-slate-800 text-sm focus:bg-white focus:outline-none focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all min-h-[140px] resize-y"
                 :class="!editOverview ? 'opacity-80' : 'shadow-sm'"
               ></textarea>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Dirección</label>
-                <input v-model="draft.profile.address" :readonly="!editOverview" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all font-medium" :class="!editOverview ? 'opacity-80' : 'shadow-sm'"/>
+                <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Dirección</label>
+                <input v-model="draft.profile.address" :readonly="!editOverview" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-sm focus:bg-white focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all font-medium" :class="!editOverview ? 'opacity-80' : 'shadow-sm'"/>
               </div>
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Sitio web</label>
-                <input v-model="draft.profile.website" :readonly="!editOverview" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all font-medium" :class="!editOverview ? 'opacity-80' : 'shadow-sm'"/>
+                <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Sitio web</label>
+                <input v-model="draft.profile.website" :readonly="!editOverview" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-sm focus:bg-white focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all font-medium" :class="!editOverview ? 'opacity-80' : 'shadow-sm'"/>
               </div>
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Industria</label>
-                <input v-model="draft.profile.industry" :readonly="!editOverview" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all font-medium" :class="!editOverview ? 'opacity-80' : 'shadow-sm'"/>
+                <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Industria</label>
+                <input v-model="draft.profile.industry" :readonly="!editOverview" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-sm focus:bg-white focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all font-medium" :class="!editOverview ? 'opacity-80' : 'shadow-sm'"/>
               </div>
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Tamaño de la Empresa</label>
-                <input v-model="draft.profile.size" :readonly="!editOverview" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all font-medium" :class="!editOverview ? 'opacity-80' : 'shadow-sm'"/>
+                <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Tamaño de la Empresa</label>
+                <input v-model="draft.profile.size" :readonly="!editOverview" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-sm focus:bg-white focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all font-medium" :class="!editOverview ? 'opacity-80' : 'shadow-sm'"/>
               </div>
             </div>
+            <LinkedCasesPanel :client-id="id" />
           </div>
           
-          <div class="space-y-6">
-            <div class="bg-primary-50 p-5 rounded-xl border border-primary-100 shadow-sm">
-              <label class="block text-xs font-bold text-primary-800 uppercase tracking-wider mb-3">Etiquetas</label>
+          <div class="space-y-4">
+            <div class="bg-primary-50 p-4 rounded-xl border border-primary-100">
+              <label class="block text-[10px] font-black uppercase tracking-wider text-primary-700 mb-2">Etiquetas</label>
               <div class="flex flex-wrap gap-2">
                 <span v-for="(tag, i) in draft.tags" :key="i" class="px-2.5 py-1 rounded-md bg-white text-primary-700 text-[11px] font-bold uppercase tracking-wider border border-primary-200 shadow-sm">{{ tag }}</span>
-                <input v-if="editOverview" v-model="newTag" @keyup.enter="addTag" placeholder="+ Agregar etiqueta (Enter)" class="bg-white border border-primary-200 rounded-md px-3 py-1.5 text-xs text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 flex-1 min-w-[120px]"/>
+                <input v-if="editOverview" v-model="newTag" @keyup.enter="addTag" placeholder="+ Agregar etiqueta (Enter)" class="bg-white border border-primary-200 rounded-md px-3 py-1.5 text-xs text-slate-700 shadow-sm focus:outline-none focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 flex-1 min-w-[120px]"/>
               </div>
             </div>
             
-            <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl space-y-4 shadow-sm">
+            <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"><i class="fas fa-building mr-1 text-slate-400"></i> Empresa / Organización</label>
-                <input v-model="draft.company" :readonly="!editOverview" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all font-medium" :class="!editOverview ? 'opacity-80' : 'shadow-sm'"/>
+                <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5"><i class="fas fa-building mr-1 text-slate-400"></i> Empresa / Organización</label>
+                <input v-model="draft.company" :readonly="!editOverview" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-sm focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all font-medium" :class="!editOverview ? 'opacity-80' : 'shadow-sm'"/>
               </div>
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"><i class="fas fa-id-card mr-1 text-slate-400"></i> NIT</label>
-                <input v-model="draft.nit" :readonly="!editOverview" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all font-medium" :class="!editOverview ? 'opacity-80' : 'shadow-sm'"/>
+                <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5"><i class="fas fa-id-card mr-1 text-slate-400"></i> NIT</label>
+                <input v-model="draft.nit" :readonly="!editOverview" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-sm focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all font-medium" :class="!editOverview ? 'opacity-80' : 'shadow-sm'"/>
               </div>
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"><i class="fas fa-user mr-1 text-slate-400"></i> Nombre de Contacto</label>
-                <input v-model="draft.name" :readonly="!editOverview" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all font-medium" :class="!editOverview ? 'opacity-80' : 'shadow-sm'"/>
+                <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5"><i class="fas fa-user mr-1 text-slate-400"></i> Nombre de Contacto</label>
+                <input v-model="draft.name" :readonly="!editOverview" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-sm focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all font-medium" :class="!editOverview ? 'opacity-80' : 'shadow-sm'"/>
               </div>
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"><i class="fas fa-envelope mr-1 text-slate-400"></i> Correo Electrónico</label>
+                <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5"><i class="fas fa-envelope mr-1 text-slate-400"></i> Correo Electrónico</label>
                 <input
                   v-model="draft.email"
                   :readonly="!editOverview"
-                  class="w-full bg-white border rounded-lg px-4 py-2.5 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all font-medium"
+                  class="w-full bg-white border rounded-xl px-3 py-2 text-slate-800 text-sm focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all font-medium"
                   :class="[!editOverview ? 'opacity-80' : 'shadow-sm', emailError ? 'border-red-300' : 'border-slate-200']"
                   @blur="validateEmail"
                 />
                 <p v-if="emailError" class="text-red-500 text-[11px] font-bold mt-1">{{ emailError }}</p>
               </div>
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"><i class="fas fa-phone mr-1 text-slate-400"></i> WhatsApp</label>
-                <input v-model="draft.phone" :readonly="!editOverview" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all font-medium" :class="!editOverview ? 'opacity-80' : 'shadow-sm'"/>
+                <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5"><i class="fas fa-phone mr-1 text-slate-400"></i> WhatsApp</label>
+                <input v-model="draft.phone" :readonly="!editOverview" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-sm focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all font-medium" :class="!editOverview ? 'opacity-80' : 'shadow-sm'"/>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Services -->
-        <div v-else-if="activeTab === 'projects'" class="motion-content-in space-y-5">
+        <div v-else-if="activeTab === 'projects'" class="motion-content-in space-y-4">
           <!-- Encabezado -->
           <div class="flex items-center justify-between gap-3">
             <div class="flex items-center gap-3">
@@ -239,7 +237,7 @@
           </div>
         </div>
 
-        <div v-else-if="activeTab === 'services'" class="motion-content-in space-y-6">
+        <div v-else-if="activeTab === 'services'" class="motion-content-in space-y-4">
           <div class="flex justify-between items-center border-b border-slate-100 pb-3">
             <h3 class="text-lg font-black text-slate-800">Servicios Contratados</h3>
           </div>
@@ -247,11 +245,11 @@
           <div class="flex flex-wrap gap-3 items-center bg-slate-50 border border-slate-200 rounded-xl p-4 shadow-sm">
             <div class="flex-1 min-w-[200px]">
               <label class="sr-only">Nombre del servicio</label>
-              <input v-model="serviceName" placeholder="Ej: Mantenimiento Mensual" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none shadow-sm" />
+              <input v-model="serviceName" placeholder="Ej: Mantenimiento Mensual" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-medium text-sm focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 focus:outline-none shadow-sm" />
             </div>
             <div class="w-full sm:w-auto">
               <label class="sr-only">Plan (opcional)</label>
-              <input v-model="servicePlan" placeholder="Plan Premium" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none shadow-sm" />
+              <input v-model="servicePlan" placeholder="Plan Premium" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-medium text-sm focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 focus:outline-none shadow-sm" />
             </div>
             <div class="w-full sm:w-auto">
               <label class="sr-only">Estado</label>
@@ -294,27 +292,27 @@
               <!-- edit mode -->
               <div v-else class="flex flex-col gap-3">
                 <div class="flex flex-col sm:flex-row gap-3">
-                  <input v-model="editServicePlan" placeholder="Plan" class="w-full sm:w-1/2 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary-500" />
+                  <input v-model="editServicePlan" placeholder="Plan" class="w-full sm:w-1/2 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15" />
                   <div class="w-full sm:w-1/2">
                     <CustomSelect :model-value="editServiceStatus" @update:model-value="(v: any) => (editServiceStatus = v)" :options="serviceStatusOptions" size="md" />
                   </div>
                 </div>
-                <input v-model="editServiceNotes" placeholder="Notas del servicio..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary-500" />
+                <input v-model="editServiceNotes" placeholder="Notas del servicio..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15" />
                 <div class="flex gap-2 justify-end mt-2">
                   <button @click="cancelEditService" class="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50">Cancelar</button>
-                  <button @click="confirmEditService" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700">Guardar</button>
+                  <button @click="confirmEditService" class="btn-primary btn-sm">Guardar</button>
                 </div>
               </div>
             </div>
           </div>
-          <div v-else class="text-center py-10 bg-slate-50 border border-dashed border-slate-200 rounded-xl">
-            <i class="fas fa-box-open text-3xl text-slate-300 mb-3"></i>
-            <p class="text-slate-500 font-medium">No hay servicios registrados para este cliente.</p>
+          <div v-else class="empty-state empty-state--sm">
+            <div class="empty-state__icon"><i class="fas fa-box-open"></i></div>
+            <p class="empty-state__title">No hay servicios registrados para este cliente.</p>
           </div>
         </div>
 
         <!-- Commitments -->
-        <div v-else-if="activeTab === 'commitments'" class="motion-content-in space-y-6">
+        <div v-else-if="activeTab === 'commitments'" class="motion-content-in space-y-4">
           <div class="flex justify-between items-center border-b border-slate-100 pb-3">
             <h3 class="text-lg font-black text-slate-800">Compromisos y Tareas</h3>
           </div>
@@ -322,11 +320,11 @@
           <div class="flex flex-wrap gap-3 items-center bg-slate-50 border border-slate-200 rounded-xl p-4 shadow-sm">
             <div class="flex-1 min-w-[200px]">
               <label class="sr-only">Título del compromiso</label>
-              <input v-model="commitTitle" placeholder="Ej: Enviar propuesta comercial" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none shadow-sm" />
+              <input v-model="commitTitle" placeholder="Ej: Enviar propuesta comercial" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-medium text-sm focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 focus:outline-none shadow-sm" />
             </div>
             <div class="w-full sm:w-auto">
               <label class="sr-only">Fecha límite</label>
-              <input v-model="commitDueDate" type="date" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none shadow-sm" />
+              <input v-model="commitDueDate" type="date" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-medium text-sm focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 focus:outline-none shadow-sm" />
             </div>
             <div class="w-full sm:w-auto">
               <label class="sr-only">Estado</label>
@@ -368,36 +366,36 @@
               <!-- edit mode -->
               <div v-else class="flex flex-col gap-3">
                 <div class="flex flex-col sm:flex-row gap-3">
-                  <input v-model="editCommitDueDate" type="date" class="w-full sm:w-1/3 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary-500" />
+                  <input v-model="editCommitDueDate" type="date" class="w-full sm:w-1/3 bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15" />
                   <div class="w-full sm:w-1/3">
                     <CustomSelect :model-value="editCommitStatus" @update:model-value="(v: any) => (editCommitStatus = v)" :options="commitStatusOptions" size="md" />
                   </div>
                 </div>
-                <input v-model="editCommitDescription" placeholder="Descripción detallada..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary-500" />
+                <input v-model="editCommitDescription" placeholder="Descripción detallada..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15" />
                 <div class="flex gap-2 justify-end mt-2">
                   <button @click="cancelEditCommitment" class="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50">Cancelar</button>
-                  <button @click="confirmEditCommitment" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700">Guardar</button>
+                  <button @click="confirmEditCommitment" class="btn-primary btn-sm">Guardar</button>
                 </div>
               </div>
             </div>
           </div>
-          <div v-else class="text-center py-10 bg-slate-50 border border-dashed border-slate-200 rounded-xl">
-            <i class="fas fa-check-circle text-3xl text-slate-300 mb-3"></i>
-            <p class="text-slate-500 font-medium">No hay compromisos pendientes.</p>
+          <div v-else class="empty-state empty-state--sm">
+            <div class="empty-state__icon"><i class="fas fa-check-circle"></i></div>
+            <p class="empty-state__title">No hay compromisos pendientes.</p>
           </div>
         </div>
 
         <!-- Preferences -->
-        <div v-else-if="activeTab === 'preferences'" class="motion-content-in space-y-6">
+        <div v-else-if="activeTab === 'preferences'" class="motion-content-in space-y-4">
           <div class="flex justify-between items-center border-b border-slate-100 pb-3">
             <h3 class="text-lg font-black text-slate-800">Preferencias del Cliente</h3>
           </div>
           <div class="flex flex-wrap gap-3 items-center bg-slate-50 border border-slate-200 rounded-xl p-4 shadow-sm">
             <div class="flex-1 min-w-[150px]">
-              <input v-model="newPrefKey" placeholder="Clave (ej. Tono de comunicación)" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none shadow-sm" />
+              <input v-model="newPrefKey" placeholder="Clave (ej. Tono de comunicación)" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-medium text-sm focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 focus:outline-none shadow-sm" />
             </div>
             <div class="flex-1 min-w-[200px]">
-              <input v-model="newPrefValue" placeholder="Valor (ej. Formal pero cercano)" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none shadow-sm" />
+              <input v-model="newPrefValue" placeholder="Valor (ej. Formal pero cercano)" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-medium text-sm focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 focus:outline-none shadow-sm" />
             </div>
             <button @click="addPreference" class="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-primary-600 text-white font-bold hover:bg-primary-700 shadow-sm transition-colors">
               <i class="fas fa-plus mr-1"></i> Agregar
@@ -414,20 +412,20 @@
               </button>
             </div>
           </div>
-          <div v-if="!(client.preferences || []).length" class="text-center py-10 bg-slate-50 border border-dashed border-slate-200 rounded-xl">
-            <i class="fas fa-heart text-3xl text-slate-300 mb-3"></i>
-            <p class="text-slate-500 font-medium">No se han registrado preferencias.</p>
+          <div v-if="!(client.preferences || []).length" class="empty-state empty-state--sm">
+            <div class="empty-state__icon"><i class="fas fa-heart"></i></div>
+            <p class="empty-state__title">No se han registrado preferencias.</p>
           </div>
         </div>
 
         <!-- Notes -->
-        <div v-else-if="activeTab === 'notes'" class="motion-content-in space-y-6">
+        <div v-else-if="activeTab === 'notes'" class="motion-content-in space-y-4">
           <div class="flex justify-between items-center border-b border-slate-100 pb-3">
             <h3 class="text-lg font-black text-slate-800">Notas Adicionales</h3>
           </div>
           <div class="flex gap-3 items-start">
             <div class="flex-1">
-              <textarea v-model="newNote" placeholder="Escribe una nueva nota o actualización (Presiona Ctr + Enter para guardar)" rows="3" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 font-medium text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none shadow-sm resize-y"></textarea>
+              <textarea v-model="newNote" placeholder="Escribe una nueva nota o actualización (Presiona Ctr + Enter para guardar)" rows="3" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 font-medium text-sm focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 focus:outline-none shadow-sm resize-y"></textarea>
             </div>
             <button @click="addNote" class="px-5 py-3 rounded-xl bg-primary-600 text-white font-bold hover:bg-primary-700 shadow-sm transition-colors h-full">
               <i class="fas fa-save mb-1 block text-lg"></i>
@@ -453,24 +451,24 @@
               <p class="text-slate-700 font-medium leading-relaxed whitespace-pre-wrap">{{ n.content }}</p>
             </div>
             
-            <div v-if="!sortedNotes.length" class="text-center py-10 bg-slate-50 border border-dashed border-slate-200 rounded-xl">
-              <i class="fas fa-sticky-note text-3xl text-slate-300 mb-3"></i>
-              <p class="text-slate-500 font-medium">Aún no hay notas para este cliente.</p>
-            </div>
+            <div v-if="!sortedNotes.length" class="empty-state empty-state--sm">
+            <div class="empty-state__icon"><i class="fas fa-sticky-note"></i></div>
+            <p class="empty-state__title">Aún no hay notas para este cliente.</p>
+          </div>
           </div>
         </div>
 
         <!-- Custom Fields -->
-        <div v-else-if="activeTab === 'custom'" class="motion-content-in space-y-6">
+        <div v-else-if="activeTab === 'custom'" class="motion-content-in space-y-4">
           <div class="flex justify-between items-center border-b border-slate-100 pb-3">
             <h3 class="text-lg font-black text-slate-800">Campos Personalizados</h3>
           </div>
           <div class="flex flex-wrap gap-3 items-center bg-slate-50 border border-slate-200 rounded-xl p-4 shadow-sm">
             <div class="flex-1 min-w-[150px]">
-              <input v-model="newFieldKey" placeholder="Nombre del Campo" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none shadow-sm" />
+              <input v-model="newFieldKey" placeholder="Nombre del Campo" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-medium text-sm focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 focus:outline-none shadow-sm" />
             </div>
             <div class="flex-1 min-w-[200px]">
-              <input v-model="newFieldValue" placeholder="Valor" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none shadow-sm" />
+              <input v-model="newFieldValue" placeholder="Valor" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-medium text-sm focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 focus:outline-none shadow-sm" />
             </div>
             <button @click="addCustomField" class="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-primary-600 text-white font-bold hover:bg-primary-700 shadow-sm transition-colors">
               <i class="fas fa-plus mr-1"></i> Agregar
@@ -487,9 +485,9 @@
               </button>
             </div>
           </div>
-          <div v-if="!(client.customFields || []).length" class="text-center py-10 bg-slate-50 border border-dashed border-slate-200 rounded-xl">
-            <i class="fas fa-sliders-h text-3xl text-slate-300 mb-3"></i>
-            <p class="text-slate-500 font-medium">Añade campos personalizados a la medida de tu requerimiento.</p>
+          <div v-if="!(client.customFields || []).length" class="empty-state empty-state--sm">
+            <div class="empty-state__icon"><i class="fas fa-sliders-h"></i></div>
+            <p class="empty-state__title">Añade campos personalizados a la medida de tu requerimiento.</p>
           </div>
         </div>
       </div>
@@ -504,6 +502,7 @@ import { clientService, type ProjectData } from '@/services/clientService'
 import { API_CONFIG } from '@/config/api'
 import { useNotifications } from '@/composables/useNotifications'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
+import LinkedCasesPanel from '@/components/cases/LinkedCasesPanel.vue'
 
 const { showError } = useNotifications()
 

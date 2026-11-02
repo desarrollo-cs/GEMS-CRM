@@ -361,6 +361,7 @@ export const useAuthStore = defineStore('auth', () => {
     userRole,
     isAdmin,
     isManager,
+    isSupport,
     
     // Permission computed properties
     canViewDashboard,

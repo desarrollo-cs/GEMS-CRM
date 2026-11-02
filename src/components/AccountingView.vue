@@ -1,96 +1,81 @@
 <template>
-  <div class="p-6">
-    <!-- Header -->
-  <!-- ...existing code... -->
-
-    <!-- Tabs -->
-    <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-lg p-6 mb-6 border border-purple-500/20">
-      <div class="flex flex-wrap gap-2">
+  <div class="flex flex-col gap-4 h-full min-h-0">
+    <!-- Header + Tabs -->
+    <PageHeader icon="fas fa-coins" title="Contabilidad" subtitle="Gestión financiera unificada">
+      <div class="seg">
         <button
           v-for="tab in tabs"
           :key="tab.id"
+          type="button"
           @click="activeTab = tab.id"
-          :class="[
-            'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:-translate-y-px',
-            activeTab === tab.id
-              ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-              : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
-          ]"
+          :aria-pressed="activeTab === tab.id"
         >
-          <i :class="tab.icon" class="mr-2"></i>
+          <i :class="tab.icon" class="mr-1.5 text-[10px]"></i>
           {{ tab.name }}
         </button>
       </div>
-    </div>
+    </PageHeader>
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
       <!-- Total Ingresos -->
-      <div class="bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-2xl p-6 border border-green-500/20">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-green-400 text-sm font-medium">Ingresos Totales</p>
-            <p class="text-2xl font-bold text-white">${{ formatCurrency(totalIngresos) }}</p>
-          </div>
-          <div class="p-3 bg-green-500/20 rounded-full">
-            <i class="fas fa-arrow-up text-green-400 text-xl"></i>
-          </div>
+      <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 flex items-center justify-between gap-3">
+        <div class="min-w-0">
+          <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Ingresos Totales</p>
+          <p class="mt-1 text-xl font-black text-slate-800 tabular-nums leading-none truncate">${{ formatCurrency(totalIngresos) }}</p>
+        </div>
+        <div class="w-9 h-9 shrink-0 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center">
+          <i class="fas fa-arrow-up text-sm"></i>
         </div>
       </div>
 
       <!-- Total Egresos -->
-      <div class="bg-gradient-to-br from-red-500/20 to-red-600/10 rounded-2xl p-6 border border-red-500/20">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-red-400 text-sm font-medium">Egresos Totales</p>
-            <p class="text-2xl font-bold text-white">${{ formatCurrency(totalEgresos) }}</p>
-          </div>
-          <div class="p-3 bg-red-500/20 rounded-full">
-            <i class="fas fa-arrow-down text-red-400 text-xl"></i>
-          </div>
+      <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 flex items-center justify-between gap-3">
+        <div class="min-w-0">
+          <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Egresos Totales</p>
+          <p class="mt-1 text-xl font-black text-slate-800 tabular-nums leading-none truncate">${{ formatCurrency(totalEgresos) }}</p>
+        </div>
+        <div class="w-9 h-9 shrink-0 rounded-xl bg-red-50 border border-red-100 text-red-600 flex items-center justify-center">
+          <i class="fas fa-arrow-down text-sm"></i>
         </div>
       </div>
 
       <!-- Balance -->
-      <div class="bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-2xl p-6 border border-blue-500/20">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-blue-400 text-sm font-medium">Balance Neto</p>
-            <p :class="[
-              'text-2xl font-bold',
-              balance >= 0 ? 'text-white' : 'text-red-400'
-            ]">${{ formatCurrency(balance) }}</p>
-          </div>
-          <div class="p-3 bg-blue-500/20 rounded-full">
-            <i class="fas fa-balance-scale text-blue-400 text-xl"></i>
-          </div>
+      <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 flex items-center justify-between gap-3">
+        <div class="min-w-0">
+          <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Balance Neto</p>
+          <p :class="[
+            'mt-1 text-xl font-black tabular-nums leading-none truncate',
+            balance >= 0 ? 'text-slate-800' : 'text-red-600'
+          ]">${{ formatCurrency(balance) }}</p>
+        </div>
+        <div class="w-9 h-9 shrink-0 rounded-xl bg-primary-50 border border-primary-100 text-primary-600 flex items-center justify-center">
+          <i class="fas fa-balance-scale text-sm"></i>
         </div>
       </div>
 
       <!-- Pagos Pendientes -->
-      <div class="bg-gradient-to-br from-yellow-500/20 to-yellow-600/10 rounded-2xl p-6 border border-yellow-500/20">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-yellow-400 text-sm font-medium">Pagos Pendientes</p>
-            <p class="text-2xl font-bold text-white">{{ summaryData.pagos_pendientes.length }}</p>
-          </div>
-          <div class="p-3 bg-yellow-500/20 rounded-full">
-            <i class="fas fa-clock text-yellow-400 text-xl"></i>
-          </div>
+      <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 flex items-center justify-between gap-3">
+        <div class="min-w-0">
+          <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Pagos Pendientes</p>
+          <p class="mt-1 text-xl font-black text-slate-800 tabular-nums leading-none truncate">{{ summaryData.pagos_pendientes.length }}</p>
+        </div>
+        <div class="w-9 h-9 shrink-0 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 flex items-center justify-center">
+          <i class="fas fa-clock text-sm"></i>
         </div>
       </div>
     </div>
 
     <!-- Content -->
     <div v-if="activeTab === 'summary'" class="motion-content-in">
-      <AccountingSummary 
+      <AccountingSummary
         :summary="summaryData"
         @markAsPaid="markRecurringPaymentAsPaid"
       />
     </div>
 
     <div v-else-if="activeTab === 'transactions'" class="motion-content-in">
-      <TransactionsList 
+      <TransactionsList
         :transactions="transactions"
         :loading="loading"
         @create="openTransactionForm"
@@ -101,7 +86,7 @@
     </div>
 
     <div v-else-if="activeTab === 'fixed-expenses'" class="motion-content-in">
-      <FixedExpensesList 
+      <FixedExpensesList
         :expenses="fixedExpenses"
         :loading="loading"
         @create="openFixedExpenseForm"
@@ -113,7 +98,7 @@
     </div>
 
     <div v-else-if="activeTab === 'recurring-payments'" class="motion-content-in">
-      <RecurringPaymentsList 
+      <RecurringPaymentsList
         ref="recurringPaymentsRef"
         @edit="editRecurringPayment"
         @refresh="loadData"
@@ -121,7 +106,7 @@
     </div>
 
     <!-- Transaction Form Modal -->
-    <TransactionForm 
+    <TransactionForm
       :show="showTransactionForm"
       :editingTransaction="editingTransaction"
       :loading="formLoading"
@@ -130,7 +115,7 @@
     />
 
     <!-- Fixed Expense Form Modal -->
-    <FixedExpenseForm 
+    <FixedExpenseForm
       :show="showFixedExpenseForm"
       :editingExpense="editingFixedExpense"
       :loading="formLoading"
@@ -149,6 +134,7 @@ import RecurringPaymentsList from './accounting/RecurringPaymentsList.vue'
 import AccountingSummary from './accounting/AccountingSummary.vue'
 import TransactionForm from './accounting/TransactionForm.vue'
 import FixedExpenseForm from './accounting/FixedExpenseForm.vue'
+import PageHeader from './ui/PageHeader.vue'
 import { useNotifications } from '../composables/useNotifications'
 
 // Composables

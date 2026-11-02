@@ -1,8 +1,20 @@
 <template>
-  <div class="space-y-6">
-    <!-- Header -->
-    <div class="bg-white/70 backdrop-blur-md rounded-3xl p-8 border border-slate-200/60 shadow-sm transition-all duration-300">
-      <div class="flex flex-col md:flex-row items-center gap-8">
+  <div class="flex flex-col gap-4">
+    <!-- Cabecera compacta -->
+    <PageHeader icon="fas fa-user" title="Mi perfil" subtitle="Tu información personal y la seguridad de tu cuenta.">
+      <button
+        @click="toggleEditMode"
+        class="btn-sm"
+        :class="isEditing ? 'btn-secondary' : 'btn-primary'"
+      >
+        <i :class="isEditing ? 'fas fa-times' : 'fas fa-pen-nib'" class="text-[10px]"></i>
+        {{ isEditing ? 'Cancelar' : 'Editar perfil' }}
+      </button>
+    </PageHeader>
+
+    <!-- Identidad -->
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+      <div class="flex flex-col sm:flex-row items-center gap-5">
         <!-- Profile Avatar -->
         <button
           type="button"
@@ -14,166 +26,150 @@
             :name="profileData?.name || 'U'"
             :photo="profileData.photo"
             title=""
-            class="w-36 h-36 rounded-full bg-gradient-to-br from-primary-400 to-indigo-500 text-white text-4xl font-black border-4 border-white shadow-xl ring-4 ring-primary-100/50"
+            class="w-20 h-20 rounded-full bg-primary-100 text-primary-700 text-2xl font-black border-2 border-white shadow-sm"
           />
           <!-- Overlay al pasar el mouse -->
           <span class="absolute inset-0 rounded-full bg-slate-900/45 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 text-white">
-            <i class="fas fa-camera text-xl"></i>
-            <span class="text-[10px] font-black uppercase tracking-widest">Cambiar</span>
+            <i class="fas fa-camera text-base"></i>
+            <span class="text-[9px] font-black uppercase tracking-wider">Cambiar</span>
           </span>
           <!-- Botón cámara siempre visible -->
-          <span class="absolute bottom-1 right-1 w-10 h-10 rounded-full bg-primary-500 text-white border-4 border-white shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-            <i class="fas fa-camera text-xs"></i>
+          <span class="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-primary-500 text-white border-2 border-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+            <i class="fas fa-camera text-[10px]"></i>
           </span>
         </button>
-        
+
         <!-- Basic Info -->
-        <div class="text-center md:text-left flex-1">
-          <div class="flex flex-col md:flex-row md:items-center gap-2 mb-2">
-            <h1 class="text-3xl font-black text-slate-800 tracking-tight">{{ profileData?.name || 'Cargando...' }}</h1>
-            <span class="inline-flex items-center px-3 py-1 bg-primary-50 text-primary-700 rounded-full text-xs font-black uppercase tracking-widest border border-primary-100/50">
+        <div class="text-center sm:text-left flex-1 min-w-0">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
+            <h2 class="text-lg font-black text-slate-800 tracking-tight leading-tight">{{ profileData?.name || 'Cargando...' }}</h2>
+            <span class="inline-flex items-center w-fit mx-auto sm:mx-0 bg-primary-50 text-primary-600 border border-primary-100 rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider">
               {{ getRoleDisplayName(profileData?.role || '') }}
             </span>
           </div>
-          <p class="text-slate-500 font-medium mb-4">{{ profileData?.email || '' }}</p>
-          
-          <div class="flex flex-wrap gap-3 justify-center md:justify-start">
-            <span class="inline-flex items-center px-4 py-1.5 bg-emerald-50 text-emerald-700 rounded-2xl text-xs font-bold border border-emerald-100">
-              <i class="fas fa-check-circle mr-2"></i>
+          <p class="text-xs text-slate-500 mb-3">{{ profileData?.email || '' }}</p>
+
+          <div class="flex flex-wrap gap-2 justify-center sm:justify-start">
+            <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider">
+              <i class="fas fa-check-circle"></i>
               Activo
             </span>
-            <span class="inline-flex items-center px-4 py-1.5 bg-slate-50 text-slate-600 rounded-2xl text-xs font-bold border border-slate-100">
-              <i class="fas fa-calendar-alt mr-2"></i>
+            <span class="inline-flex items-center gap-1.5 bg-slate-50 text-slate-600 border border-slate-200 rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider">
+              <i class="fas fa-calendar-alt"></i>
               Miembro desde {{ formatDate(profileData?.createdAt || '') }}
             </span>
           </div>
         </div>
-
-        <!-- Edit Button -->
-        <div class="flex gap-3">
-          <button
-            @click="toggleEditMode"
-            :class="[
-              'px-8 py-3.5 rounded-2xl font-black text-sm uppercase tracking-widest transition-all duration-300 shadow-sm',
-              isEditing 
-                ? 'bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100' 
-                : 'bg-primary-500 text-white hover:bg-primary-600 shadow-primary-200 shadow-lg hover:-translate-y-0.5'
-            ]"
-          >
-            <i :class="isEditing ? 'fas fa-times' : 'fas fa-pen-nib'" class="mr-2"></i>
-            {{ isEditing ? 'Cancelar' : 'Editar Perfil' }}
-          </button>
-        </div>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
       <!-- Personal Information (Left Column) -->
-      <div class="lg:col-span-2 space-y-6">
-        <div class="bg-white/70 backdrop-blur-md rounded-3xl p-8 border border-slate-200/60 shadow-sm h-full">
-          <div class="flex items-center justify-between mb-8">
-            <h2 class="text-xl font-black text-slate-800 flex items-center">
-              <div class="w-10 h-10 bg-primary-50 rounded-xl flex items-center justify-center mr-4">
-                <i class="fas fa-id-card text-primary-500"></i>
+      <div class="lg:col-span-2 flex flex-col gap-4">
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 h-full">
+          <div class="flex items-center justify-between mb-5">
+            <h2 class="text-sm font-extrabold text-slate-800 flex items-center">
+              <div class="w-8 h-8 bg-primary-50 border border-primary-100 rounded-lg flex items-center justify-center mr-3">
+                <i class="fas fa-id-card text-primary-600 text-xs"></i>
               </div>
               Información Personal
             </h2>
           </div>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
             <!-- Name -->
-            <div class="space-y-2">
-              <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 ml-1">
                 Nombre Completo
               </label>
               <div v-if="isEditing" class="relative group">
-                <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors"></i>
+                <i class="fas fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs group-focus-within:text-primary-500 transition-colors"></i>
                 <input
                   v-model="editForm.name"
                   type="text"
-                  class="w-full pl-12 pr-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl text-slate-700 font-bold focus:ring-4 focus:ring-primary-100 focus:border-primary-400 transition-all outline-none"
+                  class="w-full pl-10 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 font-medium focus:outline-none focus:bg-white focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all"
                   placeholder="Tu nombre completo"
                 />
               </div>
-              <div v-else class="px-5 py-4 bg-slate-50/50 border border-slate-100 rounded-2xl">
-                <p class="text-slate-700 font-bold">{{ profileData?.name || 'No especificado' }}</p>
+              <div v-else class="px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl">
+                <p class="text-slate-700 font-bold text-sm">{{ profileData?.name || 'No especificado' }}</p>
               </div>
             </div>
 
             <!-- Email -->
-            <div class="space-y-2">
-              <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 ml-1">
                 Correo Electrónico
               </label>
               <div v-if="isEditing" class="relative group">
-                <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors"></i>
+                <i class="fas fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs group-focus-within:text-primary-500 transition-colors"></i>
                 <input
                   v-model="editForm.email"
                   type="email"
-                  class="w-full pl-12 pr-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl text-slate-700 font-bold focus:ring-4 focus:ring-primary-100 focus:border-primary-400 transition-all outline-none"
+                  class="w-full pl-10 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 font-medium focus:outline-none focus:bg-white focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all"
                   placeholder="tu@email.com"
                 />
               </div>
-              <div v-else class="px-5 py-4 bg-slate-50/50 border border-slate-100 rounded-2xl">
-                <p class="text-slate-700 font-bold">{{ profileData?.email || 'No especificado' }}</p>
+              <div v-else class="px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl">
+                <p class="text-slate-700 font-bold text-sm">{{ profileData?.email || 'No especificado' }}</p>
               </div>
             </div>
 
             <!-- Phone -->
-            <div class="space-y-2">
-              <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 ml-1">
                 Teléfono
               </label>
               <div v-if="isEditing" class="relative group">
-                <i class="fas fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors"></i>
+                <i class="fas fa-phone absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs group-focus-within:text-primary-500 transition-colors"></i>
                 <input
                   v-model="editForm.phone"
                   type="tel"
-                  class="w-full pl-12 pr-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl text-slate-700 font-bold focus:ring-4 focus:ring-primary-100 focus:border-primary-400 transition-all outline-none"
+                  class="w-full pl-10 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 font-medium focus:outline-none focus:bg-white focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all"
                   placeholder="+57 300 000 0000"
                 />
               </div>
-              <div v-else class="px-5 py-4 bg-slate-50/50 border border-slate-100 rounded-2xl">
-                <p class="text-slate-700 font-bold">{{ profileData?.phone || 'No especificado' }}</p>
+              <div v-else class="px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl">
+                <p class="text-slate-700 font-bold text-sm">{{ profileData?.phone || 'No especificado' }}</p>
               </div>
             </div>
 
             <!-- Department -->
-            <div class="space-y-2">
-              <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 ml-1">
                 Departamento
               </label>
               <div v-if="isEditing" class="relative group">
-                <i class="fas fa-building absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors"></i>
+                <i class="fas fa-building absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs group-focus-within:text-primary-500 transition-colors"></i>
                 <input
                   v-model="editForm.department"
                   type="text"
-                  class="w-full pl-12 pr-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl text-slate-700 font-bold focus:ring-4 focus:ring-primary-100 focus:border-primary-400 transition-all outline-none"
+                  class="w-full pl-10 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 font-medium focus:outline-none focus:bg-white focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all"
                   placeholder="Tu departamento"
                 />
               </div>
-              <div v-else class="px-5 py-4 bg-slate-50/50 border border-slate-100 rounded-2xl">
-                <p class="text-slate-700 font-bold">{{ profileData?.department || 'No especificado' }}</p>
+              <div v-else class="px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl">
+                <p class="text-slate-700 font-bold text-sm">{{ profileData?.department || 'No especificado' }}</p>
               </div>
             </div>
 
             <!-- Metadata (Read Only) -->
-            <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100 mt-2">
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400">
+            <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-100 mt-1">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center text-slate-400 text-xs">
                   <i class="fas fa-calendar-plus"></i>
                 </div>
                 <div>
-                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Registrado el</p>
+                  <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Registrado el</p>
                   <p class="text-slate-700 font-bold text-sm">{{ formatDate(profileData?.createdAt || '') }}</p>
                 </div>
               </div>
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center text-slate-400 text-xs">
                   <i class="fas fa-history"></i>
                 </div>
                 <div>
-                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Última actualización</p>
+                  <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Última actualización</p>
                   <p class="text-slate-700 font-bold text-sm">{{ formatDate(profileData?.updatedAt || '') }}</p>
                 </div>
               </div>
@@ -181,70 +177,70 @@
           </div>
 
           <!-- Edit Action Buttons -->
-          <div v-if="isEditing" class="flex gap-4 mt-10 justify-end pt-6 border-t border-slate-100">
+          <div v-if="isEditing" class="flex gap-2 mt-5 justify-end pt-4 border-t border-slate-100">
             <button
               @click="toggleEditMode"
-              class="px-6 py-3 text-slate-500 hover:text-slate-700 font-black text-xs uppercase tracking-widest transition-all"
+              class="btn-ghost btn-sm"
             >
               Cancelar
             </button>
             <button
               @click="updateProfile"
               :disabled="loading"
-              class="px-8 py-3.5 bg-primary-500 hover:bg-primary-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-primary-200 disabled:opacity-50"
+              class="btn-primary btn-sm"
             >
-              <i class="fas fa-save mr-2"></i>
-              {{ loading ? 'Guardando...' : 'Guardar Cambios' }}
+              <i class="fas fa-save text-[10px]"></i>
+              {{ loading ? 'Guardando...' : 'Guardar cambios' }}
             </button>
           </div>
         </div>
       </div>
 
       <!-- Security / Password (Right Column) -->
-      <div class="space-y-6">
-        <div class="bg-white/70 backdrop-blur-md rounded-3xl p-8 border border-slate-200/60 shadow-sm">
-          <h2 class="text-xl font-black text-slate-800 mb-8 flex items-center">
-            <div class="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center mr-4">
-              <i class="fas fa-shield-alt text-amber-500"></i>
+      <div class="flex flex-col gap-4">
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+          <h2 class="text-sm font-extrabold text-slate-800 mb-5 flex items-center">
+            <div class="w-8 h-8 bg-amber-50 border border-amber-100 rounded-lg flex items-center justify-center mr-3">
+              <i class="fas fa-shield-alt text-amber-500 text-xs"></i>
             </div>
             Seguridad
           </h2>
-          
-          <form @submit.prevent="updatePassword" class="space-y-5">
-            <div class="space-y-2">
-              <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+
+          <form @submit.prevent="updatePassword" class="space-y-4">
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 ml-1">
                 Contraseña Actual
               </label>
               <input
                 v-model="passwordForm.currentPassword"
                 type="password"
-                class="w-full px-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl text-slate-700 font-bold focus:ring-4 focus:ring-primary-100 focus:border-primary-400 transition-all outline-none"
+                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 font-medium focus:outline-none focus:bg-white focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all"
                 placeholder="••••••••"
                 required
               />
             </div>
             
-            <div class="space-y-2">
-              <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 ml-1">
                 Nueva Contraseña
               </label>
               <input
                 v-model="passwordForm.newPassword"
                 type="password"
-                class="w-full px-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl text-slate-700 font-bold focus:ring-4 focus:ring-primary-100 focus:border-primary-400 transition-all outline-none"
+                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 font-medium focus:outline-none focus:bg-white focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all"
                 placeholder="••••••••"
                 required
               />
             </div>
             
-            <div class="space-y-2">
-              <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 ml-1">
                 Confirmar Nueva Contraseña
               </label>
               <input
                 v-model="passwordForm.confirmPassword"
                 type="password"
-                class="w-full px-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl text-slate-700 font-bold focus:ring-4 focus:ring-primary-100 focus:border-primary-400 transition-all outline-none"
+                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 font-medium focus:outline-none focus:bg-white focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all"
                 placeholder="••••••••"
                 required
               />
@@ -253,18 +249,18 @@
             <button
               type="submit"
               :disabled="loading || !passwordForm.currentPassword || !passwordForm.newPassword || passwordForm.newPassword !== passwordForm.confirmPassword"
-              class="w-full mt-4 px-6 py-4 bg-slate-800 hover:bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg disabled:opacity-50"
+              class="btn-primary btn-sm w-full mt-2"
             >
-              <i class="fas fa-key mr-2"></i>
-              {{ loading ? 'Actualizando...' : 'Actualizar Contraseña' }}
+              <i class="fas fa-key text-[10px]"></i>
+              {{ loading ? 'Actualizando...' : 'Actualizar contraseña' }}
             </button>
           </form>
         </div>
 
         <!-- Help Box -->
-        <div class="bg-primary-50 rounded-3xl p-6 border border-primary-100">
-          <div class="flex items-start gap-4">
-            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shrink-0">
+        <div class="bg-primary-50 rounded-2xl p-4 border border-primary-100">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shrink-0 text-xs">
               <i class="fas fa-lightbulb text-primary-500"></i>
             </div>
             <div>
@@ -297,6 +293,7 @@ import AvatarSelector from '@/components/AvatarSelector.vue'
 import ProfilePhotoUploader from '@/components/ProfilePhotoUploader.vue'
 import ProfilePhotoEditor from '@/components/ProfilePhotoEditor.vue'
 import PersonAvatar from '@/components/ui/PersonAvatar.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
 import { getAvatarById, getDefaultAvatar } from '@/utils/avatarConfig'
 import { API_CONFIG } from '@/config/api'
 

@@ -1,4 +1,5 @@
 import { API_CONFIG } from '../config/api'
+import type { LinkedClientRef } from './casesService'
 
 export interface WikiExternalLink {
   _id?: string
@@ -15,6 +16,8 @@ export interface WikiArticle {
   contenido: string
   descripcion: string
   tags: string[]
+  cliente_id?: LinkedClientRef
+  proyecto_id?: string
   autor?: {
     _id: string
     name: string
@@ -44,10 +47,12 @@ export type WikiArticleInput = Partial<Omit<WikiArticle, 'archivos'>> & {
 class WikiService {
   private apiUrl = `${API_CONFIG.BASE_URL}/wiki`
 
-  async getAll(filters: { categoria?: string, search?: string } = {}): Promise<WikiArticle[]> {
+  async getAll(filters: { categoria?: string, search?: string, cliente_id?: string, proyecto_id?: string } = {}): Promise<WikiArticle[]> {
     const queryParams = new URLSearchParams()
     if (filters.categoria) queryParams.append('categoria', filters.categoria)
     if (filters.search) queryParams.append('search', filters.search)
+    if (filters.cliente_id) queryParams.append('cliente_id', filters.cliente_id)
+    if (filters.proyecto_id) queryParams.append('proyecto_id', filters.proyecto_id)
     
     const response = await fetch(`${this.apiUrl}?${queryParams}`)
     if (!response.ok) throw new Error('Error al obtener la wiki')
@@ -69,8 +74,8 @@ class WikiService {
         value.forEach(v => {
           if (v instanceof File || v instanceof Blob) formData.append('archivos', v)
         })
-      } else if (key === 'autor' && typeof value === 'object') {
-        if ((value as any)._id) formData.append('autor', (value as any)._id)
+      } else if ((key === 'autor' || key === 'cliente_id') && typeof value === 'object') {
+        if ((value as any)._id) formData.append(key, (value as any)._id)
       } else if (Array.isArray(value)) {
         value.forEach(v => formData.append(key, v))
       } else if (typeof value !== 'object' || value instanceof File || value instanceof Blob) {
@@ -103,6 +108,8 @@ class WikiService {
         value.forEach(v => {
           if (v instanceof File || v instanceof Blob) formData.append('archivos', v)
         })
+      } else if (key === 'cliente_id' && typeof value === 'object') {
+        if ((value as any)._id) formData.append(key, (value as any)._id)
       } else if (Array.isArray(value)) {
         value.forEach(v => {
           if (v instanceof File || v instanceof Blob) {

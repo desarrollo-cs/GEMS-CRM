@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-4 h-full min-h-0 motion-page">
+  <div class="flex flex-col gap-4 h-full min-h-0">
 
     <!-- Cabecera compacta -->
     <div class="flex-shrink-0 flex flex-wrap items-center justify-between gap-3">
@@ -224,7 +224,7 @@
       @click="closeModal"
     >
       <div
-        class="bg-white rounded-3xl shadow-2xl border border-slate-200/60 w-full max-w-2xl max-h-[95vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300"
+        class="bg-white rounded-2xl shadow-2xl border border-slate-200/60 w-full max-w-2xl max-h-[95vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300"
         @click.stop
       >
         <div class="flex items-center justify-between gap-4 px-5 py-3 border-b border-slate-100 bg-slate-50/30 shrink-0">
@@ -252,75 +252,115 @@
         </div>
 
         <form @submit.prevent="submitForm" class="flex flex-col min-h-0">
-          <div class="px-5 py-4 overflow-y-auto custom-scrollbar">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Nombre completo *</label>
-                <input v-model="formData.name" required placeholder="Ej: Ana Rodríguez"
-                  class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors text-sm">
+          <div class="px-5 py-4 overflow-y-auto custom-scrollbar space-y-5">
+            <!-- Perfil del colaborador (solo al editar): foto, nombre y resumen -->
+            <div v-if="showEditModal && editingMember" class="flex items-center gap-4 p-4 rounded-2xl bg-primary-50/60 border border-primary-100">
+              <UserAvatar :name="formData.name || editingMember.name" :photo="editingMember.photo" size="xl" class="rounded-2xl shrink-0" bg-gradient="bg-primary-600" />
+              <div class="min-w-0 flex-1">
+                <p class="text-base font-black text-slate-800 tracking-tight truncate">{{ formData.name || editingMember.name }}</p>
+                <p class="text-xs text-slate-500 truncate">
+                  {{ editingMember.position || roleLabel(formData.role) }}<template v-if="formData.department"> · {{ formData.department }}</template>
+                </p>
+                <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-50 text-primary-700 border border-primary-100 text-[10px] font-black uppercase tracking-wider">
+                    <i class="fas fa-id-badge text-[9px]"></i>{{ roleLabel(formData.role) }}
+                  </span>
+                  <span v-if="formData.departmentRole === 'leader'" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-100 text-[10px] font-black uppercase tracking-wider">
+                    <i class="fas fa-crown text-[9px]"></i>Líder
+                  </span>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-black uppercase tracking-wider"
+                    :class="editingMember.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-100 text-slate-500 border-slate-200'">
+                    <span class="w-1.5 h-1.5 rounded-full" :class="editingMember.isActive ? 'bg-emerald-500' : 'bg-slate-400'"></span>{{ editingMember.isActive ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </div>
               </div>
-              <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Correo electrónico *</label>
-                <input v-model="formData.email" type="email" required placeholder="nombre@empresa.com"
-                  class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors text-sm">
-              </div>
+            </div>
 
-              <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Rol *</label>
-                <CustomSelect v-model="formData.role" size="md" searchable placeholder="Selecciona un rol" :options="roleOptions" />
+            <!-- Datos del colaborador -->
+            <section>
+              <p class="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-slate-400 mb-3">
+                <i class="fas fa-address-card text-primary-400"></i>Datos del colaborador<span class="flex-1 h-px bg-slate-100"></span>
+              </p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Nombre completo *</label>
+                  <input v-model="formData.name" required placeholder="Ej: Ana Rodríguez" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all text-sm">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Correo electrónico *</label>
+                  <input v-model="formData.email" type="email" required placeholder="nombre@empresa.com" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all text-sm">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Teléfono</label>
+                  <input v-model="formData.phone" placeholder="Opcional" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all text-sm">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Departamento</label>
+                  <CustomSelect v-model="formData.department" size="md" placeholder="Sin departamento" :options="[{ value: '', label: 'Sin departamento' }, ...departmentOptions]" />
+                </div>
               </div>
-              <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Departamento</label>
-                <CustomSelect v-model="formData.department" size="md" placeholder="Sin departamento" :options="[{ value: '', label: 'Sin departamento' }, ...departmentOptions]" />
-              </div>
+            </section>
 
-              <div v-if="showCreateModal || (showEditModal && authStore.user?.role === 'admin')">
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  {{ showCreateModal ? 'Contraseña temporal *' : 'Nueva contraseña' }}
-                </label>
-                <input v-model="formData.password" type="password" :required="showCreateModal" :placeholder="showCreateModal ? 'Mínimo 6 caracteres' : 'Dejar vacío para no cambiarla'"
-                  class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors text-sm">
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Teléfono</label>
-                <input v-model="formData.phone" placeholder="Opcional"
-                  class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors text-sm">
-              </div>
+            <!-- Acceso y permisos -->
+            <section>
+              <p class="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-slate-400 mb-3">
+                <i class="fas fa-shield-halved text-primary-400"></i>Acceso y permisos<span class="flex-1 h-px bg-slate-100"></span>
+              </p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Rol *</label>
+                  <CustomSelect v-model="formData.role" size="md" searchable placeholder="Selecciona un rol" :options="roleOptions" />
+                </div>
+                <div>
+                  <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Rol en el departamento</label>
+                  <div class="seg w-full">
+                    <button type="button" class="flex-1 flex items-center justify-center gap-1.5" @click="formData.departmentRole = 'member'" :aria-pressed="formData.departmentRole !== 'leader'">
+                      <i class="fas fa-user text-[10px]"></i> Miembro
+                    </button>
+                    <button type="button" class="flex-1 flex items-center justify-center gap-1.5" @click="formData.departmentRole = 'leader'" :aria-pressed="formData.departmentRole === 'leader'">
+                      <i class="fas fa-crown text-[10px] text-amber-500"></i> Líder
+                    </button>
+                  </div>
+                </div>
 
-              <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Rol en el departamento</label>
-                <div class="seg w-full">
-                  <button type="button" class="flex-1 flex items-center justify-center gap-1.5" @click="formData.departmentRole = 'member'" :aria-pressed="formData.departmentRole !== 'leader'">
-                    <i class="fas fa-user text-[10px]"></i> Miembro
-                  </button>
-                  <button type="button" class="flex-1 flex items-center justify-center gap-1.5" @click="formData.departmentRole = 'leader'" :aria-pressed="formData.departmentRole === 'leader'">
-                    <i class="fas fa-crown text-[10px] text-amber-500"></i> Líder
+                <div v-if="showCreateModal || canChangePassword">
+                  <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
+                    {{ showCreateModal ? 'Contraseña temporal *' : 'Nueva contraseña' }}
+                  </label>
+                  <div class="relative">
+                    <input v-model="formData.password" :type="showPassword ? 'text' : 'password'" :required="showCreateModal" autocomplete="new-password"
+                      :placeholder="showCreateModal ? 'Mínimo 6 caracteres' : 'Dejar vacío para no cambiarla'" class="w-full pl-4 pr-10 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all text-sm">
+                    <button type="button" @click="showPassword = !showPassword" :title="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                      class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors">
+                      <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="text-xs"></i>
+                    </button>
+                  </div>
+                  <p v-if="showEditModal" class="text-[10px] text-slate-400 mt-1.5">Mínimo 6 caracteres · el colaborador la usará en su próximo ingreso.</p>
+                </div>
+
+                <div>
+                  <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Permiso especial</label>
+                  <button
+                    type="button"
+                    role="switch"
+                    :aria-checked="formData.selfApproval"
+                    @click="formData.selfApproval = !formData.selfApproval"
+                    title="Amplía plazos y elimina tareas sin pedir autorización; cada acción queda registrada en Autorizaciones. Solo un administrador puede cambiarlo."
+                    class="w-full h-[42px] px-3 rounded-lg border text-left transition-colors flex items-center gap-2.5"
+                    :class="formData.selfApproval ? 'bg-primary-50 border-primary-200' : 'bg-slate-50 border-slate-200 hover:border-slate-300'"
+                  >
+                    <i class="fas fa-bolt text-xs w-4 text-center shrink-0" :class="formData.selfApproval ? 'text-primary-600' : 'text-slate-400'"></i>
+                    <span class="flex-1 min-w-0 leading-tight">
+                      <span class="block text-xs font-bold" :class="formData.selfApproval ? 'text-primary-700' : 'text-slate-700'">Autoaprobación</span>
+                      <span class="block text-[10px] text-slate-400 truncate">Sin pedir permiso · queda registrado</span>
+                    </span>
+                    <span class="relative w-8 h-[18px] rounded-full shrink-0 transition-colors" :class="formData.selfApproval ? 'bg-primary-600' : 'bg-slate-300'">
+                      <span class="absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform" :class="formData.selfApproval ? 'translate-x-3.5' : 'translate-x-0'"></span>
+                    </span>
                   </button>
                 </div>
               </div>
-
-              <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Permiso especial</label>
-                <button
-                  type="button"
-                  role="switch"
-                  :aria-checked="formData.selfApproval"
-                  @click="formData.selfApproval = !formData.selfApproval"
-                  title="Amplía plazos y elimina tareas sin pedir autorización; cada acción queda registrada en Autorizaciones. Solo un administrador puede cambiarlo."
-                  class="w-full h-[42px] px-3 rounded-lg border text-left transition-colors flex items-center gap-2.5"
-                  :class="formData.selfApproval ? 'bg-primary-50 border-primary-200' : 'bg-slate-50 border-slate-200 hover:border-slate-300'"
-                >
-                  <i class="fas fa-bolt text-xs w-4 text-center shrink-0" :class="formData.selfApproval ? 'text-primary-600' : 'text-slate-400'"></i>
-                  <span class="flex-1 min-w-0 leading-tight">
-                    <span class="block text-xs font-bold" :class="formData.selfApproval ? 'text-primary-700' : 'text-slate-700'">Autoaprobación</span>
-                    <span class="block text-[10px] text-slate-400 truncate">Sin pedir permiso · queda registrado</span>
-                  </span>
-                  <span class="relative w-8 h-[18px] rounded-full shrink-0 transition-colors" :class="formData.selfApproval ? 'bg-primary-600' : 'bg-slate-300'">
-                    <span class="absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform" :class="formData.selfApproval ? 'translate-x-3.5' : 'translate-x-0'"></span>
-                  </span>
-                </button>
-              </div>
-            </div>
+            </section>
           </div>
 
           <div class="flex items-center justify-end gap-3 px-5 py-3 border-t border-slate-100 bg-slate-50/30 shrink-0">
@@ -404,6 +444,11 @@ const departmentOptions = [
 ]
 
 const editingMember = ref<TeamMember | null>(null)
+const showPassword = ref(false)
+// Admin y soporte cambian contraseñas; soporte no la de un administrador (el backend también lo exige)
+const canChangePassword = computed(() => showEditModal.value && authStore.isSupport &&
+  (authStore.isAdmin || editingMember.value?.role !== 'admin'))
+const roleLabel = (role: string) => roleOptions.value.find(r => r.value === role)?.label || role || 'Sin rol'
 const pagination = reactive({
   page: 1,
   limit: 500,
@@ -560,7 +605,7 @@ const submitForm = async () => {
       await teamStore.updateMember(editingMember.value._id!, updateData)
       
       // Si se proporcionó una contraseña y el usuario es admin, actualizarla
-      if (password && authStore.user?.role === 'admin') {
+      if (password && canChangePassword.value) {
         if (password.length < 6) {
           showError('Validación', 'La nueva contraseña debe tener al menos 6 caracteres')
           isSubmitting.value = false

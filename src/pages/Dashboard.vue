@@ -45,14 +45,17 @@
           <StatTile v-if="summary.approvals.canReview" label="Por aprobar" :value="summary.approvals.toReview" to="/aprobaciones" />
         </div>
 
-        <!-- Cuerpo: mi día + un bloque secundario según rol -->
-        <div class="grid grid-cols-1 gap-5" :class="summary.team ? 'xl:grid-cols-5' : 'xl:grid-cols-3'">
-          <div class="flex flex-col gap-5" :class="summary.team ? 'xl:col-span-3' : 'xl:col-span-2'">
+        <!-- Sin equipo a cargo: las sugerencias van a lo ancho y Mi día ocupa todo -->
+        <AIInsightsWidget v-if="!summary.team" :summary="summary" />
+
+        <!-- Cuerpo: mi día + carga del equipo, las dos columnas a la misma altura -->
+        <div class="grid grid-cols-1 gap-5 items-stretch" :class="summary.team ? 'xl:grid-cols-5' : ''">
+          <div class="flex flex-col min-h-0" :class="summary.team ? 'xl:col-span-3' : ''">
             <MyDayList :lists="summary.lists" @open="openActivity" />
           </div>
-          <div class="flex flex-col gap-5" :class="summary.team ? 'xl:col-span-2' : ''">
+          <div v-if="summary.team" class="flex flex-col gap-5 min-h-0 xl:col-span-2">
             <AIInsightsWidget :summary="summary" />
-            <TeamLoad v-if="summary.team" :team="summary.team" :viewer-id="summary.viewer.id" />
+            <TeamLoad :team="summary.team" :viewer-id="summary.viewer.id" />
           </div>
         </div>
 

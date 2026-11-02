@@ -1,66 +1,66 @@
 <template>
-  <div class="h-[100dvh] max-h-[100dvh] bg-transparent text-white">
-    <div class="h-[100dvh] p-4 sm:p-6">
-      <div class="grid grid-cols-1 lg:grid-cols-[320px,1fr] h-full rounded-2xl border border-white/15 bg-white/5 backdrop-blur-sm overflow-hidden">
+  <div class="h-full min-h-0 flex flex-col">
+    <div class="flex-1 min-h-0 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-[300px,1fr]">
       <!-- Sidebar (desktop) -->
-  <aside class="hidden lg:flex flex-col border-r border-white/10 bg-white/5 backdrop-blur-sm">
-        <div class="px-4 py-3 border-b border-white/10">
-          <div class="flex items-center justify-between">
-            <h2 class="font-semibold">Conversaciones</h2>
+      <aside class="hidden lg:flex flex-col min-h-0 bg-slate-50/70 border-r border-slate-200">
+        <div class="px-4 py-3 border-b border-slate-200">
+          <div class="flex items-center justify-between gap-2">
+            <h2 class="text-sm font-extrabold text-slate-800">Conversaciones</h2>
             <div class="flex items-center gap-2">
-              <div v-if="!chatStore.isConnected" class="text-xs text-yellow-300">Conectando…</div>
-              <div v-else class="text-xs text-emerald-300">Conectado</div>
-              <button @click="showCreateRoom = true" class="p-2 rounded-md border border-white/10 bg-white/5 hover:bg-white/10" title="Nuevo chat">
+              <div v-if="!chatStore.isConnected" class="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-amber-600"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Conectando…</div>
+              <div v-else class="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-emerald-600"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Conectado</div>
+              <button @click="showCreateRoom = true" class="w-7 h-7 rounded-lg bg-primary-600 hover:bg-primary-700 text-white flex items-center justify-center shadow-sm transition-colors shrink-0" title="Nuevo chat">
                 <PlusIcon class="w-4 h-4" />
               </button>
             </div>
           </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-3 custom-scrollbar">
-          <div v-if="chatStore.isLoading" class="py-2 opacity-30">
+        <div class="flex-1 min-h-0 overflow-y-auto p-3 custom-scrollbar">
+          <div v-if="chatStore.isLoading" class="py-2 opacity-60">
             <Skeleton preset="list" :rows="5" />
           </div>
 
-          <div v-else-if="chatStore.chatRooms.length === 0" class="py-10 text-center">
-            <ChatBubbleLeftEllipsisIcon class="w-12 h-12 text-purple-400/70 mx-auto mb-2" />
-            <p class="text-sm text-gray-300 mb-3">No hay conversaciones</p>
-            <button @click="showCreateRoom = true" class="text-sm rounded-md px-3 py-1.5 bg-white/10 border border-white/10 hover:bg-white/15">Crear conversación</button>
+          <div v-else-if="chatStore.chatRooms.length === 0" class="empty-state empty-state--sm">
+            <div class="empty-state__icon"><i class="fas fa-comments"></i></div>
+            <p class="empty-state__title">No hay conversaciones</p>
+            <p class="empty-state__text">Crea la primera para empezar a chatear.</p>
+            <button @click="showCreateRoom = true" class="btn-secondary btn-sm mt-1">Crear conversación</button>
           </div>
 
-          <ul v-else class="space-y-2">
+          <ul v-else class="space-y-1">
             <li v-for="room in chatStore.chatRooms" :key="room._id">
               <button
                 @click="selectRoom(room)"
-                class="w-full text-left flex items-center gap-3 rounded-xl border px-3 py-3 transition-colors"
+                class="w-full text-left flex items-center gap-3 px-3 py-2 rounded-xl border transition-all"
                 :class="[
                   currentRoom?._id === room._id
-                    ? 'bg-white/10 border-purple-400/40'
-                    : 'bg-white/5 border-white/10 hover:bg-white/10'
+                    ? 'bg-white shadow-sm border-primary-100'
+                    : 'border-transparent hover:bg-white hover:shadow-sm'
                 ]"
               >
                 <div
-                  class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                  :class="room.type === 'direct' ? 'bg-gradient-to-br from-emerald-500 to-teal-500' : room.type === 'team' ? 'bg-gradient-to-br from-blue-500 to-indigo-500' : 'bg-gradient-to-br from-purple-500 to-pink-500'"
+                  class="w-9 h-9 rounded-lg border flex items-center justify-center shrink-0"
+                  :class="room.type === 'direct' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : room.type === 'team' ? 'bg-primary-50 border-primary-100 text-primary-600' : 'bg-slate-100 border-slate-200 text-slate-600'"
                 >
-                  <UserIcon v-if="room.type === 'direct'" class="w-5 h-5" />
-                  <UsersIcon v-else-if="room.type === 'team'" class="w-5 h-5" />
-                  <UserGroupIcon v-else class="w-5 h-5" />
+                  <UserIcon v-if="room.type === 'direct'" class="w-4 h-4" />
+                  <UsersIcon v-else-if="room.type === 'team'" class="w-4 h-4" />
+                  <UserGroupIcon v-else class="w-4 h-4" />
                 </div>
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center justify-between gap-2">
-                    <p class="font-medium truncate">{{ room.name }}</p>
-                    <span class="text-xs text-gray-400">{{ formatTime(room.lastActivity) }}</span>
+                    <p class="text-sm font-bold text-slate-800 truncate">{{ room.name }}</p>
+                    <span class="text-[10px] text-slate-400 shrink-0">{{ formatTime(room.lastActivity) }}</span>
                   </div>
                   <div class="flex items-center justify-between gap-2">
-                    <p class="text-xs text-gray-400 whitespace-nowrap">👥 {{ room.participants.length }} · <span :class="onlineCount(room) > 0 ? 'text-emerald-300' : 'text-gray-400'">● {{ onlineCount(room) }}</span></p>
-                    <span v-if="getUnreadCount(room._id) > 0" class="text-[10px] rounded-full bg-pink-600 px-2 py-0.5 notification-pulse">{{ getUnreadCount(room._id) }}</span>
+                    <p class="text-[11px] text-slate-500 whitespace-nowrap"><i class="fas fa-users text-[10px]"></i> {{ room.participants.length }} · <span :class="onlineCount(room) > 0 ? 'text-emerald-600' : 'text-slate-400'"><i class="fas fa-circle text-[6px]"></i> {{ onlineCount(room) }}</span></p>
+                    <span v-if="getUnreadCount(room._id) > 0" class="bg-primary-600 text-white text-[10px] font-black rounded-full px-1.5 notification-pulse">{{ getUnreadCount(room._id) }}</span>
                   </div>
                 </div>
                 <button
                   v-if="authStore.isAdmin"
                   @click.stop="confirmDeleteRoom(room._id)"
-                  class="ml-1 p-2 rounded-md hover:bg-red-500/10 text-red-300"
+                  class="ml-1 w-8 h-8 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 flex items-center justify-center transition-colors shrink-0"
                   title="Eliminar chat"
                 >
                   <TrashIcon class="w-4 h-4" />
@@ -71,111 +71,115 @@
         </div>
       </aside>
 
-    <!-- Main panel -->
-  <section class="flex flex-col min-h-0 bg-white/0">
+      <!-- Main panel -->
+      <section class="flex flex-col min-h-0 min-w-0 bg-white">
         <!-- Room header or empty state header -->
-  <div class="px-4 sm:px-6 py-3 border-b border-white/10 bg-white/5 backdrop-blur-sm">
-          <div v-if="currentRoom" class="flex items-center justify-between">
+        <div class="px-4 py-3 border-b border-slate-100">
+          <div v-if="currentRoom" class="flex items-center justify-between gap-3">
             <div class="flex items-center gap-3 min-w-0">
               <div
-                class="w-11 h-11 rounded-lg flex items-center justify-center shrink-0"
-                :class="currentRoom.type === 'direct' ? 'bg-gradient-to-br from-emerald-500 to-teal-500' : currentRoom.type === 'team' ? 'bg-gradient-to-br from-blue-500 to-indigo-500' : 'bg-gradient-to-br from-purple-500 to-pink-500'"
+                class="w-10 h-10 rounded-xl border flex items-center justify-center shrink-0"
+                :class="currentRoom.type === 'direct' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : currentRoom.type === 'team' ? 'bg-primary-50 border-primary-100 text-primary-600' : 'bg-slate-100 border-slate-200 text-slate-600'"
               >
-                <UserIcon v-if="currentRoom.type === 'direct'" class="w-6 h-6" />
-                <UsersIcon v-else-if="currentRoom.type === 'team'" class="w-6 h-6" />
-                <UserGroupIcon v-else class="w-6 h-6" />
+                <UserIcon v-if="currentRoom.type === 'direct'" class="w-5 h-5" />
+                <UsersIcon v-else-if="currentRoom.type === 'team'" class="w-5 h-5" />
+                <UserGroupIcon v-else class="w-5 h-5" />
               </div>
               <div class="min-w-0">
-                <h3 class="font-semibold truncate">{{ currentRoom.name }}</h3>
-                <div class="text-xs text-gray-400 flex items-center gap-2">
-                  <span class="whitespace-nowrap">👥 {{ currentRoom.participants.length }}</span>
-                  <span class="whitespace-nowrap" :class="onlineCount(currentRoom) > 0 ? 'text-emerald-300' : 'text-gray-400'">● {{ onlineCount(currentRoom) }}</span>
-                  <span v-if="typingUsers.length > 0" class="ml-2 text-purple-300">✍️ {{ typingUsers.join(', ') }} escribiendo…</span>
+                <h3 class="text-sm font-extrabold text-slate-800 truncate">{{ currentRoom.name }}</h3>
+                <div class="text-[11px] text-slate-500 flex items-center gap-2">
+                  <span class="whitespace-nowrap"><i class="fas fa-users text-[10px]"></i> {{ currentRoom.participants.length }}</span>
+                  <span class="whitespace-nowrap" :class="onlineCount(currentRoom) > 0 ? 'text-emerald-600' : 'text-slate-400'"><i class="fas fa-circle text-[6px]"></i> {{ onlineCount(currentRoom) }}</span>
+                  <span v-if="typingUsers.length > 0" class="ml-2 text-primary-600 font-semibold truncate"><i class="fas fa-pen"></i> {{ typingUsers.join(', ') }} escribiendo…</span>
                 </div>
               </div>
             </div>
-            <button class="p-2 rounded-md hover:bg-white/10" @click="showRoomInfo = true" title="Información del chat">
-              <InformationCircleIcon class="w-6 h-6" />
+            <button class="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 flex items-center justify-center transition-colors shrink-0" @click="showRoomInfo = true" title="Información del chat">
+              <InformationCircleIcon class="w-5 h-5" />
             </button>
           </div>
           <div v-else class="flex items-center justify-between">
-            <div class="text-sm text-gray-300">Selecciona una conversación</div>
-            <button class="lg:hidden p-2 rounded-md hover:bg-white/10" @click="showRoomsMobile = true" title="Abrir conversaciones">
-              <ChatBubbleLeftRightIcon class="w-6 h-6" />
+            <div class="text-sm font-extrabold text-slate-800">Selecciona una conversación</div>
+            <button class="lg:hidden w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 flex items-center justify-center transition-colors" @click="showRoomsMobile = true" title="Abrir conversaciones">
+              <ChatBubbleLeftRightIcon class="w-5 h-5" />
             </button>
           </div>
         </div>
 
-  <!-- Messages -->
+        <!-- Messages -->
         <div
           class="relative flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-4 custom-scrollbar"
           ref="messagesContainer"
           @scroll="onMessagesScroll"
         >
-          <div v-if="!currentRoom" class="h-full grid place-items-center">
-            <div class="text-center">
-              <ChatBubbleLeftEllipsisIcon class="w-16 h-16 text-purple-400/70 mx-auto mb-3" />
-              <p class="text-gray-300">Elige un chat para empezar</p>
+          <div v-if="!currentRoom" class="h-full flex items-center justify-center">
+            <div class="empty-state w-full max-w-md">
+              <div class="empty-state__icon"><i class="fas fa-comments"></i></div>
+              <p class="empty-state__title">Elige un chat para empezar</p>
+              <p class="empty-state__text">Selecciona una conversación de la lista o crea una nueva.</p>
             </div>
           </div>
 
           <div v-else>
             <!-- Loading messages -->
-            <div v-if="chatStore.isLoading" class="py-4 opacity-30"><Skeleton preset="chat" :rows="6" /></div>
+            <div v-if="chatStore.isLoading" class="py-4 opacity-60"><Skeleton preset="chat" :rows="6" /></div>
 
             <!-- Empty state -->
-            <div v-else-if="currentMessages.length === 0" class="py-16 text-center text-gray-300 motion-content-in">
-              <ChatBubbleLeftEllipsisIcon class="w-10 h-10 text-purple-400/50 mx-auto mb-2" />
-              <p class="text-sm">Sin mensajes aún</p>
-              <p class="text-xs text-gray-500 mt-1">Escribe el primero abajo.</p>
+            <div v-else-if="currentMessages.length === 0" class="h-full flex items-center justify-center motion-content-in">
+              <div class="empty-state w-full max-w-md">
+                <div class="empty-state__icon"><i class="fas fa-comment-dots"></i></div>
+                <p class="empty-state__title">Sin mensajes aún</p>
+                <p class="empty-state__text">Escribe el primero abajo.</p>
+              </div>
             </div>
 
             <!-- Messages list -->
-            <div v-else class="space-y-4">
-        <div
+            <div v-else class="space-y-3">
+              <div
                 v-for="message in currentMessages"
                 :key="message._id"
                 class="flex"
                 :class="isOwnMessage(message) ? 'justify-end' : 'justify-start'"
               >
                 <div
-                  class="max-w-[80%] rounded-xl border px-4 py-3"
-          :class="isOwnMessage(message) ? 'bg-gradient-to-br from-purple-600 to-pink-600 border-pink-500 text-white' : 'bg-slate-800 border-slate-700 text-white'"
+                  class="max-w-[80%] px-4 py-2.5 text-sm"
+                  :class="isOwnMessage(message) ? 'bg-primary-600 text-white rounded-2xl rounded-br-md' : 'bg-slate-100 text-slate-800 rounded-2xl rounded-bl-md'"
                 >
-                  <div v-if="!isOwnMessage(message)" class="mb-1 text-xs text-purple-200 font-medium">
+                  <div v-if="!isOwnMessage(message)" class="mb-0.5 text-[10px] font-bold text-slate-500">
                     {{ message.sender.name }}
                   </div>
                   <div class="whitespace-pre-wrap break-words">{{ message.content }}</div>
-          <div v-if="message.attachments && message.attachments.length" class="mt-3 space-y-2">
+                  <div v-if="message.attachments && message.attachments.length" class="mt-2 space-y-1.5">
                     <a
                       v-for="a in message.attachments"
                       :key="a.filename"
                       :href="a.url"
                       target="_blank"
-            class="flex items-center gap-3 rounded-lg border border-slate-600 bg-slate-900 hover:bg-slate-800 px-3 py-2 text-sm"
+                      class="flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs transition-colors"
+                      :class="isOwnMessage(message) ? 'bg-primary-700/60 border-primary-500 text-white hover:bg-primary-700' : 'bg-white border-slate-200 text-slate-700 hover:border-primary-200'"
                     >
-                      <DocumentIcon class="w-5 h-5" />
+                      <DocumentIcon class="w-4 h-4 shrink-0" />
                       <span class="truncate">{{ a.originalname }}</span>
-                      <span class="text-xs text-gray-400">{{ formatFileSize(a.size) }}</span>
+                      <span class="text-[10px] opacity-70 shrink-0">{{ formatFileSize(a.size) }}</span>
                     </a>
                   </div>
-                  <div class="mt-2 flex items-center gap-2 text-xs text-white/70">
-                    <span :title="formatFullDateTime(message.createdAt)">🕒 {{ formatTimeShort(message.createdAt) }}</span>
-                    <span v-if="message.edited" class="text-yellow-300">· editado</span>
+                  <div class="mt-1 flex items-center gap-2 text-[10px]" :class="isOwnMessage(message) ? 'text-primary-100' : 'text-slate-400'">
+                    <span :title="formatFullDateTime(message.createdAt)"><i class="fas fa-clock"></i> {{ formatTimeShort(message.createdAt) }}</span>
+                    <span v-if="message.edited" class="italic">· editado</span>
                     <button
                       v-if="isOwnMessage(message)"
                       @click="startEdit(message)"
-                      class="ml-2 opacity-70 hover:opacity-100 p-1 rounded hover:bg-white/10"
+                      class="ml-1 opacity-70 hover:opacity-100 p-0.5 rounded hover:bg-primary-700 transition-colors"
                       title="Editar"
                     >
-                      <PencilIcon class="w-4 h-4" />
+                      <PencilIcon class="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
               </div>
 
               <!-- Typing indicator -->
-              <div v-if="typingUsers.length > 0" class="text-sm text-purple-300">✍️ {{ typingUsers.join(', ') }} escribiendo…</div>
+              <div v-if="typingUsers.length > 0" class="text-xs font-semibold text-primary-600"><i class="fas fa-pen"></i> {{ typingUsers.join(', ') }} escribiendo…</div>
 
               <!-- Pending optimistic -->
               <div
@@ -183,48 +187,48 @@
                 :key="p.id"
                 class="flex justify-end"
               >
-                <div class="max-w-[80%] rounded-xl border px-4 py-3 bg-purple-600 border-purple-500 text-white">
+                <div class="max-w-[80%] px-4 py-2.5 text-sm bg-primary-500 text-white rounded-2xl rounded-br-md opacity-80">
                   <div class="whitespace-pre-wrap break-words">{{ p.content }}</div>
-                  <div class="mt-1 text-xs text-white/70">🕒 {{ formatTimeShort(p.createdAt) }} · Enviando…</div>
+                  <div class="mt-1 text-[10px] text-primary-100"><i class="fas fa-clock"></i> {{ formatTimeShort(p.createdAt) }} · Enviando…</div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Scroll edge overlays -->
-          <div v-if="!atTop" class="pointer-events-none absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-purple-500/15 to-transparent"></div>
-          <div v-if="!atBottom" class="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-pink-500/15 to-transparent"></div>
+          <div v-if="!atTop" class="pointer-events-none absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-white to-transparent"></div>
+          <div v-if="!atBottom" class="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-white to-transparent"></div>
 
           <!-- Scroll to bottom -->
           <button
             v-if="!atBottom"
             @click="scrollToBottom"
-            class="absolute bottom-4 right-4 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 px-3 py-2 text-sm shadow"
+            class="absolute bottom-4 right-4 btn-primary btn-sm !rounded-full shadow-md"
             title="Bajar al final"
           >
-            <div class="flex items-center gap-2"><ArrowDownIcon class="w-5 h-5" /><span class="hidden sm:inline">Bajar</span></div>
+            <div class="flex items-center gap-2"><ArrowDownIcon class="w-4 h-4" /><span class="hidden sm:inline">Bajar</span></div>
           </button>
         </div>
 
         <!-- Input -->
-  <div class="border-t border-white/10 bg-white/5 backdrop-blur-sm px-4 sm:px-6 py-3">
-          <div v-if="editingMessage" class="mb-2 flex items-center justify-between rounded-md bg-yellow-500/10 border border-yellow-500/40 px-3 py-2 text-yellow-200">
-            <div class="text-sm">✏️ Editando mensaje — Enter para guardar, Esc para cancelar</div>
-            <button class="p-1 rounded hover:bg-yellow-500/20" @click="cancelEdit" title="Cancelar">
-              <XMarkIcon class="w-5 h-5" />
+        <div class="border-t border-slate-100 p-3">
+          <div v-if="editingMessage" class="mb-2 flex items-center justify-between rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 text-amber-800">
+            <div class="text-xs font-semibold"><i class="fas fa-pen"></i> Editando mensaje — Enter para guardar, Esc para cancelar</div>
+            <button class="w-7 h-7 rounded-lg hover:bg-amber-100 flex items-center justify-center transition-colors" @click="cancelEdit" title="Cancelar">
+              <XMarkIcon class="w-4 h-4" />
             </button>
           </div>
 
-          <div class="flex items-end gap-2">
+          <div class="flex items-center gap-2">
             <!-- Emoji picker teleport -->
             <teleport to="body">
               <div
                 v-if="showEmojiPicker"
                 :style="{ position: 'fixed', top: emojiPos.top + 'px', left: emojiPos.left + 'px', zIndex: 50 }"
-                class="rounded-md border border-white/10 bg-slate-900/95 p-2 shadow-xl flex flex-wrap gap-1 w-56"
+                class="rounded-xl border border-slate-200 bg-white p-2 shadow-xl flex flex-wrap gap-1 w-56"
                 data-emoji-picker
               >
-                <button v-for="e in emojis" :key="e" class="px-1 py-1 hover:bg-white/10 rounded" @click.prevent="insertEmoji(e)">{{ e }}</button>
+                <button v-for="e in emojis" :key="e" class="px-1 py-1 hover:bg-slate-100 rounded-md" @click.prevent="insertEmoji(e)">{{ e }}</button>
               </div>
             </teleport>
 
@@ -236,55 +240,54 @@
                 @keydown.escape.prevent="cancelEdit"
                 @input="handleTyping"
                 :placeholder="editingMessage ? 'Editar mensaje…' : 'Escribe un mensaje…'"
-                class="w-full rounded-lg bg-white/5 border border-white/10 backdrop-blur-sm px-4 py-3 outline-none focus:border-purple-400"
+                class="w-full h-9 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all"
               />
             </div>
-            <button @click="toggleEmojiPicker" class="p-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10" title="Emojis">😊</button>
+            <button @click="toggleEmojiPicker" class="w-9 h-9 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 flex items-center justify-center transition-colors shrink-0" title="Emojis"><i class="fas fa-face-smile"></i></button>
             <button
               @click="editingMessage ? saveEdit() : sendMessage()"
               :disabled="!newMessage.trim()"
-              class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-3 disabled:opacity-50"
+              class="btn-primary btn-sm !px-3 h-9 shrink-0"
             >
-              <PaperAirplaneIcon v-if="!editingMessage" class="w-5 h-5" />
-              <CheckIcon v-else class="w-5 h-5" />
+              <PaperAirplaneIcon v-if="!editingMessage" class="w-4 h-4" />
+              <CheckIcon v-else class="w-4 h-4" />
             </button>
           </div>
         </div>
       </section>
-      </div>
     </div>
 
     <!-- Mobile drawer for rooms -->
     <div v-if="showRoomsMobile" class="fixed inset-0 z-50 lg:hidden">
-      <div class="absolute inset-0 bg-black/40" @click="showRoomsMobile = false"></div>
-  <div class="absolute inset-y-0 left-0 w-[86%] max-w-sm bg-white/10 backdrop-blur-md border-r border-white/10 shadow-xl flex flex-col">
-        <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between">
-          <h2 class="font-semibold">Conversaciones</h2>
-          <button class="p-2 rounded hover:bg-white/10" @click="showRoomsMobile = false" title="Cerrar">
-            <XMarkIcon class="w-6 h-6" />
+      <div class="absolute inset-0 bg-slate-900/40" @click="showRoomsMobile = false"></div>
+      <div class="absolute inset-y-0 left-0 w-[86%] max-w-sm bg-white border-r border-slate-200 shadow-xl flex flex-col">
+        <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+          <h2 class="text-sm font-extrabold text-slate-800">Conversaciones</h2>
+          <button class="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 flex items-center justify-center transition-colors" @click="showRoomsMobile = false" title="Cerrar">
+            <XMarkIcon class="w-5 h-5" />
           </button>
         </div>
-        <div class="flex-1 overflow-y-auto p-3 custom-scrollbar">
-          <ul class="space-y-2">
+        <div class="flex-1 min-h-0 overflow-y-auto p-3 custom-scrollbar bg-slate-50/70">
+          <ul class="space-y-1">
             <li v-for="room in chatStore.chatRooms" :key="room._id">
               <button
                 @click="selectRoom(room); showRoomsMobile = false"
-                class="w-full text-left flex items-center gap-3 rounded-xl border px-3 py-3 bg-white/5 border-white/10 hover:bg-white/10"
+                class="w-full text-left flex items-center gap-3 px-3 py-2 rounded-xl border border-transparent hover:bg-white hover:shadow-sm transition-all"
               >
                 <div
-                  class="w-10 h-10 rounded-lg flex items-center justify-center"
-                  :class="room.type === 'direct' ? 'bg-gradient-to-br from-emerald-500 to-teal-500' : room.type === 'team' ? 'bg-gradient-to-br from-blue-500 to-indigo-500' : 'bg-gradient-to-br from-purple-500 to-pink-500'"
+                  class="w-9 h-9 rounded-lg border flex items-center justify-center shrink-0"
+                  :class="room.type === 'direct' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : room.type === 'team' ? 'bg-primary-50 border-primary-100 text-primary-600' : 'bg-slate-100 border-slate-200 text-slate-600'"
                 >
-                  <UserIcon v-if="room.type === 'direct'" class="w-5 h-5" />
-                  <UsersIcon v-else-if="room.type === 'team'" class="w-5 h-5" />
-                  <UserGroupIcon v-else class="w-5 h-5" />
+                  <UserIcon v-if="room.type === 'direct'" class="w-4 h-4" />
+                  <UsersIcon v-else-if="room.type === 'team'" class="w-4 h-4" />
+                  <UserGroupIcon v-else class="w-4 h-4" />
                 </div>
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center justify-between gap-2">
-                    <p class="font-medium truncate">{{ room.name }}</p>
-                    <span class="text-xs text-gray-400">{{ formatTime(room.lastActivity) }}</span>
+                    <p class="text-sm font-bold text-slate-800 truncate">{{ room.name }}</p>
+                    <span class="text-[10px] text-slate-400 shrink-0">{{ formatTime(room.lastActivity) }}</span>
                   </div>
-                  <p class="text-xs text-gray-400 truncate">👥 {{ room.participants.length }} participante{{ room.participants.length !== 1 ? 's' : '' }}</p>
+                  <p class="text-[11px] text-slate-500 truncate"><i class="fas fa-users text-[10px]"></i> {{ room.participants.length }} participante{{ room.participants.length !== 1 ? 's' : '' }}</p>
                 </div>
               </button>
             </li>
@@ -295,7 +298,7 @@
 
     <!-- Mobile FAB: create room -->
     <button
-      class="lg:hidden fixed bottom-5 right-5 z-40 rounded-full p-4 shadow-xl bg-gradient-to-r from-purple-600 to-pink-600"
+      class="lg:hidden fixed bottom-5 right-5 z-40 w-12 h-12 rounded-full bg-primary-600 hover:bg-primary-700 text-white shadow-lg flex items-center justify-center transition-colors"
       title="Nuevo chat"
       @click="showCreateRoom = true"
     >
@@ -306,37 +309,37 @@
 
     <!-- Room Info Modal -->
     <div v-if="showRoomInfo && currentRoom" class="fixed inset-0 z-50 flex items-center justify-center">
-      <div class="absolute inset-0 bg-black/50" @click="showRoomInfo = false"></div>
-      <div class="relative bg-slate-900 rounded-xl border border-white/10 shadow-2xl w-full max-w-md mx-4">
+      <div class="absolute inset-0 bg-slate-900/40" @click="showRoomInfo = false"></div>
+      <div class="relative bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-md mx-4">
         <div class="p-5">
           <div class="flex items-center justify-between mb-3">
-            <h3 class="text-lg font-semibold">Información del chat</h3>
-            <button @click="showRoomInfo = false" class="p-2 rounded hover:bg-white/10"><XMarkIcon class="w-6 h-6" /></button>
+            <h3 class="text-sm font-extrabold text-slate-800">Información del chat</h3>
+            <button @click="showRoomInfo = false" class="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 flex items-center justify-center transition-colors"><XMarkIcon class="w-5 h-5" /></button>
           </div>
           <div class="space-y-4 text-sm">
             <div>
-              <div class="text-gray-400">Nombre</div>
-              <div class="font-medium">{{ currentRoom.name }}</div>
+              <div class="text-[10px] font-black uppercase tracking-wider text-slate-400">Nombre</div>
+              <div class="font-semibold text-slate-800">{{ currentRoom.name }}</div>
             </div>
             <div v-if="currentRoom.description">
-              <div class="text-gray-400">Descripción</div>
-              <div>{{ currentRoom.description }}</div>
+              <div class="text-[10px] font-black uppercase tracking-wider text-slate-400">Descripción</div>
+              <div class="text-slate-700">{{ currentRoom.description }}</div>
             </div>
             <div>
-              <div class="text-gray-400">Participantes ({{ currentRoom.participants.length }})</div>
-              <div class="mt-2 space-y-2 max-h-56 overflow-y-auto custom-scrollbar">
-                <div v-for="p in currentRoom.participants" :key="p._id" class="flex items-center gap-3 rounded-md bg-white/5 border border-white/10 px-3 py-2">
-                  <div class="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-                    <span class="text-xs font-semibold">{{ p.name.charAt(0).toUpperCase() }}</span>
+              <div class="text-[10px] font-black uppercase tracking-wider text-slate-400">Participantes ({{ currentRoom.participants.length }})</div>
+              <div class="mt-2 space-y-1.5 max-h-56 overflow-y-auto custom-scrollbar">
+                <div v-for="p in currentRoom.participants" :key="p._id" class="flex items-center gap-3 rounded-xl bg-slate-50 border border-slate-200 px-3 py-2">
+                  <div class="w-8 h-8 rounded-full bg-primary-50 border border-primary-100 text-primary-700 flex items-center justify-center shrink-0">
+                    <span class="text-xs font-bold">{{ p.name.charAt(0).toUpperCase() }}</span>
                   </div>
                   <div class="min-w-0">
-                    <div class="font-medium truncate">{{ p.name }}</div>
-                    <div class="text-xs text-gray-400 truncate">{{ p.position || p.role }}</div>
+                    <div class="font-semibold text-slate-800 truncate">{{ p.name }}</div>
+                    <div class="text-[11px] text-slate-500 truncate">{{ p.position || p.role }}</div>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="text-xs text-gray-400">Creado: {{ new Date(currentRoom.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }}</div>
+            <div class="text-[11px] text-slate-400">Creado: {{ new Date(currentRoom.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }}</div>
           </div>
         </div>
       </div>
@@ -744,165 +747,13 @@ onUnmounted(() => {
 </script>
 
 
+
 <style scoped>
-/* Custom Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.5s ease-out forwards;
-}
-
-.animate-slideIn {
-  animation: slideIn 0.3s ease-out forwards;
-}
-
-/* Custom Scrollbar */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(147, 51, 234, 0.5) transparent;
-  scrollbar-gutter: stable both-edges; /* reserve gutter for harmony */
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgb(147, 51, 234), rgb(219, 39, 119));
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(147, 51, 234, 0.5);
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, rgb(126, 34, 206), rgb(190, 24, 93));
-  box-shadow: 0 0 15px rgba(147, 51, 234, 0.8);
-}
-
-/* Message hover effects */
-.message-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.message-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-}
-
-/* Gradient text animation */
-.gradient-text {
-  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-  background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
-}
-
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* Enhanced button hover effects */
-.btn-hover {
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-hover::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s;
-}
-
-.btn-hover:hover::before {
-  left: 100%;
-}
-
-/* Floating animation */
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-/* Pulse glow effect */
-@keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 5px rgba(147, 51, 234, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(147, 51, 234, 0.8), 0 0 30px rgba(219, 39, 119, 0.6);
-  }
-}
-
-.pulse-glow {
-  animation: pulseGlow 2s ease-in-out infinite;
-}
-
-/* Glass morphism effect */
-.glass-morph {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-/* Enhanced focus styles */
-input:focus {
-  box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.3), 0 0 20px rgba(147, 51, 234, 0.2);
-}
-
-/* Text shadow for better readability */
-.text-shadow {
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
 /* Notification dot animation */
 @keyframes notificationPulse {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.2);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .notification-pulse {

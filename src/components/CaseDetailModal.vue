@@ -259,6 +259,10 @@
           <div class="bg-gray-800/50 rounded-lg p-4">
             <h3 class="text-lg font-semibold text-white mb-3">Información</h3>
             <div class="space-y-3">
+              <div v-if="caseItem.cliente_id">
+                <label class="block text-sm text-gray-400">Vinculado a</label>
+                <LinkChip class="mt-1" :cliente-id="caseItem.cliente_id" :proyecto-id="caseItem.proyecto_id" />
+              </div>
               <div>
                 <label class="block text-sm text-gray-400">ID</label>
                 <p class="text-white text-sm font-mono">{{ caseItem._id }}</p>
@@ -430,6 +434,7 @@ import { casesService, type Case } from '../services/casesService'
 import { API_CONFIG } from '../config/api'
 import { useNotifications } from '../composables/useNotifications'
 import CustomSelect from './ui/CustomSelect.vue'
+import LinkChip from './cases/LinkChip.vue'
 
 const { confirmDelete } = useNotifications()
 

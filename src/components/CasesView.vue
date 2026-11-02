@@ -229,6 +229,7 @@
                 <p class="text-xs text-slate-500 mt-0.5 capitalize">
                   {{ selectedCase.tipo }}<template v-if="selectedCase.categoria"> · {{ selectedCase.categoria }}</template>
                 </p>
+                <LinkChip v-if="selectedCase.cliente_id" class="mt-1.5" :cliente-id="selectedCase.cliente_id" :proyecto-id="selectedCase.proyecto_id" :clients="clients" />
               </div>
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
@@ -456,10 +457,18 @@
                     class="w-full mt-2 text-sm text-slate-600 bg-white border border-slate-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder-slate-300"
                     placeholder="Añade una descripción..."
                   ></textarea>
+                  <div class="mt-2">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Vincular a <span class="normal-case font-medium tracking-normal">(opcional)</span></label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <CustomSelect :model-value="clientIdOf(selectedWiki.cliente_id)" @update:model-value="selectedWiki.cliente_id = String($event ?? ''); selectedWiki.proyecto_id = ''" size="sm" searchable placeholder="Sin cliente" :options="newCaseClientOptions" />
+                      <CustomSelect :model-value="selectedWiki.proyecto_id ?? ''" @update:model-value="selectedWiki.proyecto_id = String($event ?? '')" size="sm" placeholder="Sin proyecto" :disabled="!selectedWiki.cliente_id" :options="projectOptionsFor(selectedWiki.cliente_id)" />
+                    </div>
+                  </div>
                 </template>
                 <template v-else>
                   <h1 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight leading-tight">{{ selectedWiki.titulo || 'Sin título' }}</h1>
                   <p class="text-sm text-slate-500 mt-1 leading-relaxed">{{ selectedWiki.descripcion || 'Sin descripción' }}</p>
+                  <LinkChip v-if="selectedWiki.cliente_id" class="mt-1.5" :cliente-id="selectedWiki.cliente_id" :proyecto-id="selectedWiki.proyecto_id" :clients="clients" />
                 </template>
               </div>
             </div>
@@ -669,7 +678,11 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Cliente</label>
-                  <CustomSelect v-model="newCase.cliente_id" size="md" searchable placeholder="Seleccionar cliente" :options="newCaseClientOptions" />
+                  <CustomSelect :model-value="newCase.cliente_id" @update:model-value="newCase.cliente_id = String($event ?? ''); newCase.proyecto_id = ''" size="md" searchable placeholder="Seleccionar cliente" :options="newCaseClientOptions" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Proyecto <span class="normal-case font-medium text-slate-400 tracking-normal">(opcional)</span></label>
+                  <CustomSelect v-model="newCase.proyecto_id" size="md" placeholder="Sin proyecto" :disabled="!newCase.cliente_id" :options="projectOptionsFor(newCase.cliente_id)" />
                 </div>
                 <div>
                   <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Categoría</label>
@@ -722,6 +735,14 @@
                 <div>
                   <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Etiquetas</label>
                   <input v-model="wikiTagsRaw" placeholder="login, 401, credenciales" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors text-sm">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Vincular a <span class="normal-case font-medium text-slate-400 tracking-normal">(opcional)</span></label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <CustomSelect :model-value="clientIdOf(newWiki.cliente_id)" @update:model-value="newWiki.cliente_id = String($event ?? ''); newWiki.proyecto_id = ''" size="md" searchable placeholder="Sin cliente" :options="newCaseClientOptions" />
+                  <CustomSelect :model-value="newWiki.proyecto_id ?? ''" @update:model-value="newWiki.proyecto_id = String($event ?? '')" size="md" placeholder="Sin proyecto" :disabled="!newWiki.cliente_id" :options="projectOptionsFor(newWiki.cliente_id)" />
                 </div>
               </div>
 
@@ -835,7 +856,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
-import { casesService, type Case } from '../services/casesService'
+import { useRoute, useRouter } from 'vue-router'
+import { casesService, type Case, type LinkedClientRef } from '../services/casesService'
 import { clientService, type ClientData } from '../services/clientService'
 import { wikiService, type WikiArticle, type WikiArticleInput } from '../services/wikiService'
 import { useNotifications } from '../composables/useNotifications'
@@ -844,6 +866,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import WikiEditor from './wiki/WikiEditor.vue'
 import WikiContent from './wiki/WikiContent.vue'
+import LinkChip from './cases/LinkChip.vue'
 import FileDropzone from './ui/FileDropzone.vue'
 import LinkedItemsSelector from './forms/LinkedItemsSelector.vue'
 import EmbeddedSpreadsheet from './EmbeddedSpreadsheet.vue'
@@ -887,12 +910,18 @@ import { useTasksStore } from '../stores/tasks'
 import { activityService } from '../services/activityService'
 
 // Form State
-const newCase = ref({ titulo: '', tipo: 'seguimiento' as any, prioridad: 'media' as any, descripcion: '', cliente_id: '', categoria: '', tags: [] as string[], archivos: [] as File[] })
-const newWiki = ref<WikiArticleInput>({ titulo: '', categoria: 'proceso', contenido: '', descripcion: '', tags: [], archivos: [] })
+const newCase = ref({ titulo: '', tipo: 'seguimiento' as any, prioridad: 'media' as any, descripcion: '', cliente_id: '', proyecto_id: '', categoria: '', tags: [] as string[], archivos: [] as File[] })
+const newWiki = ref<WikiArticleInput>({ titulo: '', categoria: 'proceso', contenido: '', descripcion: '', tags: [], archivos: [], cliente_id: '', proyecto_id: '' })
 const newCaseClientOptions = computed(() => [
   { value: '', label: 'Seleccionar cliente...' },
   ...clients.value.map((c) => ({ value: c._id ?? '', label: c.name }))
 ])
+// cliente_id puede venir populado (objeto) desde el backend
+const clientIdOf = (ref?: LinkedClientRef | null) => (typeof ref === 'object' ? ref?._id : ref) || ''
+const projectOptionsFor = (clientRef?: LinkedClientRef | null) => [
+  { value: '', label: 'Sin proyecto' },
+  ...(clients.value.find(c => c._id === clientIdOf(clientRef))?.projects || []).map(p => ({ value: p._id ?? '', label: p.name }))
+]
 const newLog = ref({ que_se_hizo: '', sentimiento: '😐' as any })
 
 // Enlaces externos
@@ -1159,8 +1188,8 @@ const openCreateModal = () => {
 }
 
 const resetForm = () => {
-  newCase.value = { titulo: '', tipo: 'seguimiento', prioridad: 'media', descripcion: '', cliente_id: '', categoria: '', tags: [], archivos: [] }
-  newWiki.value = { titulo: '', categoria: 'proceso', contenido: WIKI_TEMPLATE, descripcion: '', tags: [], archivos: [] }
+  newCase.value = { titulo: '', tipo: 'seguimiento', prioridad: 'media', descripcion: '', cliente_id: '', proyecto_id: '', categoria: '', tags: [], archivos: [] }
+  newWiki.value = { titulo: '', categoria: 'proceso', contenido: WIKI_TEMPLATE, descripcion: '', tags: [], archivos: [], cliente_id: '', proyecto_id: '' }
   wikiTagsRaw.value = ''
 }
 
@@ -1341,8 +1370,8 @@ const handleAddDailyLog = async () => {
 }
 
 // Helpers
-const getClientName = (id?: string) => clients.value.find(c => c._id === id)?.name || 'Interno'
-const getClientInitials = (id?: string) => getClientName(id).split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+const getClientName = (ref?: LinkedClientRef) => clients.value.find(c => c._id === clientIdOf(ref))?.name || (typeof ref === 'object' ? ref?.name : '') || 'Interno'
+const getClientInitials = (ref?: LinkedClientRef) => getClientName(ref).split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 const getStatusDot = (s?: string) => ({ abierto: 'bg-emerald-500', en_progreso: 'bg-amber-500', resueltos: 'bg-blue-500', cerrado: 'bg-slate-900' }[s || ''] || 'bg-slate-300')
 const getPriorityClass = (p?: string) => ({ baja: 'badge-success', media: 'badge-warning', alta: 'badge-warning', critica: 'badge-danger' }[p || ''] || 'badge-slate')
 const getCoverGradient = (p?: string) => ({ baja: 'bg-gradient-to-br from-emerald-400 to-teal-600', media: 'bg-gradient-to-br from-amber-400 to-orange-500', alta: 'bg-gradient-to-br from-orange-400 to-rose-600', critica: 'bg-gradient-to-br from-rose-500 to-slate-900' }[p || ''] || 'bg-gradient-to-br from-slate-400 to-slate-600')
@@ -1358,7 +1387,7 @@ const copyToClipboard = (text: string) => { navigator.clipboard.writeText(text);
 const openEditCase = () => {
   if (!selectedCase.value) return
   modalMode.value = 'edit'
-  newCase.value = { ...selectedCase.value, archivos: [] } // No enviamos archivos previos por ahora
+  newCase.value = { ...selectedCase.value, cliente_id: clientIdOf(selectedCase.value.cliente_id), proyecto_id: selectedCase.value.proyecto_id || '', archivos: [] } // No enviamos archivos previos por ahora
   showCreateModal.value = true
 }
 
@@ -1402,8 +1431,28 @@ const uploadFilesToCase = async (e: any) => {
     closeLoading(); showSuccess('Éxito', 'Archivos añadidos correctamente.')
   } catch (err: any) { closeLoading(); showError('Error', err.message) }
 }
+const route = useRoute()
+const router = useRouter()
+// /cases?case=<id> | ?wiki=<id> (desde LinkedCasesPanel): abre el ítem y limpia la URL
+const openFromQuery = async () => {
+  const caseId = route.query.case as string | undefined
+  const wikiId = route.query.wiki as string | undefined
+  if (!caseId && !wikiId) return
+  try {
+    if (caseId) {
+      viewMode.value = 'cases'
+      selectCase(cases.value.find(c => c._id === caseId) || await casesService.getCaseById(caseId))
+    } else if (wikiId) {
+      viewMode.value = 'wiki'
+      selectedWiki.value = wikiArticles.value.find(w => w._id === wikiId) || await wikiService.getById(wikiId)
+    }
+    listDisplayMode.value = 'tree'
+  } catch { showError('Error', 'No se encontró el elemento vinculado.') }
+  router.replace({ path: route.path })
+}
+
 onMounted(() => {
-  loadData()
+  loadData().then(openFromQuery)
   loadLinkCatalogs()
 })
 watch(viewMode, () => { searchTerm.value = ''; expandedGroups.value = [] })

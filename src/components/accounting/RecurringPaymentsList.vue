@@ -1,16 +1,17 @@
 <template>
-  <div>
+  <div class="flex flex-col gap-4">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+    <div class="flex flex-wrap justify-between items-center gap-3">
       <div>
-        <h2 class="text-2xl font-bold text-white">Pagos Recurrentes</h2>
-        <p class="text-gray-400">Gestiona pagos mensuales de clientes</p>
+        <h2 class="text-sm font-extrabold text-slate-800">Pagos Recurrentes</h2>
+        <p class="text-xs text-slate-500">Gestiona pagos mensuales de clientes</p>
       </div>
       <button
+        type="button"
         @click="refreshPayments"
-        class="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
+        class="btn-secondary btn-sm"
       >
-        <i class="fas fa-sync-alt"></i>
+        <i class="fas fa-sync-alt text-[10px]"></i>
         Actualizar
       </button>
     </div>
@@ -21,27 +22,27 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="payments.length === 0" class="text-center py-12">
-      <i class="fas fa-calendar-check text-4xl text-gray-500 mb-4"></i>
-      <p class="text-gray-400 text-lg">No hay pagos recurrentes pendientes</p>
+    <div v-else-if="payments.length === 0" class="empty-state">
+      <div class="empty-state__icon"><i class="fas fa-calendar-check"></i></div>
+      <p class="empty-state__title">No hay pagos recurrentes pendientes</p>
     </div>
 
     <!-- Payments List -->
-    <div v-else class="space-y-4">
+    <div v-else class="space-y-3">
       <div
         v-for="payment in payments"
         :key="payment._id"
-        class="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-purple-500/20 hover:border-purple-400"
+        class="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 hover:border-primary-200 hover:shadow-md transition-all"
       >
         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <!-- Payment Info -->
-          <div class="flex items-center gap-4 flex-1">
-            <div class="p-3 bg-green-500/20 text-green-400 rounded-full">
-              <i class="fas fa-calendar-alt text-xl"></i>
+          <div class="flex items-center gap-3 flex-1 min-w-0">
+            <div class="w-10 h-10 shrink-0 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center">
+              <i class="fas fa-calendar-alt text-sm"></i>
             </div>
-            <div class="flex-1">
-              <h3 class="font-bold text-white text-lg">{{ payment.concepto }}</h3>
-              <div class="flex flex-wrap gap-4 text-sm text-gray-400 mt-1">
+            <div class="flex-1 min-w-0">
+              <h3 class="text-sm font-extrabold text-slate-800 truncate">{{ payment.concepto }}</h3>
+              <div class="flex flex-wrap gap-3 text-xs text-slate-500 mt-0.5">
                 <span v-if="payment.cliente_id">
                   <i class="fas fa-user mr-1"></i>
                   {{ getClientName(payment.cliente_id) }}
@@ -62,16 +63,16 @@
           <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <!-- Amount -->
             <div class="text-right">
-              <p class="text-2xl font-bold text-green-400">
+              <p class="text-lg font-black text-emerald-600 tabular-nums leading-none">
                 ${{ formatCurrency(payment.monto) }}
               </p>
-              <p class="text-sm text-gray-400">{{ formatFrequency(payment.frecuencia) }}</p>
+              <p class="mt-1 text-[10px] font-black uppercase tracking-wider text-slate-400">{{ formatFrequency(payment.frecuencia) }}</p>
             </div>
 
             <!-- Status Badge -->
             <div class="flex items-center gap-2">
               <span :class="[
-                'px-3 py-1 rounded-full text-xs font-medium',
+                'rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider border',
                 getStatusClass(payment)
               ]">
                 {{ getStatusText(payment) }}
@@ -81,17 +82,19 @@
             <!-- Actions -->
             <div class="flex gap-2">
               <button
+                type="button"
                 @click="markAsPaid(payment)"
                 :disabled="processingPayment === payment._id"
-                class="px-4 py-2 bg-green-600/20 text-green-400 rounded-lg hover:bg-green-600/30 transition-colors border border-green-500/30 disabled:opacity-50 flex items-center gap-2"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-100 text-xs font-bold transition-colors disabled:opacity-50"
               >
                 <i v-if="processingPayment === payment._id" class="fas fa-spinner fa-spin"></i>
                 <i v-else class="fas fa-check"></i>
-                Marcar Pagado
+                Marcar pagado
               </button>
               <button title="Editar pago"
+                type="button"
                 @click="$emit('edit', payment)"
-                class="p-2 bg-blue-600/20 text-blue-400 rounded-lg hover:bg-blue-600/30 transition-colors border border-blue-500/30"
+                class="w-8 h-8 inline-flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-primary-600 hover:border-primary-200 transition-colors"
               >
                 <i class="fas fa-edit"></i>
               </button>
@@ -100,10 +103,10 @@
         </div>
 
         <!-- Payment History (if available) -->
-        <div v-if="payment.estado_pago === 'pagado'" class="mt-4 p-4 bg-green-500/10 rounded-xl border border-green-500/20">
-          <div class="flex items-center gap-2 text-green-400">
+        <div v-if="payment.estado_pago === 'pagado'" class="mt-3 px-3 py-2 bg-emerald-50 rounded-xl border border-emerald-100">
+          <div class="flex items-center gap-2 text-emerald-700">
             <i class="fas fa-check-circle"></i>
-            <span class="text-sm font-medium">Último pago registrado: {{ formatDate(payment.fecha) }}</span>
+            <span class="text-xs font-semibold">Último pago registrado: {{ formatDate(payment.fecha) }}</span>
           </div>
         </div>
       </div>
@@ -187,18 +190,18 @@ const formatCurrency = (amount: number): string => {
 }
 
 const getStatusClass = (payment: Transaction): string => {
-  if (!payment.proximo_pago) return 'bg-gray-500/20 text-gray-400'
+  if (!payment.proximo_pago) return 'bg-slate-50 text-slate-600 border-slate-200'
   
   const nextPayment = new Date(payment.proximo_pago)
   const today = new Date()
   const daysDiff = Math.ceil((nextPayment.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
   
   if (daysDiff < 0) {
-    return 'bg-red-500/20 text-red-400' // Vencido
+    return 'bg-red-50 text-red-700 border-red-100' // Vencido
   } else if (daysDiff <= 7) {
-    return 'bg-yellow-500/20 text-yellow-400' // Próximo a vencer
+    return 'bg-amber-50 text-amber-700 border-amber-100' // Próximo a vencer
   } else {
-    return 'bg-green-500/20 text-green-400' // Al día
+    return 'bg-emerald-50 text-emerald-700 border-emerald-100' // Al día
   }
 }
 

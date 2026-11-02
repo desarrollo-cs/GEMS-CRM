@@ -1,143 +1,131 @@
 <template>
-  <div class="space-y-6">
-    <!-- Header -->
-    <div class="bg-white/70 backdrop-blur-md rounded-3xl shadow-sm p-6 border border-slate-100">
-      <div class="flex flex-col lg:flex-row gap-6 lg:items-center lg:justify-between">
-        <!-- Selector de Board -->
-        <div class="flex items-center gap-4">
-          <div class="min-w-[220px]">
-            <CustomSelect
-              v-model="selectedBoardId"
-              @change="onBoardChange"
-              :options="boardOptions"
-              placeholder="Seleccionar Tablero"
-              size="md"
-              searchable
-            />
-          </div>
+  <div class="flex flex-col gap-4 h-full min-h-0">
+    <!-- Cabecera compacta -->
+    <PageHeader icon="fas fa-columns" title="Tableros de tareas">
+      <template #subtitle>{{ currentBoard?.name || 'Selecciona un tablero' }} · {{ tasks.length }} tareas</template>
+      <!-- Nueva Tarea -->
+      <button
+        @click="openTaskModal()"
+        class="btn-primary btn-sm"
+      >
+        <i class="fas fa-plus text-[10px]"></i>
+        Nueva tarea
+      </button>
 
-          <!-- Toggle Vista -->
-          <div class="flex bg-slate-100 rounded-2xl p-1.5 border border-slate-200">
-            <button
-              @click="currentView = 'kanban'"
-              :class="currentView === 'kanban' 
-                ? 'bg-white text-primary-600 shadow-sm' 
-                : 'text-slate-400 hover:text-slate-600'"
-              class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
-            >
-              <i class="fas fa-columns"></i>
-              Kanban
-            </button>
-            <button
-              @click="currentView = 'list'"
-              :class="currentView === 'list' 
-                ? 'bg-white text-primary-600 shadow-sm' 
-                : 'text-slate-400 hover:text-slate-600'"
-              class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
-            >
-              <i class="fas fa-list"></i>
-              Lista
-            </button>
-          </div>
+      <!-- GitHub -->
+      <button
+        v-if="currentBoard?.github"
+        @click="showGitHubPanel = !showGitHubPanel"
+        class="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300 rounded-lg transition-colors"
+        title="Integración GitHub"
+      >
+        <i class="fab fa-github text-sm"></i>
+      </button>
+    </PageHeader>
+
+    <!-- Barra de herramientas -->
+    <div class="flex-shrink-0 bg-slate-50/50 p-2 rounded-xl border border-slate-100">
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- Selector de Board -->
+        <div class="w-full sm:w-56">
+          <CustomSelect
+            v-model="selectedBoardId"
+            @change="onBoardChange"
+            :options="boardOptions"
+            placeholder="Seleccionar Tablero"
+            size="sm"
+            searchable
+          />
         </div>
 
-        <div class="flex items-center gap-4">
-          <!-- Filtros -->
-          <button
-            @click="showFilters = !showFilters"
-            class="px-5 py-3 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all font-black text-[10px] uppercase tracking-widest flex items-center gap-3 shadow-sm"
-            :class="{'border-primary-400 ring-4 ring-primary-500/10': showFilters}"
-          >
-            <i class="fas fa-filter text-primary-500"></i>
-            Filtros
-            <span v-if="activeFiltersCount > 0" class="w-5 h-5 bg-primary-500 text-white rounded-full flex items-center justify-center text-[8px]">{{ activeFiltersCount }}</span>
+        <!-- Toggle Vista -->
+        <div class="seg">
+          <button @click="currentView = 'kanban'" :aria-pressed="currentView === 'kanban'">
+            <i class="fas fa-columns text-[10px] mr-1.5"></i>Kanban
           </button>
+          <button @click="currentView = 'list'" :aria-pressed="currentView === 'list'">
+            <i class="fas fa-list text-[10px] mr-1.5"></i>Lista
+          </button>
+        </div>
 
+        <div class="flex flex-wrap items-center gap-2 ml-auto">
           <!-- Sprint Selector (only Scrum) -->
-          <div v-if="currentBoard?.type === 'scrum'" class="min-w-[180px]">
+          <div v-if="currentBoard?.type === 'scrum'" class="w-44">
             <CustomSelect
               v-model="selectedSprintId"
               @change="loadTasks"
               :options="sprintOptions"
               placeholder="Backlog Activo"
-              size="md"
+              size="sm"
             />
           </div>
 
-          <!-- Nueva Tarea -->
+          <!-- Filtros -->
           <button
-            @click="openTaskModal()"
-            class="px-6 py-3.5 bg-primary-500 text-white rounded-[1.25rem] hover:bg-primary-600 transition-all shadow-xl shadow-primary-100 font-black text-[10px] uppercase tracking-widest flex items-center gap-3 active:scale-95"
+            @click="showFilters = !showFilters"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold bg-white border rounded-lg transition-colors"
+            :class="showFilters ? 'text-primary-600 border-primary-200' : 'text-slate-500 border-slate-200 hover:text-primary-600 hover:border-primary-200'"
           >
-            <i class="fas fa-plus"></i>
-            Nueva Tarea
-          </button>
-
-          <!-- GitHub -->
-          <button
-            v-if="currentBoard?.github"
-            @click="showGitHubPanel = !showGitHubPanel"
-            class="w-12 h-12 flex items-center justify-center bg-slate-800 text-white rounded-2xl hover:bg-black transition-all shadow-lg"
-            title="Integración GitHub"
-          >
-            <i class="fab fa-github text-lg"></i>
+            <i class="fas fa-filter text-[10px]"></i>
+            Filtros
+            <span v-if="activeFiltersCount > 0" class="w-4 h-4 bg-primary-500 text-white rounded-full flex items-center justify-center text-[8px] font-black">{{ activeFiltersCount }}</span>
           </button>
         </div>
       </div>
 
       <!-- Filtros Panel -->
-      <div v-if="showFilters" class="mt-8 pt-8 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 animate-in slide-in-from-top-4 duration-300">
+      <div v-if="showFilters" class="mt-2 pt-3 px-1 pb-1 border-t border-slate-200/60 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 animate-in slide-in-from-top-4 duration-300">
         <div class="space-y-2">
-          <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo de Tarea</label>
+          <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 ml-1">Tipo de Tarea</label>
           <CustomSelect
             v-model="filters.type"
             @change="loadTasks"
             :options="[{ value: '', label: 'Todos los tipos' }, { value: 'task', label: 'Task' }, { value: 'bug', label: 'Bug' }, { value: 'feature', label: 'Feature' }, { value: 'user-story', label: 'User Story' }, { value: 'epic', label: 'Epic' }]"
             placeholder="Todos los tipos"
-            size="dense"
+            size="sm"
           />
         </div>
         <div class="space-y-2">
-          <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Prioridad</label>
+          <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 ml-1">Prioridad</label>
           <CustomSelect
             v-model="filters.priority"
             @change="loadTasks"
             :options="[{ value: '', label: 'Cualquier prioridad' }, { value: 'low', label: 'Baja' }, { value: 'medium', label: 'Media' }, { value: 'high', label: 'Alta' }, { value: 'critical', label: 'Crítica' }]"
             placeholder="Cualquier prioridad"
-            size="dense"
+            size="sm"
           />
         </div>
         <div class="space-y-2">
-          <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Equipo / Depto</label>
+          <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 ml-1">Equipo / Depto</label>
           <CustomSelect
             v-model="filters.department"
             @change="loadTasks"
             :options="departmentOptions"
             placeholder="Todos los equipos"
-            size="dense"
+            size="sm"
           />
         </div>
         <div class="space-y-2">
-          <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Responsable</label>
+          <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 ml-1">Responsable</label>
           <CustomSelect
             v-model="filters.assignedTo"
             @change="loadTasks"
             :options="assignedToOptions"
             placeholder="Cualquier persona"
-            size="dense"
+            size="sm"
             searchable
           />
         </div>
         <div class="flex items-end gap-2">
           <button
             @click="clearFilters"
-            class="flex-1 px-4 py-3 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+            class="btn-secondary btn-sm flex-1"
           >
             Reset
           </button>
           <button
             @click="saveCurrentFilters"
-            class="px-4 py-3 bg-primary-50 text-primary-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary-100 transition-all"
+            class="btn-secondary btn-sm"
             title="Guardar filtros por defecto"
           >
             <i class="fas fa-save"></i>
@@ -153,18 +141,18 @@
     </div>
 
     <!-- Kanban View -->
-    <div v-else-if="currentView === 'kanban' && selectedBoardId" class="overflow-x-auto custom-scrollbar pb-6 motion-content-in">
-      <div class="flex space-x-6 min-w-max px-1">
+    <div v-else-if="currentView === 'kanban' && selectedBoardId" class="flex-1 min-h-0 overflow-x-auto custom-scrollbar pb-6 motion-content-in">
+      <div class="flex gap-4 min-w-max px-1">
         <div
           v-for="column in columns"
           :key="column.id"
-          class="bg-slate-50/50 backdrop-blur-sm rounded-[2rem] p-1.5 border border-slate-200/60 w-[420px] flex-shrink-0 flex flex-col max-h-[calc(100vh-280px)]"
+          class="bg-slate-50/50 rounded-2xl p-2 border border-slate-200 w-[420px] flex-shrink-0 flex flex-col max-h-full"
         >
           <!-- Column Header -->
-          <div class="flex items-center justify-between mb-6 px-1">
+          <div class="flex items-center justify-between mb-3 px-1">
             <div class="flex items-center gap-3">
               <div class="w-2.5 h-2.5 rounded-full" :class="getColumnColor(column.id)"></div>
-              <h3 class="text-slate-800 font-black text-xs uppercase tracking-widest">{{ column.name }}</h3>
+              <h3 class="text-slate-800 font-black text-xs uppercase tracking-wider">{{ column.name }}</h3>
               <span class="bg-white border border-slate-200 text-slate-500 px-2.5 py-1 rounded-lg text-[10px] font-black">
                 {{ getColumnTasks(column.id).length }}
               </span>
@@ -179,7 +167,7 @@
 
           <!-- Tasks List -->
           <div 
-            class="space-y-3 flex-1 overflow-y-auto custom-scrollbar px-2 pb-6 min-h-[150px]"
+            class="space-y-3 flex-1 overflow-y-auto custom-scrollbar px-2 pb-6 min-h-[150px] motion-stagger"
             @drop="onDrop($event, column.id)"
             @dragover.prevent
             @dragenter.prevent
@@ -190,7 +178,7 @@
               draggable="true"
               @dragstart="onDragStart($event, task)"
               @dragend="onDragEnd"
-              class="bg-white rounded-[1.5rem] p-3 border border-slate-100 hover:border-primary-200 hover:shadow-xl hover:shadow-primary-500/5 transition-all cursor-move group relative animate-in fade-in duration-500"
+              class="bg-white rounded-xl p-3 border border-slate-200 hover:border-primary-200 hover:shadow-md transition-all cursor-move group relative"
             >
               <!-- Clickable Content Wrapper -->
               <div @click.stop="openTaskDetail(task)" class="cursor-pointer">
@@ -246,8 +234,9 @@
             </div>
 
             <!-- Empty Column State (Soft) -->
-            <div v-if="getColumnTasks(column.id).length === 0" class="flex flex-col items-center justify-center py-10 opacity-20 group-hover:opacity-40 transition-opacity">
-              <i class="fas fa-layer-group text-3xl mb-2 text-slate-300"></i>
+            <div v-if="getColumnTasks(column.id).length === 0" class="empty-state empty-state--sm border-0 bg-transparent">
+              <div class="empty-state__icon"><i class="fas fa-layer-group"></i></div>
+              <p class="empty-state__text">Sin tareas</p>
             </div>
           </div>
         </div>
@@ -255,17 +244,17 @@
     </div>
 
     <!-- List View -->
-    <div v-else-if="currentView === 'list' && selectedBoardId" class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden motion-content-in">
+    <div v-else-if="currentView === 'list' && selectedBoardId" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden motion-content-in">
       <div class="overflow-x-auto">
         <table class="w-full">
           <thead class="bg-slate-50">
             <tr>
-              <th class="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Tarea</th>
-              <th class="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Tipo</th>
-              <th class="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Estado</th>
-              <th class="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Prioridad</th>
-              <th class="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Responsable</th>
-              <th class="px-6 py-4 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Tiempo</th>
+              <th class="px-5 py-2.5 text-left text-[10px] font-black text-slate-400 uppercase tracking-wider">Tarea</th>
+              <th class="px-5 py-2.5 text-left text-[10px] font-black text-slate-400 uppercase tracking-wider">Tipo</th>
+              <th class="px-5 py-2.5 text-left text-[10px] font-black text-slate-400 uppercase tracking-wider">Estado</th>
+              <th class="px-5 py-2.5 text-left text-[10px] font-black text-slate-400 uppercase tracking-wider">Prioridad</th>
+              <th class="px-5 py-2.5 text-left text-[10px] font-black text-slate-400 uppercase tracking-wider">Responsable</th>
+              <th class="px-5 py-2.5 text-right text-[10px] font-black text-slate-400 uppercase tracking-wider">Tiempo</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
@@ -275,33 +264,33 @@
               @click="openTaskDetail(task)"
               class="hover:bg-slate-50/80 cursor-pointer transition-colors group"
             >
-              <td class="px-6 py-4">
+              <td class="px-5 py-3">
                 <div class="flex items-center gap-3">
                   <div class="w-2 h-2 rounded-full flex-shrink-0" :style="{ backgroundColor: getTaskTypeColor(task.type) }"></div>
                   <div class="text-slate-700 font-bold text-sm group-hover:text-primary-600 transition-colors">{{ task.title }}</div>
                 </div>
               </td>
-              <td class="px-6 py-4">
+              <td class="px-5 py-3">
                 <span class="text-[10px] font-black uppercase text-slate-400">{{ getTaskTypeLabel(task.type) }}</span>
               </td>
-              <td class="px-6 py-4">
+              <td class="px-5 py-3">
                 <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider" :class="getBoardStatusClass(task.boardStatus)">
                   {{ getBoardStatusLabel(task.boardStatus) }}
                 </span>
               </td>
-              <td class="px-6 py-4">
+              <td class="px-5 py-3">
                 <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border" :class="getPriorityClass(task.priority)">
                   {{ getPriorityLabel(task.priority) }}
                 </span>
               </td>
-              <td class="px-6 py-4">
+              <td class="px-5 py-3">
                 <div v-if="task.assignedTo" class="flex items-center gap-2">
                   <PersonAvatar :name="task.assignedTo.name" :photo="task.assignedTo.photo" class="w-7 h-7 rounded-full bg-primary-100 text-primary-700 text-[10px] font-black border border-white shadow-sm" />
                   <span class="text-slate-600 text-xs font-bold">{{ task.assignedTo.name }}</span>
                 </div>
                 <span v-else class="text-slate-300 text-xs italic">Sin asignar</span>
               </td>
-              <td class="px-6 py-4 text-right">
+              <td class="px-5 py-3 text-right">
                 <div class="text-slate-700 font-black text-xs">{{ Number(task.actualHours || 0).toFixed(1) }}<span class="text-[10px] text-slate-400 ml-0.5">h</span></div>
                 <div class="text-[9px] text-slate-400 uppercase tracking-tighter">Est: {{ task.estimatedHours || 0 }}h</div>
               </td>
@@ -312,12 +301,10 @@
     </div>
 
     <!-- Global Empty State -->
-    <div v-else class="flex flex-col items-center justify-center py-32 text-center">
-      <div class="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center border border-slate-100 mb-8 animate-bounce duration-[3s]">
-        <i class="fas fa-rocket text-4xl text-primary-200"></i>
-      </div>
-      <h3 class="text-2xl font-black text-slate-800 tracking-tight mb-2">Comienza tu viaje en Customer Touch</h3>
-      <p class="text-slate-400 font-medium text-sm max-w-md">
+    <div v-else class="empty-state">
+      <div class="empty-state__icon"><i class="fas fa-rocket"></i></div>
+      <p class="empty-state__title">Comienza tu viaje en Customer Touch</p>
+      <p class="empty-state__text">
         Selecciona un tablero para visualizar el flujo de trabajo y comenzar a gestionar la productividad de tu equipo.
       </p>
     </div>
@@ -350,6 +337,7 @@
 import Skeleton from '@/components/ui/Skeleton.vue'
 import PersonAvatar from '../components/ui/PersonAvatar.vue'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
 import { ref, computed, onMounted, watch } from 'vue'
 import { useBoardsStore } from '@/stores/boards'
 import { useTasksStore, type Task } from '@/stores/tasks'

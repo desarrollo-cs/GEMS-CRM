@@ -3,18 +3,18 @@
     <div class="flex items-center justify-center min-h-screen px-4">
       <!-- Backdrop -->
       <div
-        class="fixed inset-0 bg-transparent backdrop-blur-sm"
+        class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
         @click="$emit('close')"
       ></div>
       
   <!-- Modal -->
-  <div class="relative bg-transparent backdrop-blur-md rounded-2xl border border-white/20 shadow-2xl w-full max-w-sm p-5">
+  <div class="relative bg-white rounded-2xl border border-slate-100 shadow-xl w-full max-w-sm p-5 animate-fade-in">
         <!-- Header -->
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="text-lg font-semibold text-white">Crear nuevo chat</h3>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-extrabold text-slate-800">Crear nuevo chat</h3>
           <button
             @click="$emit('close')"
-            class="text-gray-400 hover:text-white transition-colors"
+            class="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 flex items-center justify-center transition-colors"
           >
             <XMarkIcon class="w-5 h-5" />
           </button>
@@ -24,7 +24,7 @@
         <form @submit.prevent="createRoom" class="space-y-4">
           <!-- Chat Type -->
           <div>
-            <label class="block text-sm font-medium text-white mb-2">
+            <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
               Tipo de chat
             </label>
             <div class="grid grid-cols-3 gap-2">
@@ -34,10 +34,10 @@
                 :key="type.value"
                 @click="formData.type = type.value"
                 :class="[
-                  'p-3 rounded-lg border transition-all text-center',
+                  'p-3 rounded-xl border transition-all text-center',
                   formData.type === type.value
-                    ? 'border-purple-500 bg-purple-500/20 text-white'
-                    : 'border-white/20 bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
+                    ? 'border-primary-200 bg-primary-50 text-primary-700'
+                    : 'border-slate-200 bg-slate-50 text-slate-500 hover:text-slate-800 hover:bg-white'
                 ]"
               >
                 <component :is="type.icon" class="w-5 h-5 mx-auto mb-1" />
@@ -48,7 +48,7 @@
 
           <!-- Chat Name -->
           <div>
-            <label for="chatName" class="block text-sm font-medium text-white mb-2">
+            <label for="chatName" class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
               Nombre del chat
             </label>
             <input
@@ -57,13 +57,13 @@
               type="text"
               required
               :placeholder="getNamePlaceholder()"
-              class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all"
             />
           </div>
 
           <!-- Description -->
           <div v-if="formData.type !== 'direct'">
-            <label for="chatDescription" class="block text-sm font-medium text-white mb-2">
+            <label for="chatDescription" class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
               Descripción (opcional)
             </label>
             <textarea
@@ -71,23 +71,23 @@
               v-model="formData.description"
               rows="3"
               placeholder="Describe el propósito de este chat..."
-              class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 resize-none"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-primary-400 focus:ring-[3px] focus:ring-primary-600/15 transition-all resize-none"
             ></textarea>
           </div>
 
           <!-- Participants -->
           <div>
-            <label class="block text-sm font-medium text-white mb-2">
+            <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
               {{ formData.type === 'direct' ? 'Seleccionar usuario' : 'Seleccionar participantes' }}
             </label>
             
             <!-- Loading -->
             <div v-if="loading" class="flex items-center justify-center py-4">
-              <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500"></div>
+              <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500"></div>
             </div>
             
             <!-- Users List -->
-            <div v-else class="max-h-40 overflow-y-auto space-y-2 p-2 bg-white/5 rounded-lg border border-white/10">
+            <div v-else class="max-h-40 overflow-y-auto custom-scrollbar space-y-1 p-1.5 bg-slate-50 rounded-xl border border-slate-200">
               <div
                 v-for="user in users"
                 :key="user._id"
@@ -95,22 +95,22 @@
                 :class="[
                   'flex items-center p-2 rounded-lg cursor-pointer transition-colors',
                   selectedUsers.includes(user._id)
-                    ? 'bg-purple-500/30 border border-purple-500/50'
-                    : 'hover:bg-white/10'
+                    ? 'bg-white shadow-sm border border-primary-100'
+                    : 'hover:bg-white'
                 ]"
               >
                 <div class="flex items-center flex-1">
                   <!-- Avatar -->
-                  <div class="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center mr-3">
-                    <span class="text-white text-xs font-medium">
+                  <div class="w-8 h-8 rounded-full bg-primary-50 border border-primary-100 flex items-center justify-center mr-3">
+                    <span class="text-primary-700 text-xs font-black">
                       {{ user.name.charAt(0).toUpperCase() }}
                     </span>
                   </div>
                   
                   <!-- User Info -->
                   <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-white truncate">{{ user.name }}</p>
-                    <p class="text-xs text-gray-400 truncate">
+                    <p class="text-sm font-semibold text-slate-800 truncate">{{ user.name }}</p>
+                    <p class="text-xs text-slate-500 truncate">
                       {{ user.position || user.role }}
                     </p>
                   </div>
@@ -121,8 +121,8 @@
                   :class="[
                     'w-4 h-4 rounded border flex items-center justify-center',
                     selectedUsers.includes(user._id)
-                      ? 'bg-purple-500 border-purple-500'
-                      : 'border-gray-400'
+                      ? 'bg-primary-600 border-primary-600'
+                      : 'border-slate-300 bg-white'
                   ]"
                 >
                   <CheckIcon
@@ -132,13 +132,13 @@
                 </div>
               </div>
               
-              <div v-if="users.length === 0" class="text-center text-gray-400 py-4">
+              <div v-if="users.length === 0" class="text-center text-xs text-slate-400 py-4">
                 No hay usuarios disponibles
               </div>
             </div>
             
             <!-- Selected count -->
-            <p v-if="selectedUsers.length > 0" class="text-xs text-gray-400 mt-2">
+            <p v-if="selectedUsers.length > 0" class="text-xs text-slate-500 mt-2">
               {{ selectedUsers.length }} usuario{{ selectedUsers.length !== 1 ? 's' : '' }} seleccionado{{ selectedUsers.length !== 1 ? 's' : '' }}
             </p>
           </div>
@@ -148,14 +148,14 @@
             <button
               type="button"
               @click="$emit('close')"
-              class="flex-1 px-4 py-2 bg-white/10 border border-white/20 text-white rounded-lg hover:bg-white/20 transition-colors"
+              class="btn-secondary btn-sm flex-1"
             >
               Cancelar
             </button>
             <button
               type="submit"
               :disabled="!canCreate"
-              class="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+              class="btn-primary btn-sm flex-1"
             >
               {{ creating ? 'Creando...' : 'Crear chat' }}
             </button>

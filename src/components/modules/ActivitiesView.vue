@@ -80,8 +80,9 @@
       </div>
     </div>
 
-    <!-- Barra de tarea rápida -->
-    <div 
+    <!-- Barra de tarea rápida (oculta por ahora para quitar ruido; v-if="true" la devuelve) -->
+    <div
+      v-if="false"
       class="bg-indigo-50 rounded-xl p-2 border border-indigo-100 shadow-sm relative"
     >
       <div class="flex items-center gap-3">
@@ -1082,7 +1083,7 @@
           <div v-if="pendingActivities.length === 0" class="empty-state empty-state--sm border-amber-100 bg-amber-50/30">
             <div class="empty-state__icon bg-amber-100/70 text-amber-400"><i class="fas fa-clock"></i></div>
             <p class="empty-state__title">No hay actividades pendientes</p>
-            <p class="empty-state__text">Usa la tarea rápida para agregar la primera.</p>
+            <p class="empty-state__text">Crea la primera con el botón Nueva actividad.</p>
           </div>
         </div>
 

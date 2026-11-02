@@ -1,6 +1,6 @@
 <template>
   <!-- Sugerencias de IA: franja discreta con 1 o 2 líneas accionables para esta persona. -->
-  <div class="rounded-2xl bg-slate-50 px-5 py-4">
+  <div class="rounded-2xl bg-white border border-slate-200 px-5 py-4 shrink-0">
     <div class="flex items-center justify-between gap-3 mb-2">
       <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 leading-none">Sugerencias para {{ firstName }}</p>
       <button type="button" @click="generate(true)" :disabled="loading" class="text-[11px] font-medium text-slate-400 hover:text-primary-600 transition-colors disabled:opacity-40">

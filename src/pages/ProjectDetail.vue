@@ -83,6 +83,7 @@
               <i v-if="savingDescription" class="fas fa-spinner fa-spin mr-1.5"></i>Guardar
             </button>
           </div>
+          <LinkedCasesPanel :client-id="clientId" :project-id="projectId" />
         </div>
 
         <!-- Enlaces y Adjuntos -->
@@ -373,6 +374,7 @@ import ActivityFormModal from '@/components/forms/ActivityFormModal.vue'
 import TaskListView, { type TaskListGroup } from '@/components/tasks/TaskListView.vue'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
 import Skeleton from '@/components/ui/Skeleton.vue'
+import LinkedCasesPanel from '@/components/cases/LinkedCasesPanel.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useTasksStore } from '@/stores/tasks'
 import { useCanManageTasks } from '@/services/taskApprovalService'
