@@ -3153,7 +3153,7 @@ const activityListGroups = computed<TaskListGroup[]>(() => {
   const recurringRows = listFilteredActivities.value.filter(a => a.type === 'recurring').map(activityToListRow)
 
   return [
-    ...(recurringRows.length ? [{ key: 'recurring', label: 'Recurrentes (diarias)', dotClass: 'bg-teal-500', rows: recurringRows }] : []),
+    ...(recurringRows.length ? [{ key: 'recurring', label: 'Recurrentes', dotClass: 'bg-teal-500', rows: recurringRows }] : []),
     { key: 'overdue', label: 'Vencidas', dotClass: 'bg-red-500', rows: byStatus('overdue') },
     { key: 'pending', label: 'Pendientes', dotClass: 'bg-amber-400', rows: byStatus('pending') },
     { key: 'in-progress', label: 'En progreso', dotClass: 'bg-primary-400', rows: byStatus('in-progress') },

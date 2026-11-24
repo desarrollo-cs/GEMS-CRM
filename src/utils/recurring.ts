@@ -1,4 +1,12 @@
-import { todayKeyCR } from '@/services/activityService'
+import { todayKeyCR, type Recurrence } from '@/services/activityService'
+
+export const RECURRENCE_OPTIONS: { value: Recurrence; label: string }[] = [
+  { value: 'daily', label: 'Diaria' },
+  { value: 'weekly', label: 'Semanal' },
+  { value: 'monthly', label: 'Mensual' },
+  { value: 'yearly', label: 'Anual' }
+]
+export const recurrenceLabel = (r?: Recurrence | null) => RECURRENCE_OPTIONS.find(o => o.value === r)?.label || 'Diaria'
 
 export interface DailyLogEntry {
   date: string // 'YYYY-MM-DD' en hora de Costa Rica

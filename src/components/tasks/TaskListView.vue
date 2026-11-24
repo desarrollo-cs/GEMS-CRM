@@ -46,7 +46,7 @@
             <span
               v-if="row.recurring"
               class="w-5 h-5 shrink-0 rounded-full bg-teal-50 text-teal-500 flex items-center justify-center"
-              title="Tarea recurrente diaria"
+              title="Tarea recurrente"
             >
               <i class="fas fa-repeat text-[9px]"></i>
             </span>

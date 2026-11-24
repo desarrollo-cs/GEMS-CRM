@@ -42,10 +42,12 @@ export interface ActivityData {
   acceptanceCriteria?: string
   environment?: ActivityEnvironment | null
   attachments?: ActivityAttachment[]
-  // Tareas recurrentes: un registro por persona y por día ("+" diario)
+  // Tareas recurrentes: periodicidad y un registro por persona y por día ("+" diario)
+  recurrence?: Recurrence
   dailyLog?: Array<{ _id?: string; date: string; userId: string; at?: string }>
 }
 
+export type Recurrence = 'daily' | 'weekly' | 'monthly' | 'yearly'
 export type ActivityType = 'task' | 'bug' | 'feature' | 'user-story' | 'recurring'
 export type ActivityEnvironment = 'development' | 'testing' | 'production'
 

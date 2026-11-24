@@ -78,7 +78,7 @@
                     { value: 'bug', label: 'Bug / Error' },
                     { value: 'feature', label: 'Mejora / Feature' },
                     { value: 'user-story', label: 'Historia de Usuario' },
-                    ...(isBoardTask ? [] : [{ value: 'recurring', label: 'Recurrente (diaria)' }])
+                    ...(isBoardTask ? [] : [{ value: 'recurring', label: 'Recurrente' }])
                   ]"
                 />
               </div>
@@ -140,8 +140,13 @@
                   />
                 </div>
               </div>
+              <!-- Recurrente: en vez de entrega, cada cuánto se repite -->
+              <div v-if="form.type === 'recurring'" class="group/field space-y-1.5">
+                <label :class="labelClass">Periodicidad</label>
+                <CustomSelect v-model="form.recurrence" size="dense" :options="RECURRENCE_OPTIONS" />
+              </div>
               <!-- Entrega: fecha pactada. Una recurrente no tiene: no vence -->
-              <div v-if="form.type !== 'recurring'" class="group/field space-y-1.5">
+              <div v-else class="group/field space-y-1.5">
                 <label :class="labelClass">
                   Entrega
                   <i
@@ -209,7 +214,7 @@
                 <i class="fas fa-repeat"></i>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-xs font-black text-slate-700">Tarea recurrente diaria</p>
+                <p class="text-xs font-black text-slate-700">Tarea recurrente · {{ recurrenceLabel(form.recurrence) }}</p>
                 <p v-if="isEditing" class="text-[11px] text-slate-500 mt-0.5">
                   <b class="text-slate-700">{{ recurring.totalDays }}</b> días registrados ·
                   racha de <b class="text-slate-700">{{ recurring.streak }}</b> día(s) hábiles ·
@@ -804,9 +809,9 @@ import CustomSelect from '../ui/CustomSelect.vue'
 import ProjectSelect from './ProjectSelect.vue'
 import VoiceDictateButton from '@/components/ui/VoiceDictateButton.vue'
 import TaskHistory from '../tasks/TaskHistory.vue'
-import { activityService, type ActivityData, type ActivityAttachment } from '../../services/activityService'
+import { activityService, type ActivityData, type ActivityAttachment, type Recurrence } from '../../services/activityService'
 import { compressImageToDataUrl } from '../../utils/compressImage'
-import { recurringStats } from '../../utils/recurring'
+import { recurringStats, RECURRENCE_OPTIONS, recurrenceLabel } from '../../utils/recurring'
 import { useBoardsStore } from '../../stores/boards'
 import { useTasksStore } from '../../stores/tasks'
 import { useAuthStore } from '../../stores/auth'
@@ -879,6 +884,7 @@ const form = reactive({
   priority: 'medium',
   status: 'pending',
   type: 'task',
+  recurrence: 'daily' as Recurrence,
   date: '',
   dueDate: '',
   estimatedTime: '',
@@ -989,6 +995,7 @@ const populateForm = () => {
       form.priority = props.activity.priority || 'medium'
       form.status = props.activity.status || 'pending'
       form.type = props.activity.type || 'task'
+      form.recurrence = props.activity.recurrence || 'daily'
       
       // Soporte para estimatedHours (Task) o estimatedTime (Activity)
       form.estimatedTime = props.activity.estimatedTime || (props.activity.estimatedHours ? `${props.activity.estimatedHours}h` : '')
@@ -1014,6 +1021,7 @@ const populateForm = () => {
       form.priority = 'medium'
       form.status = 'pending'
       form.type = props.initialType || 'task'
+      form.recurrence = 'daily'
       form.estimatedTime = ''
       form.completionPercentage = 0
       form.date = new Date().toISOString().slice(0, 16)
@@ -1150,7 +1158,7 @@ const handleSubmit = async () => {
     }
     // Una recurrente no vence (el backend también lo fuerza). Con la entrega
     // bloqueada no se manda: no hay nada que cambiar.
-    if (form.type === 'recurring') taskData.dueDate = null
+    if (form.type === 'recurring') { taskData.dueDate = null; taskData.recurrence = form.recurrence }
     else if (!dueDateLocked.value) taskData.dueDate = dueDateInputToIso(form.dueDate)
 
     // Campos específicos según el modelo
