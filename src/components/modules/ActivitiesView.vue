@@ -854,7 +854,7 @@
       v-else-if="currentView === 'kanban'"
       class="grid grid-cols-1 gap-2 sm:gap-3 md:grid-cols-2 lg:grid-cols-4 motion-stagger"
     >
-      <!-- Recurrentes diarias: no tienen estado ni prioridad, se marcan con "+ Hoy" -->
+      <!-- Recurrentes: no tienen estado ni prioridad, se marcan con "+" en cada período -->
       <section
         v-if="recurringBoardItems.length"
         class="md:col-span-2 lg:col-span-4 bg-gradient-to-r from-teal-50/80 via-white to-white border border-teal-100 rounded-xl p-3 sm:p-4 shadow-sm"
@@ -863,11 +863,11 @@
           <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center border border-teal-200 shadow-sm">
             <i class="fas fa-repeat text-teal-600 text-sm"></i>
           </div>
-          <h2 class="text-xs font-black text-slate-800 uppercase tracking-wide">Recurrentes de hoy</h2>
+          <h2 class="text-xs font-black text-slate-800 uppercase tracking-wide">Recurrentes</h2>
           <span class="px-2 h-5 flex items-center justify-center bg-teal-100 border border-teal-200 text-teal-700 rounded-full text-[10px] font-black shadow-sm">
             {{ recurringBoardItems.filter(r => r.stats.doneToday).length }}/{{ recurringBoardItems.length }}
           </span>
-          <span class="hidden sm:inline text-[11px] text-slate-400 font-medium">Marca con <b class="text-teal-600">+ Hoy</b> cuando la hagas</span>
+          <span class="hidden sm:inline text-[11px] text-slate-400 font-medium">Marca con <b class="text-teal-600">+</b> cuando la hagas (cada día, semana, mes o año según su periodicidad)</span>
         </div>
         <div v-auto-animate class="flex gap-2.5 overflow-x-auto pb-1 custom-scrollbar-slim">
           <div
@@ -902,7 +902,7 @@
                   />
                 </div>
                 <span class="text-[10px] font-bold text-slate-400 whitespace-nowrap" :title="`${stats.totalDays} días registrados · racha de ${stats.streak} día(s) hábiles`">
-                  <i class="fas fa-fire text-orange-400 mr-0.5" v-if="stats.streak > 1"></i>{{ stats.streak > 1 ? stats.streak : stats.totalDays + 'd' }}
+                  <i class="fas fa-fire text-orange-400 mr-0.5" v-if="stats.streak > 1"></i>{{ stats.streak > 1 ? stats.streak : stats.total }}
                 </span>
               </div>
               <button
@@ -912,9 +912,9 @@
                 :class="stats.doneToday
                   ? 'bg-teal-500 text-white hover:bg-teal-600'
                   : 'bg-white text-teal-600 border border-teal-200 hover:bg-teal-50'"
-                :title="stats.doneToday ? 'Ya la registraste hoy — clic para deshacer' : 'Registrar que hiciste esta tarea hoy'"
+                :title="stats.doneToday ? `Ya la registraste ${stats.period} — clic para deshacer` : `Registrar que la hiciste ${stats.period}`"
               >
-                <i :class="stats.doneToday ? 'fas fa-check' : 'fas fa-plus'" class="mr-1"></i>Hoy
+                <i :class="stats.doneToday ? 'fas fa-check' : 'fas fa-plus'" class="mr-1"></i>{{ stats.button }}
               </button>
             </div>
           </div>
@@ -2982,8 +2982,8 @@ const boardActivities = computed(() => filteredActivities.value.filter(a => a.ty
 const recurringBoardItems = computed(() =>
   filteredActivities.value
     .filter(a => a.type === 'recurring')
-    .map(activity => ({ activity, stats: recurringStats(activity.dailyLog as any, authStore.user?._id) }))
-    // Primero las que faltan hoy
+    .map(activity => ({ activity, stats: recurringStats(activity.dailyLog as any, authStore.user?._id, activity.recurrence) }))
+    // Primero las que faltan en el período actual
     .sort((x, y) => Number(x.stats.doneToday) - Number(y.stats.doneToday) || x.activity.title.localeCompare(y.activity.title))
 )
 
@@ -3131,7 +3131,7 @@ function activityToListRow(activity: ActivityData): TaskListRow {
     kindLabel: activity.type === 'feature' ? 'Feature' : undefined,
     kindClass: 'bg-violet-50 text-violet-600',
     tags: activity.tags,
-    recurring: activity.type === 'recurring' ? recurringStats(activity.dailyLog as any, authStore.user?._id) : undefined,
+    recurring: activity.type === 'recurring' ? recurringStats(activity.dailyLog as any, authStore.user?._id, activity.recurrence) : undefined,
     done: visualStatusFor(activity) === 'completed',
     assignees: activityAssignees(activity),
     dueDateLabel: activity.dueDate ? formatDate(activity.dueDate) : undefined,

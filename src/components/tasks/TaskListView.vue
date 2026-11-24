@@ -116,11 +116,11 @@
                   :class="row.recurring.doneToday
                     ? 'bg-teal-500 text-white hover:bg-teal-600'
                     : 'bg-white text-teal-600 border border-teal-200 hover:bg-teal-50'"
-                  :title="row.recurring.doneToday ? 'Ya la registraste hoy — clic para deshacer' : 'Registrar que hiciste esta tarea hoy'"
+                  :title="row.recurring.doneToday ? `Ya la registraste ${row.recurring.period} — clic para deshacer` : `Registrar que la hiciste ${row.recurring.period}`"
                 >
-                  <i :key="String(row.recurring.doneToday)" :class="row.recurring.doneToday ? 'fas fa-check motion-pop' : 'fas fa-plus'" class="mr-0.5"></i>Hoy
+                  <i :key="String(row.recurring.doneToday)" :class="row.recurring.doneToday ? 'fas fa-check motion-pop' : 'fas fa-plus'" class="mr-0.5"></i>{{ row.recurring.button }}
                 </button>
-                <span class="text-[10px] font-bold text-slate-400" :title="`${row.recurring.totalDays} días registrados · racha de ${row.recurring.streak}`">{{ row.recurring.totalDays }}d</span>
+                <span class="text-[10px] font-bold text-slate-400" :title="`${row.recurring.total} ${row.recurring.unit} con registro · racha de ${row.recurring.streak}`">{{ row.recurring.total }}</span>
               </div>
               <span
                 v-else-if="row.dueDateLabel"
@@ -190,8 +190,8 @@ export interface TaskListRow {
   kindLabel?: string
   kindClass?: string
   tags?: string[]
-  // Solo tareas recurrentes: estado del "+" diario
-  recurring?: { doneToday: boolean; totalDays: number; streak: number }
+  // Solo tareas recurrentes: estado del "+" del período (hoy / esta semana / este mes / este año)
+  recurring?: { doneToday: boolean; total: number; streak: number; period: string; unit: string; button: string }
   raw: any
 }
 

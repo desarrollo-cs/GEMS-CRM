@@ -216,11 +216,11 @@
               <div class="flex-1 min-w-0">
                 <p class="text-xs font-black text-slate-700">Tarea recurrente · {{ recurrenceLabel(form.recurrence) }}</p>
                 <p v-if="isEditing" class="text-[11px] text-slate-500 mt-0.5">
-                  <b class="text-slate-700">{{ recurring.totalDays }}</b> días registrados ·
-                  racha de <b class="text-slate-700">{{ recurring.streak }}</b> día(s) hábiles ·
-                  hoy: <b :class="recurring.doneToday ? 'text-teal-600' : 'text-amber-600'">{{ recurring.doneToday ? 'hecha' : 'pendiente' }}</b>
+                  <b class="text-slate-700">{{ recurring.total }}</b> {{ recurring.unit }} con registro ·
+                  racha de <b class="text-slate-700">{{ recurring.streak }}</b> ·
+                  {{ recurring.period }}: <b :class="recurring.doneToday ? 'text-teal-600' : 'text-amber-600'">{{ recurring.doneToday ? 'hecha' : 'pendiente' }}</b>
                 </p>
-                <p v-else class="text-[11px] text-slate-500 mt-0.5">No vence ni se completa: cada día, quien la hace le da <b>+</b> para registrarla.</p>
+                <p v-else class="text-[11px] text-slate-500 mt-0.5">No vence ni se completa: en cada período (día, semana, mes o año), quien la hace le da <b>+</b> para registrarla.</p>
               </div>
               <button
                 v-if="isEditing"
@@ -231,9 +231,9 @@
                 :class="recurring.doneToday
                   ? 'bg-teal-500 text-white shadow-sm shadow-teal-200 hover:bg-teal-600'
                   : 'bg-white text-teal-600 border border-teal-200 hover:bg-teal-50'"
-                :title="recurring.doneToday ? 'Ya la registraste hoy — clic para deshacer' : 'Registrar que hiciste esta tarea hoy'"
+                :title="recurring.doneToday ? `Ya la registraste ${recurring.period} — clic para deshacer` : `Registrar que la hiciste ${recurring.period}`"
               >
-                <i :class="recurring.doneToday ? 'fas fa-check' : 'fas fa-plus'" class="mr-1.5"></i>{{ recurring.doneToday ? 'Hecha hoy' : 'Hoy' }}
+                <i :class="recurring.doneToday ? 'fas fa-check' : 'fas fa-plus'" class="mr-1.5"></i>{{ recurring.doneToday ? `Hecha ${recurring.period}` : recurring.button }}
               </button>
             </div>
 
@@ -1464,7 +1464,7 @@ function onAttachmentPaste(e: ClipboardEvent) {
 }
 
 // ── Tarea recurrente: "+" del día ───────────────────────────────────────────
-const recurring = computed(() => recurringStats(localTask.value?.dailyLog, authStore.user?._id))
+const recurring = computed(() => recurringStats(localTask.value?.dailyLog, authStore.user?._id, form.recurrence))
 const checkingDaily = ref(false)
 
 async function toggleDailyCheck() {
